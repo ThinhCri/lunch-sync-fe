@@ -1,10 +1,9 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { ConfigProvider } from 'antd';
+import { ConfigProvider, theme } from 'antd';
 import { SessionProvider } from '@/contexts/SessionContext';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { useAuthStore } from '@/store/authStore';
 
-// Pages
 import HomePage from '@/pages/HomePage';
 import LoginPage from '@/pages/LoginPage';
 import RegisterPage from '@/pages/RegisterPage';
@@ -25,14 +24,21 @@ function App() {
       <ErrorBoundary>
         <ConfigProvider
           theme={{
+            algorithm: theme.defaultAlgorithm,
             token: {
-              colorPrimary: '#6C63FF',
-              borderRadius: 10,
+              colorPrimary: '#9c3f00',
+              colorSuccess: '#176a21',
+              colorError: '#b02500',
+              colorWarning: '#c47d00',
+              colorInfo: '#4953ac',
+              borderRadius: 16,
               fontFamily: "'Inter', sans-serif",
             },
             components: {
-              Button: { controlHeight: 48 },
-              Input: { controlHeight: 48 },
+              Button: { controlHeight: 56, borderRadius: 28 },
+              Input: { controlHeight: 56 },
+              Modal: { borderRadius: 28 },
+              message: { top: 80 },
             },
           }}
         >
@@ -43,7 +49,6 @@ function App() {
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/join" element={<JoinPage />} />
               <Route path="/join/:pin" element={<JoinPage />} />
-
               <Route path="/create" element={<RequireAuth><CreateSessionPage /></RequireAuth>} />
               <Route path="/lobby/:pin" element={<RequireAuth><LobbyPage /></RequireAuth>} />
               <Route path="/waiting/:pin" element={<WaitingRoomPage />} />

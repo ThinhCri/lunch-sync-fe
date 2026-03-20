@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Form, Input, Button, message } from 'antd';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { mockHandlers } from '@/api/mock';
@@ -8,24 +7,49 @@ import styles from './LoginPage.module.css';
 export default function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [generalError, setGeneralError] = useState('');
 
-  const handleSubmit = async (values) => {
+  const validate = () => {
+    const errs = {};
+    if (!email.trim()) {
+      errs.email = 'Vui lòng nhập email';
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      errs.email = 'Email không hợp lệ';
+    }
+    if (!password) {
+      errs.password = 'Vui lòng nhập mật khẩu';
+    }
+    return errs;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const errs = validate();
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs);
+      return;
+    }
+    setErrors({});
+    setGeneralError('');
     setLoading(true);
-    try {
-      // Optimistic redirect: redirect trước khi API response
-      navigate('/create');
 
-      const res = await mockHandlers.login(values.email, values.password);
+    try {
+      // Optimistic redirect
+      navigate('/create');
+      const res = await mockHandlers.login(email, password);
       if (res.error) {
-        message.error(res.error.message || 'Đăng nhập thất bại');
-        // Rollback redirect
+        setGeneralError(res.error.message);
         navigate('/login');
         return;
       }
       login(res.token, res.user);
-    } catch (err) {
-      message.error(err.message || 'Đăng nhập thất bại');
+    } catch {
+      setGeneralError('Đăng nhập thất bại. Vui lòng thử lại.');
       navigate('/login');
     } finally {
       setLoading(false);
@@ -34,82 +58,114 @@ export default function LoginPage() {
 
   return (
     <div className={styles.page}>
-      <div className={styles.header}>
-        <button className={styles.backBtn} onClick={() => navigate('/')}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M19 12H5M12 5l-7 7 7 7"/>
-          </svg>
-        </button>
-        <span className={styles.headerTitle}>Đăng nhập</span>
-        <div style={{ width: 40 }} />
-      </div>
-
-      <div className={styles.formWrap}>
-        <div className={styles.logoSection}>
-          <svg width="48" height="48" viewBox="0 0 64 64" fill="none">
-            <rect width="64" height="64" rx="16" fill="#6C63FF"/>
-            <path d="M32 18c-7.732 0-14 6.268-14 14s6.268 14 14 14 14-6.268 14-14-6.268-14-14-14zm0 4c5.523 0 10 4.477 10 10s-4.477 10-10 10-10-4.477-10-10 4.477-10 10-10z" fill="white"/>
-            <path d="M32 24v8l5.657 5.657" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
-            <circle cx="32" cy="32" r="3" fill="white"/>
-          </svg>
-          <h1 className={styles.title}>Chào mừng trở lại!</h1>
-          <p className={styles.subtitle}>Đăng nhập để tạo bữa trưa với nhóm</p>
+      {/* Left visual — desktop only */}
+      <div className={styles.visualSide}>
+        <div className={styles.visualInner}>
+          <div className={styles.visualHeader}>
+            <h1 className={styles.brand}>LunchSync</h1>
+            <p className={styles.brandSub}>Connect. Eat. Sync.</p>
+          </div>
+          <div className={styles.heroWrap}>
+            <div className={styles.heroGlow} />
+            <img
+              className={styles.heroImg}
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZskAD2t36S0uEXb6BapUqhmGdkHs2aSuQ0XD4JwPMlNAGsJWYqFjABBlAPIV-C6ciZNtiZEBZysKWr-0T1cNm07vpd1bEN-rzsBZISqThW8hU5r7SNlHYtNeK8z30neoC8_ScPeU1rWTDpFvUMQXuKkD4oIwtRX4fOTSLkR1TXhiNaDdeoItZ22U_eEWMipNqVOetgHeai86ZkuDIJLQEJnEAcHiex0dL_FuFJK8wutAdCfSv0BI_iqpps1JWK-iicnbB_7TVV0U"
+              alt="Office workers sharing lunch"
+            />
+            <div className={`${styles.badge} glass-card`}>
+              <span className="material-symbols-outlined" style={{ color: 'var(--color-secondary)', fontSize: 28 }}>restaurant</span>
+              <p className={styles.badgeText}>Hơn 500+ đồng nghiệp tại Quận 1 đang chờ bạn!</p>
+            </div>
+          </div>
         </div>
-
-        <Form
-          layout="vertical"
-          onFinish={handleSubmit}
-          className={styles.form}
-          requiredMark={false}
-        >
-          <Form.Item
-            name="email"
-            label="Email"
-            rules={[
-              { required: true, message: 'Vui lòng nhập email' },
-              { type: 'email', message: 'Email không hợp lệ' },
-            ]}
-          >
-            <Input
-              size="large"
-              placeholder="you@example.com"
-              type="email"
-              autoComplete="email"
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="password"
-            label="Mật khẩu"
-            rules={[
-              { required: true, message: 'Vui lòng nhập mật khẩu' },
-              { min: 6, message: 'Mật khẩu tối thiểu 6 ký tự' },
-            ]}
-          >
-            <Input.Password
-              size="large"
-              placeholder="Nhập mật khẩu"
-              autoComplete="current-password"
-            />
-          </Form.Item>
-
-          <Button
-            type="primary"
-            htmlType="submit"
-            size="large"
-            block
-            loading={loading}
-            className={styles.submitBtn}
-          >
-            Đăng nhập
-          </Button>
-        </Form>
-
-        <p className={styles.registerLink}>
-          Chưa có tài khoản?{' '}
-          <Link to="/register">Đăng ký ngay</Link>
-        </p>
       </div>
+
+      {/* Right — Form */}
+      <div className={styles.formSide}>
+        <div className={styles.formWrap}>
+          {/* Mobile logo */}
+          <div className={styles.mobileLogo}>
+            <span className={styles.mobileLogoText}>LunchSync</span>
+          </div>
+
+          <div className={styles.heading}>
+            <h2 className={styles.title}>Chào mừng trở lại</h2>
+            <p className={styles.subtitle}>Kết nối bữa trưa cùng đồng nghiệp ngay.</p>
+          </div>
+
+          {generalError && (
+            <div className={styles.errorBanner}>
+              <span className="material-symbols-outlined" style={{ fontSize: 18 }}>error</span>
+              {generalError}
+            </div>
+          )}
+
+          <form className={styles.form} onSubmit={handleSubmit} noValidate>
+            {/* Email */}
+            <div className={styles.fieldGroup}>
+              <label className="field-label" htmlFor="email">Email hoặc Tên đăng nhập</label>
+              <input
+                id="email"
+                type="email"
+                className={`text-field ${errors.email ? styles.inputError : ''}`}
+                placeholder="name@company.com"
+                value={email}
+                onChange={(e) => { setEmail(e.target.value); setErrors((p) => ({ ...p, email: '' })); }}
+                autoComplete="email"
+                disabled={loading}
+              />
+              {errors.email && <p className="field-error">{errors.email}</p>}
+            </div>
+
+            {/* Password */}
+            <div className={styles.fieldGroup}>
+              <div className={styles.passwordHeader}>
+                <label className="field-label" htmlFor="password" style={{ marginBottom: 0 }}>Mật khẩu</label>
+                <button type="button" className="btn-text">Quên mật khẩu?</button>
+              </div>
+              <div className={styles.passwordWrap}>
+                <input
+                  id="password"
+                  type="password"
+                  className={`text-field ${errors.password ? styles.inputError : ''}`}
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => { setPassword(e.target.value); setErrors((p) => ({ ...p, password: '' })); }}
+                  autoComplete="current-password"
+                  disabled={loading}
+                />
+              </div>
+              {errors.password && <p className="field-error">{errors.password}</p>}
+            </div>
+
+            {/* Submit */}
+            <button
+              type="submit"
+              className={`btn-filled ${loading ? styles.loading : ''}`}
+              disabled={loading}
+            >
+              {loading ? (
+                <span className="material-symbols-outlined animate-spin">progress_activity</span>
+              ) : (
+                <>
+                  Đăng nhập
+                  <span className="material-symbols-outlined" style={{ fontSize: 20 }}>arrow_forward</span>
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Footer */}
+          <p className={styles.footerLink}>
+            Bạn mới sử dụng LunchSync?{' '}
+            <Link to="/register">Đăng ký ngay</Link>
+          </p>
+        </div>
+      </div>
+
+      {/* Background accents */}
+      <div className={styles.accentTop} />
+      <div className={styles.accentBottom} />
     </div>
   );
 }
