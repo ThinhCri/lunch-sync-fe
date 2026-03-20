@@ -47,17 +47,16 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      navigate('/create');
       const res = await mockHandlers.register(email, password);
       if (res.error) {
         setGeneralError(res.error.message);
-        navigate('/register');
         return;
       }
       login(res.token, res.user);
+      const destination = res.user?.role === 'admin' ? '/admin/submissions' : '/create';
+      navigate(destination, { replace: true });
     } catch {
       setGeneralError('Đăng ký thất bại. Vui lòng thử lại.');
-      navigate('/register');
     } finally {
       setLoading(false);
     }

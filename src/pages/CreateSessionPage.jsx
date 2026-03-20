@@ -17,18 +17,34 @@ export default function CreateSessionPage() {
   const navigate = useNavigate();
   const { setSession, setParticipants } = useSessionStore();
 
+  // Auto-fill từ lịch sử gần nhất
+  const savedHistory = (() => {
+    try { return JSON.parse(localStorage.getItem('lunchsync-create-history') || 'null'); }
+    catch { return null; }
+  })();
+
   const [collections, setCollections] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedCollection, setSelectedCollection] = useState(null);
+  const [selectedCollection, setSelectedCollection] = useState(
+    savedHistory?.collectionId ? null : null
+  );
   const [selectedTier, setSelectedTier] = useState(null);
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(savedHistory ? 1 : 1);
   const [creating, setCreating] = useState(false);
   const [createdSession, setCreatedSession] = useState(null);
 
-  // Load collections
+  // Load collections + auto-select from history
   useEffect(() => {
     mockHandlers.getCollections().then((res) => {
       setCollections(res);
+      if (savedHistory?.collectionId) {
+        const found = res.find(c => c.id === savedHistory.collectionId);
+        if (found) setSelectedCollection(found);
+      }
+      if (savedHistory?.priceTier) {
+        const found = PRICE_TIERS.find(t => t.key === savedHistory.priceTier);
+        if (found) setSelectedTier(found);
+      }
       setLoading(false);
     });
   }, []);
@@ -55,6 +71,12 @@ export default function CreateSessionPage() {
         collectionName: selectedCollection.name,
         priceTier: selectedTier.key,
       });
+      // Lưu lịch sử tạo gần nhất
+      localStorage.setItem('lunchsync-create-history', JSON.stringify({
+        collectionId: selectedCollection.id,
+        collectionName: selectedCollection.name,
+        priceTier: selectedTier.key,
+      }));
       // Host tự join vào session
       const joinRes = await mockHandlers.joinSession(res.pin, 'Host');
       setParticipants([{ id: joinRes.participantId, nickname: 'Host', joinedAt: new Date().toISOString() }]);

@@ -197,3 +197,48 @@ input, textarea, select {
   color: var(--color-on-primary-container);
   flex-shrink: 0;
 }
+
+/* ── Responsive: 375px baseline ── */
+@media (min-width: 768px) {
+  .page-container {
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  .btn-filled {
+    height: 52px;
+    font-size: var(--font-size-lg) !important;
+  }
+
+  .btn-outlined {
+    height: 52px;
+    font-size: var(--font-size-lg) !important;
+  }
+
+  .text-field {
+    height: 52px;
+    font-size: var(--font-size-lg);
+  }
+}
+
+@media (min-width: 1024px) {
+  .page-container {
+    max-width: 960px;
+  }
+}
+
+/* ── Mobile: fix bottom CTA always visible ── */
+@media (max-width: 480px) {
+  /* Ensure sticky/bottom elements don't get cut by nav bar */
+  .page-container > *:last-child {
+    padding-bottom: calc(var(--space-6) + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* ── Reduce motion for accessibility ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

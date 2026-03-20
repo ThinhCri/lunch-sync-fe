@@ -205,14 +205,14 @@ export default function VotingPage() {
                     letter="A"
                     selected={answers[currentIndex] === 'A'}
                     disabled={isTransitioning}
-                    onClick={() => selectOption('A')}
+                    onClick={() => { selectOption('A'); if (navigator.vibrate) navigator.vibrate(10); }}
                   />
                   <ChoiceButton
                     label={currentChoice.optionB}
                     letter="B"
                     selected={answers[currentIndex] === 'B'}
                     disabled={isTransitioning}
-                    onClick={() => selectOption('B')}
+                    onClick={() => { selectOption('B'); if (navigator.vibrate) navigator.vibrate(10); }}
                   />
                 </div>
               </>

@@ -7,6 +7,14 @@ export default function HomePage() {
 
   return (
     <div className={styles.page}>
+      {/* Auth nav */}
+      {!isAuthenticated && (
+        <div className={styles.authNav}>
+          <a href="/login" className={styles.navBtn}>Đăng nhập</a>
+          <a href="/register" className={styles.navBtnPrimary}>Đăng ký</a>
+        </div>
+      )}
+
       <div className={styles.hero}>
         <div className={styles.logoWrap}>
           <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
@@ -37,6 +45,14 @@ export default function HomePage() {
           href="/join"
         >
           Tham gia
+        </Button>
+        <Button
+          size="small"
+          block
+          className={styles.btnSuggest}
+          href="/suggest"
+        >
+          Đề xuất quán mới
         </Button>
       </div>
 

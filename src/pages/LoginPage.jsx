@@ -39,18 +39,17 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // Optimistic redirect
-      navigate('/create');
       const res = await mockHandlers.login(email, password);
       if (res.error) {
         setGeneralError(res.error.message);
-        navigate('/login');
         return;
       }
       login(res.token, res.user);
+      // Redirect theo role: admin → admin page, user/host → create session
+      const destination = res.user?.role === 'admin' ? '/admin/submissions' : '/create';
+      navigate(destination, { replace: true });
     } catch {
       setGeneralError('Đăng nhập thất bại. Vui lòng thử lại.');
-      navigate('/login');
     } finally {
       setLoading(false);
     }

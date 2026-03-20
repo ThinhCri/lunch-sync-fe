@@ -16,10 +16,21 @@ import VotingWaitPage from '@/pages/VotingWaitPage';
 import ResultsPage from '@/pages/ResultsPage';
 import BoomPage from '@/pages/BoomPage';
 import DonePage from '@/pages/DonePage';
+import CrowdsourcePage from '@/pages/CrowdsourcePage';
+import SubmissionsPage from '@/pages/admin/SubmissionsPage';
+import DishManagementPage from '@/pages/admin/DishManagementPage';
 
 function RequireAuth({ children }) {
   const isAuth = useAuthStore((s) => !!s.token);
   if (!isAuth) return <Navigate to="/login" />;
+  return children;
+}
+
+function RequireAdmin({ children }) {
+  const isAuth = useAuthStore((s) => !!s.token);
+  const isAdmin = useAuthStore((s) => s.user?.role === 'admin');
+  if (!isAuth) return <Navigate to="/login" />;
+  if (!isAdmin) return <Navigate to="/create" />;
   return children;
 }
 
@@ -54,6 +65,7 @@ function App() {
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/join" element={<JoinPage />} />
               <Route path="/join/:pin" element={<JoinPage />} />
+              <Route path="/suggest" element={<CrowdsourcePage />} />
               <Route path="/create" element={<RequireAuth><CreateSessionPage /></RequireAuth>} />
               <Route path="/lobby/:pin" element={<RequireAuth><LobbyPage /></RequireAuth>} />
               <Route path="/waiting/:pin" element={<WaitingRoomPage />} />
@@ -62,6 +74,8 @@ function App() {
               <Route path="/results/:pin" element={<ResultsPage />} />
               <Route path="/boom/:pin" element={<BoomPage />} />
               <Route path="/done/:pin" element={<DonePage />} />
+              <Route path="/admin/submissions" element={<RequireAdmin><SubmissionsPage /></RequireAdmin>} />
+              <Route path="/admin/dishes" element={<RequireAdmin><DishManagementPage /></RequireAdmin>} />
             </Routes>
           </SessionProvider>
         </ConfigProvider>
