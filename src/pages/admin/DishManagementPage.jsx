@@ -25,6 +25,7 @@ export default function DishManagementPage() {
   const [selectedDish, setSelectedDish] = useState(null);
   const [editingProfile, setEditingProfile] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [expandedDiffId, setExpandedDiffId] = useState(null);
   const [cacheLoading, setCacheLoading] = useState(false);
   const [cacheDone, setCacheDone] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
@@ -205,9 +206,10 @@ export default function DishManagementPage() {
                       const sorted = [...dish.lastDiff].sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
                       const top2 = sorted.slice(0, 2);
                       const rest = sorted.slice(2);
+                      const isExpanded = expandedDiffId === dish.id;
                       return (
                         <div className={styles.diffContainer}>
-                          {top2.map(({ dimension, oldValue, newValue, delta }) => (
+                          {(isExpanded ? sorted : top2).map(({ dimension, oldValue, newValue, delta }) => (
                             <div key={dimension} className={styles.diffRow}>
                               <span className={styles.diffDim}>{PROFILE_LABELS[dimension] || dimension}</span>
                               <span className={styles.diffOld}>{oldValue.toFixed(2)}</span>
@@ -219,8 +221,11 @@ export default function DishManagementPage() {
                             </div>
                           ))}
                           {rest.length > 0 && (
-                            <button className={styles.diffMore} onClick={() => openDrawer(dish)}>
-                              +{rest.length} thay đổi khác
+                            <button
+                              className={styles.diffMore}
+                              onClick={() => setExpandedDiffId(isExpanded ? null : dish.id)}
+                            >
+                              {isExpanded ? '▲ Thu gọn' : `+${rest.length} thay đổi khác`}
                             </button>
                           )}
                         </div>
