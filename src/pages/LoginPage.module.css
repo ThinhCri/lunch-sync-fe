@@ -1,0 +1,97 @@
+.page {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
+  padding-top: calc(var(--space-4) + var(--safe-area-inset-top));
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.backBtn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--color-text-primary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.headerTitle {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.formWrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-8) var(--space-6);
+  max-width: 400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.logoSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-8);
+}
+
+.title {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.subtitle {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.form {
+  width: 100%;
+}
+
+.form :global(.ant-form-item-label > label) {
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+}
+
+.submitBtn {
+  height: 52px !important;
+  font-size: var(--font-size-lg) !important;
+  font-weight: 700 !important;
+  border-radius: var(--radius-xl) !important;
+  margin-top: var(--space-4);
+}
+
+.registerLink {
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-base);
+  margin-top: var(--space-6);
+}
+
+.registerLink a {
+  color: var(--color-primary);
+  font-weight: 600;
+}

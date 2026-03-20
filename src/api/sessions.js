@@ -1,0 +1,15 @@
+import client from './client';
+
+export const sessionsApi = {
+  create: (data) => client.post('/sessions', data),
+  getInfo: (pin) => client.get(`/sessions/${pin}`),
+  join: (pin, data) => client.post(`/sessions/${pin}/join`, data),
+  start: (pin) => client.post(`/sessions/${pin}/start`),
+  getStatus: (pin) => client.get(`/sessions/${pin}/status`),
+  closeVoting: (pin) => client.post(`/sessions/${pin}/close-voting`),
+  getChoices: (pin) => client.get(`/sessions/${pin}/choices`),
+  vote: (pin, data) => client.post(`/sessions/${pin}/vote`, data),
+  getResults: (pin) => client.get(`/sessions/${pin}/results`),
+  boom: (pin) => client.post(`/sessions/${pin}/boom`),
+  pick: (pin, data) => client.post(`/sessions/${pin}/pick`, data),
+};

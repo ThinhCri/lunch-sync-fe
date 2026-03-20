@@ -1,0 +1,17 @@
+.timer {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.timer svg {
+  flex-shrink: 0;
+}
+
+.warning {
+  color: #e65100;
+}
