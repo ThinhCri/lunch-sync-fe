@@ -229,23 +229,22 @@ export const mockHandlers = {
     if (!mockSession || mockSession.pin !== pin) {
       return delay({ error: { code: 'SESSION_NOT_FOUND' } });
     }
-    mockSession.votedCount = (mockSession.votedCount || 0) + 1;
     const total = mockSession.participants.length;
-    if (mockSession.votedCount >= total) {
-      mockSession.status = 'results';
-      mockSession.results = {
-        topDishes: [
-          { id: 'dish-2', name: 'Bún riêu', category: 'Phở & Bún nước', score: 0.85, rank: 1 },
-          { id: 'dish-1', name: 'Phở bò', category: 'Phở & Bún nước', score: 0.72, rank: 2 },
-          { id: 'dish-3', name: 'Bún bò Huế', category: 'Phở & Bún nước', score: 0.68, rank: 3 },
-        ],
-        topRestaurants: MOCK_RESTAURANTS.map((r, i) => ({ ...r, score: 0.9 - i * 0.1, rank: i + 1 })),
-        boomTriggeredAt: null,
-        eliminated: [],
-        remaining: [],
-        finalRestaurant: null,
-      };
-    }
+    // Cách 1: user vote → coi như tất cả cùng vote xong → instant results
+    mockSession.votedCount = total;
+    mockSession.status = 'results';
+    mockSession.results = {
+      topDishes: [
+        { id: 'dish-2', name: 'Bún riêu', category: 'Phở & Bún nước', score: 0.85, rank: 1 },
+        { id: 'dish-1', name: 'Phở bò', category: 'Phở & Bún nước', score: 0.72, rank: 2 },
+        { id: 'dish-3', name: 'Bún bò Huế', category: 'Phở & Bún nước', score: 0.68, rank: 3 },
+      ],
+      topRestaurants: MOCK_RESTAURANTS.map((r, i) => ({ ...r, score: 0.9 - i * 0.1, rank: i + 1 })),
+      boomTriggeredAt: null,
+      eliminated: [],
+      remaining: [],
+      finalRestaurant: null,
+    };
     return delay({ status: 'voted', totalVoted: mockSession.votedCount, totalParticipants: total });
   },
 
@@ -278,10 +277,17 @@ export const mockHandlers = {
     if (!mockSession || mockSession.pin !== pin) {
       return delay({ error: { code: 'SESSION_NOT_FOUND' } });
     }
+    const result = mockSession.results || {};
+    const restaurants = result.topRestaurants || MOCK_RESTAURANTS.map((r, i) => ({ ...r, score: 0.9 - i * 0.1, rank: i + 1 }));
+    const eliminated = restaurants.slice(2).map(r => ({ id: r.id, name: r.name, rank: r.rank }));
+    const remaining = restaurants.slice(0, 3).map(r => ({ id: r.id, name: r.name, rank: r.rank }));
     return delay({
-      ...mockSession.results,
-      boomTriggeredAt: mockSession.boomTriggeredAt,
+      ...result,
+      topRestaurants: restaurants,
+      boomTriggeredAt: mockSession.boomTriggeredAt || null,
       status: mockSession.status,
+      eliminated,
+      remaining,
     });
   },
 

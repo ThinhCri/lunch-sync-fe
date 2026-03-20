@@ -13,6 +13,9 @@ import JoinPage from '@/pages/JoinPage';
 import WaitingRoomPage from '@/pages/WaitingRoomPage';
 import VotingPage from '@/pages/VotingPage';
 import VotingWaitPage from '@/pages/VotingWaitPage';
+import ResultsPage from '@/pages/ResultsPage';
+import BoomPage from '@/pages/BoomPage';
+import DonePage from '@/pages/DonePage';
 
 function RequireAuth({ children }) {
   const isAuth = useAuthStore((s) => !!s.token);
@@ -56,6 +59,9 @@ function App() {
               <Route path="/waiting/:pin" element={<WaitingRoomPage />} />
               <Route path="/vote/:pin" element={<VotingPage />} />
               <Route path="/voting-wait/:pin" element={<VotingWaitPage />} />
+              <Route path="/results/:pin" element={<ResultsPage />} />
+              <Route path="/boom/:pin" element={<BoomPage />} />
+              <Route path="/done/:pin" element={<DonePage />} />
             </Routes>
           </SessionProvider>
         </ConfigProvider>
