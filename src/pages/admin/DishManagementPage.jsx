@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { mockHandlers } from '@/api/mock';
-import { useAuthStore } from '@/store/authStore';
+import AdminLayout from '@/components/admin/AdminLayout';
 import styles from './DishManagementPage.module.css';
 
 const PROFILE_LABELS = {
@@ -18,8 +17,6 @@ const PROFILE_LABELS = {
 };
 
 export default function DishManagementPage() {
-  const navigate = useNavigate();
-  const { logout } = useAuthStore();
   const [dishes, setDishes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedDish, setSelectedDish] = useState(null);
@@ -102,27 +99,7 @@ export default function DishManagementPage() {
   };
 
   return (
-    <div className={styles.page}>
-      {/* Header */}
-      <header className={styles.topBar}>
-        <div className={styles.topBarLeft}>
-          <button className={styles.backBtn} onClick={() => navigate('/admin/submissions')}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M15 18l-6-6 6-6"/>
-            </svg>
-          </button>
-          <span className={styles.topBarTitle}>Quản lý món ăn</span>
-        </div>
-        <button className={styles.logoutBtn} onClick={logout} title="Đăng xuất">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-            <polyline points="16 17 21 12 16 7"/>
-            <line x1="21" y1="12" x2="9" y2="12"/>
-          </svg>
-        </button>
-      </header>
-
-      {/* Action bar */}
+    <AdminLayout>
       <div className={styles.actionBar}>
         <button
           className={`${styles.cacheBtn} ${cacheDone ? styles.cacheDone : ''}`}
@@ -299,6 +276,6 @@ export default function DishManagementPage() {
           </div>
         </div>
       )}
-    </div>
+    </AdminLayout>
   );
 }
