@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button, Input, message } from 'antd';
 import { mockHandlers } from '@/api/mock';
@@ -9,12 +9,21 @@ export default function JoinPage() {
   const navigate = useNavigate();
   const params = useParams();
   const { setSession } = useSessionStore();
+  const { pin: savedPin, participantId: savedParticipantId } = useSessionStore();
 
   const [pin, setPin] = useState(params.pin || '');
   const [nickname, setNickname] = useState('');
   const [step, setStep] = useState(params.pin ? 'nickname' : 'pin');
   const [loading, setLoading] = useState(false);
   const [pinError, setPinError] = useState('');
+
+  // Restore: nếu đã có participantId với cùng PIN → auto-redirect waiting
+  useEffect(() => {
+    const urlPin = params.pin;
+    if (urlPin && savedPin === urlPin && savedParticipantId) {
+      navigate(`/waiting/${urlPin}`);
+    }
+  }, [params.pin, savedPin, savedParticipantId, navigate]);
 
   const handlePinSubmit = () => {
     if (pin.length !== 6) {

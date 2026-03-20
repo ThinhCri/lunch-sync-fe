@@ -69,7 +69,12 @@ export default function LobbyPage() {
     }
   };
 
-  const handleCancel = () => {
+  const handleCancel = async () => {
+    try {
+      await mockHandlers.cancelSession(pin);
+    } catch {
+      // ignore API errors on cancel
+    }
     reset();
     navigate('/');
   };

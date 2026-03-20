@@ -4,6 +4,7 @@ import { message } from 'antd';
 import { mockHandlers } from '@/api/mock';
 import { useSessionStore } from '@/store/sessionStore';
 import { useSession } from '@/hooks/useSession';
+import { useReconnect } from '@/hooks/useReconnect';
 import { ParticipantAvatar } from '@/components/common/AppHeader';
 import { ParticipantCount } from '@/components/common/ParticipantCount';
 import styles from './WaitingRoomPage.module.css';
@@ -38,6 +39,7 @@ export default function WaitingRoomPage() {
   };
 
   useSession({ pin, onStatus: fetchStatus, enabled: true });
+  useReconnect({ onReconnect: fetchStatus, enabled: true });
 
   useEffect(() => {
     fetchStatus();
@@ -81,7 +83,12 @@ export default function WaitingRoomPage() {
           </div>
 
           {loading ? (
-            <div className={styles.loadingList}>Đang tải...</div>
+            <div className={styles.loadingState}>
+              <div className={styles.loadingDots}>
+                <span /><span /><span />
+              </div>
+              <p className={styles.loadingText}>Đang kết nối...</p>
+            </div>
           ) : participants.length === 0 ? (
             <p className={styles.emptyText}>Chưa có ai tham gia</p>
           ) : (

@@ -2,61 +2,81 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useVotingStore } from '@/store/votingStore';
 import { TIMER_DURATION } from '@/utils/constants';
 
-export function useVoting({ choices, onSubmit, autoAdvanceDelay = 200 }) {
+export function useVoting({ choices, onSubmit, autoAdvanceDelay = 300 }) {
   const [timeLeft, setTimeLeft] = useState(TIMER_DURATION);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const timerRef = useRef(null);
-  const { answers, currentIndex, setAnswer, nextQuestion, submit: storeSubmit, reset } = useVotingStore();
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const transitioningRef = useRef(false);
+  const currentIndexRef = useRef(0);
+  const onSubmitRef = useRef(onSubmit);
+  onSubmitRef.current = onSubmit;
+
+  // Subscribe to store for currentIndex changes
+  useEffect(() => {
+    const unsub = useVotingStore.subscribe((state) => {
+      currentIndexRef.current = state.currentIndex;
+      setCurrentIndex(state.currentIndex);
+    });
+    // Init
+    setCurrentIndex(useVotingStore.getState().currentIndex);
+    currentIndexRef.current = useVotingStore.getState().currentIndex;
+    return unsub;
+  }, []);
 
   const currentChoice = choices?.[currentIndex];
   const isLast = currentIndex === 7;
-  const isComplete = answers.filter(Boolean).length === 8;
 
   const selectOption = useCallback((option) => {
-    if (isTransitioning) return;
+    if (transitioningRef.current) return;
+    if (navigator.vibrate) navigator.vibrate(10);
 
-    // Haptic feedback
-    if (navigator.vibrate) {
-      navigator.vibrate(10);
-    }
-
-    setAnswer(option);
+    transitioningRef.current = true;
     setIsTransitioning(true);
+    useVotingStore.getState().setAnswer(option);
 
     setTimeout(() => {
-      setIsTransitioning(false);
-      if (isLast) {
-        storeSubmit();
+      const { currentIndex: idx } = useVotingStore.getState();
+      const nextIndex = idx + 1;
+
+      if (nextIndex > 7) {
+        useVotingStore.getState().submit();
         const choicesStr = useVotingStore.getState().answers.join('');
-        onSubmit?.(choicesStr);
+        onSubmitRef.current?.(choicesStr);
       } else {
-        nextQuestion();
+        useVotingStore.getState().nextQuestion();
+        currentIndexRef.current = nextIndex;
         setTimeLeft(TIMER_DURATION);
+        transitioningRef.current = false;
+        setIsTransitioning(false);
       }
     }, autoAdvanceDelay);
-  }, [isTransitioning, isLast, setAnswer, nextQuestion, storeSubmit, onSubmit, autoAdvanceDelay]);
+  }, [autoAdvanceDelay]);
 
-  // Timer countdown
+  // Timer per question
   useEffect(() => {
-    timerRef.current = setInterval(() => {
+    const interval = setInterval(() => {
+      if (transitioningRef.current) return;
       setTimeLeft((prev) => {
         if (prev <= 1) {
-          // Hết giờ → auto chọn A
           selectOption('A');
           return TIMER_DURATION;
         }
         return prev - 1;
       });
     }, 1000);
+    return () => clearInterval(interval);
+  }, [selectOption]);
 
-    return () => clearInterval(timerRef.current);
-  }, [currentIndex, selectOption]);
+  const answers = useVotingStore((s) => s.answers);
 
-  // Reset khi bắt đầu vote mới
   const startVoting = useCallback(() => {
-    reset();
+    useVotingStore.getState().reset();
+    currentIndexRef.current = 0;
+    setCurrentIndex(0);
+    transitioningRef.current = false;
     setTimeLeft(TIMER_DURATION);
-  }, [reset]);
+    setIsTransitioning(false);
+  }, []);
 
   return {
     timeLeft,
@@ -64,9 +84,11 @@ export function useVoting({ choices, onSubmit, autoAdvanceDelay = 200 }) {
     currentIndex,
     answers,
     isLast,
-    isComplete,
+    isComplete: answers.filter(Boolean).length === 8,
     isTransitioning,
     selectOption,
     startVoting,
   };
 }
+
+

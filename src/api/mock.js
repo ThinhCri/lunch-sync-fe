@@ -139,6 +139,11 @@ export const mockHandlers = {
   createSession: ({ collectionId, priceTier }) => {
     const pin = generatePin();
     const collection = MOCK_COLLECTIONS.find(c => c.id === collectionId) || MOCK_COLLECTIONS[0];
+    const mockParticipants = [
+      { id: 'p-bot-1', nickname: 'Minh', joinedAt: new Date().toISOString() },
+      { id: 'p-bot-2', nickname: 'Lan', joinedAt: new Date().toISOString() },
+      { id: 'p-bot-3', nickname: 'Tuấn', joinedAt: new Date().toISOString() },
+    ];
     mockSession = {
       sessionId: 'session-' + Date.now(),
       pin,
@@ -146,7 +151,7 @@ export const mockHandlers = {
       collectionName: collection.name,
       priceTier,
       status: 'waiting',
-      participants: [],
+      participants: mockParticipants,
       createdAt: Date.now(),
     };
     return delay({
@@ -292,5 +297,14 @@ export const mockHandlers = {
     }
     mockSession.status = 'results';
     return delay({ status: 'results', totalVoted: mockSession.votedCount || 0, totalParticipants: mockSession.participants.length });
+  },
+
+  // DELETE /sessions/{pin} (host cancel)
+  cancelSession: (pin) => {
+    if (!mockSession || mockSession.pin !== pin) {
+      return delay({ error: { code: 'SESSION_NOT_FOUND' } });
+    }
+    mockSession = null;
+    return delay({ success: true });
   },
 };

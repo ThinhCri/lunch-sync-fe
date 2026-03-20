@@ -51,6 +51,9 @@ export default function CreateSessionPage() {
         sessionId: res.sessionId,
         participantId: null,
         isHost: true,
+        collectionId: selectedCollection.id,
+        collectionName: selectedCollection.name,
+        priceTier: selectedTier.key,
       });
       // Host tự join vào session
       const joinRes = await mockHandlers.joinSession(res.pin, 'Host');

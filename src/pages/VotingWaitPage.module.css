@@ -1,0 +1,146 @@
+.page {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+  gap: var(--space-4);
+  padding-top: calc(var(--space-8) + var(--safe-area-inset-top));
+}
+
+.iconWrap {
+  margin-bottom: var(--space-4);
+}
+
+.iconCircle {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #51CF66, #176a21);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(81, 207, 102, 0.35);
+}
+
+.title {
+  font-size: var(--font-size-2xl);
+  font-weight: 800;
+  color: var(--color-text-primary);
+  text-align: center;
+}
+
+.subtitle {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  text-align: center;
+  margin: 0;
+  max-width: 260px;
+  line-height: 1.5;
+}
+
+/* Waiting animation */
+.waitingBar {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.waitingDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  opacity: 0.5;
+}
+
+/* Host action */
+.hostActions {
+  margin-top: var(--space-6);
+  width: 100%;
+  max-width: 320px;
+}
+
+.startBtn {
+  width: 100%;
+  height: 56px;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-xl);
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.startBtn:hover {
+  opacity: 0.9;
+}
+
+.hostBtn {
+  width: 100%;
+  height: 52px;
+  background: var(--color-surface);
+  color: var(--color-primary);
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius-xl);
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.hostBtn:hover {
+  background: rgba(156, 63, 0, 0.06);
+}
+
+/* Voted progress */
+.votedBar {
+  width: 100%;
+  max-width: 300px;
+  margin-top: var(--space-2);
+}
+
+.votedCount {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
+  justify-content: center;
+}
+
+.votedNum {
+  font-size: var(--font-size-3xl);
+  font-weight: 800;
+  color: var(--color-primary);
+  font-family: 'SF Mono', 'Consolas', monospace;
+}
+
+.votedTotal {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.progressTrack {
+  height: 8px;
+  background: var(--color-border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+  border-radius: 4px;
+}
