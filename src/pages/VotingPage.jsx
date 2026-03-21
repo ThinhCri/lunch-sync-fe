@@ -7,7 +7,7 @@ import { useSessionStore } from '@/store/sessionStore';
 import { useVoting } from '@/hooks/useVoting';
 import { useSession } from '@/hooks/useSession';
 import { useReconnect } from '@/hooks/useReconnect';
-import { useVotingStore } from '@/store/votingStore';
+import { MAX_SKIP_COUNT } from '@/utils/constants';
 import styles from './VotingPage.module.css';
 
 const TOTAL_QUESTIONS = 8;
@@ -89,7 +89,6 @@ export default function VotingPage() {
       Promise.resolve(),
     ]).then(([choicesData]) => {
       setChoices(choicesData);
-      // If already in progress, resume from current index (already set in store)
       setCardKey((k) => k + 1);
       setLoading(false);
     });
@@ -113,17 +112,21 @@ export default function VotingPage() {
     currentChoice,
     currentIndex,
     answers,
+    skipped,
+    skipRemaining,
     isTransitioning,
     selectOption,
+    handleSkip,
     startVoting,
   } = useVoting({ choices, onSubmit: handleSubmit });
 
-  // Start voting on mount
+  // Start voting on mount — không đưa startVoting vào deps để tránh recreated
   useEffect(() => {
     if (!loading && choices.length > 0) {
       startVoting();
       setCardKey((k) => k + 1);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, choices.length]);
 
   if (loading) {
@@ -140,6 +143,7 @@ export default function VotingPage() {
   }
 
   const answeredCount = answers.filter(Boolean).length;
+  const skippedCount = skipped.filter(Boolean).length;
   const progressPct = (currentIndex / TOTAL_QUESTIONS) * 100;
 
   return (
@@ -168,11 +172,12 @@ export default function VotingPage() {
       <div className={styles.dots}>
         {Array.from({ length: TOTAL_QUESTIONS }, (_, i) => {
           const isAnswered = !!answers[i];
+          const isSkipped = !!skipped[i];
           const isCurrent = i === currentIndex;
           return (
             <div
               key={i}
-              className={`${styles.dot} ${isAnswered ? styles.dotAnswered : ''} ${isCurrent ? styles.dotCurrent : ''}`}
+              className={`${styles.dot} ${isAnswered ? styles.dotAnswered : ''} ${isSkipped ? styles.dotSkipped : ''} ${isCurrent ? styles.dotCurrent : ''}`}
             />
           );
         })}
@@ -219,6 +224,25 @@ export default function VotingPage() {
             )}
           </motion.div>
         </AnimatePresence>
+      </div>
+
+      {/* Skip button */}
+      <div className={styles.skipArea}>
+        {skipRemaining > 0 ? (
+          <button
+            className={styles.skipBtn}
+            onClick={handleSkip}
+            disabled={isTransitioning}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polygon points="5 4 15 12 5 20 5 4"/>
+              <line x1="19" y1="5" x2="19" y2="19"/>
+            </svg>
+            Bỏ qua {skipRemaining}/{MAX_SKIP_COUNT}
+          </button>
+        ) : (
+          <p className={styles.skipHint}>Đã hết lượt bỏ qua</p>
+        )}
       </div>
 
       {/* Submitting overlay */}

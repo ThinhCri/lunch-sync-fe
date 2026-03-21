@@ -6,17 +6,41 @@ import { mockHandlers } from '@/api/mock';
 import { useSessionStore } from '@/store/sessionStore';
 import styles from './BoomPage.module.css';
 
-const BOOM_DELAY_MS = 2500; // T+2.5s
+const BOOM_DELAY_MS = 2500;  // thời gian animation boom
+const PICK_COUNTDOWN_SECONDS = 90; // countdown để auto-pick
+
+function usePickingCountdown(boomTriggeredAt) {
+  const [remaining, setRemaining] = useState(PICK_COUNTDOWN_SECONDS);
+
+  useEffect(() => {
+    if (!boomTriggeredAt) return;
+
+    const updateRemaining = () => {
+      const elapsed = Math.floor((Date.now() - new Date(boomTriggeredAt).getTime()) / 1000);
+      const rem = PICK_COUNTDOWN_SECONDS - elapsed;
+      setRemaining(Math.max(0, rem));
+    };
+
+    updateRemaining();
+    const interval = setInterval(updateRemaining, 1000);
+    return () => clearInterval(interval);
+  }, [boomTriggeredAt]);
+
+  return remaining;
+}
 
 export default function BoomPage() {
   const { pin } = useParams();
   const navigate = useNavigate();
-  const { isHost, results } = useSessionStore();
+  const { isHost } = useSessionStore();
 
   const [boomData, setBoomData] = useState(null);
   const [phase, setPhase] = useState('loading'); // loading | idle | boom | picking | done
-  const [boomTriggered, setBoomTriggered] = useState(false);
-  const autoPickDone = useRef(false);
+  const [pickingDone, setPickingDone] = useState(false);
+
+  const remaining = usePickingCountdown(boomData?.boomTriggeredAt);
+
+  const autoPickFired = useRef(false);
 
   // Fetch boom data from results
   const fetchBoomData = useCallback(async () => {
@@ -44,42 +68,39 @@ export default function BoomPage() {
     fetchBoomData();
   }, [fetchBoomData]);
 
-  // If host has not triggered boom yet, show waiting state
-  // If boomTriggeredAt exists, calculate sync delay
+  // Transition: idle → boom → picking
   useEffect(() => {
     if (!boomData) return;
     if (!boomData.boomTriggeredAt) {
       setPhase('idle');
       return;
     }
-    setBoomTriggered(true);
     setPhase('boom');
 
-    const delay = new Date(boomData.boomTriggeredAt).getTime() + BOOM_DELAY_MS - Date.now();
     const timer = setTimeout(() => {
       setPhase('picking');
-    }, Math.max(delay, 0));
+    }, BOOM_DELAY_MS);
 
     return () => clearTimeout(timer);
   }, [boomData]);
 
-  // Auto-pick top ranked restaurant (MVP)
+  // Auto-pick: chỉ Host + countdown = 0 + chưa ai chọn
   useEffect(() => {
-    if (phase !== 'picking' || !isHost || autoPickDone.current || !boomData?.remaining?.length) return;
-    autoPickDone.current = true;
+    if (phase !== 'picking') return;
+    if (!isHost) return;
+    if (pickingDone) return;
+    if (!boomData?.remaining?.length) return;
+    if (remaining > 0) return;
+    if (autoPickFired.current) return;
 
+    autoPickFired.current = true;
     const top = boomData.remaining.reduce((a, b) => (a.rank < b.rank ? a : b));
-    const timer = setTimeout(async () => {
-      try {
-        await mockHandlers.pick(pin, top.id);
-      } catch {}
+    mockHandlers.pick(pin, top.id).then(() => {
       navigate(`/done/${pin}`);
-    }, 2000);
+    });
+  }, [phase, isHost, pickingDone, boomData, remaining, pin, navigate]);
 
-    return () => clearTimeout(timer);
-  }, [phase, isHost, boomData, pin, navigate]);
-
-  // Poll for status updates
+  // Poll for done
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
@@ -101,22 +122,21 @@ export default function BoomPage() {
         message.error(res.error.message);
         return;
       }
-      setBoomTriggered(true);
-      setPhase('boom');
       setBoomData(prev => ({ ...prev, boomTriggeredAt: res.boomTriggeredAt, eliminated: res.eliminated, remaining: res.remaining }));
-
-      setTimeout(() => setPhase('picking'), BOOM_DELAY_MS);
     } catch {
       message.error('Không thể kích hoạt Boom.');
     }
   };
 
   const handlePick = async (restaurantId) => {
+    if (!isHost) return;
+    setPickingDone(true);
     try {
       await mockHandlers.pick(pin, restaurantId);
       navigate(`/done/${pin}`);
     } catch {
       message.error('Không thể chốt quán.');
+      setPickingDone(false);
     }
   };
 
@@ -133,9 +153,14 @@ export default function BoomPage() {
 
   const allRestaurants = [...(boomData.eliminated || []), ...(boomData.remaining || [])];
 
+  const mins = Math.floor(remaining / 60);
+  const secs = remaining % 60;
+  const timeDisplay = mins > 0 ? `${mins}:${String(secs).padStart(2, '0')}` : `${secs}s`;
+  const isUrgent = remaining <= 15;
+
   return (
     <div className={styles.page}>
-      {/* Phase: idle (host not triggered yet) */}
+      {/* Phase: idle (host chưa kích hoạt) */}
       <AnimatePresence>
         {phase === 'idle' && (
           <motion.div
@@ -164,7 +189,7 @@ export default function BoomPage() {
         )}
       </AnimatePresence>
 
-      {/* Phase: boom animation (5 restaurants on screen) */}
+      {/* Phase: boom animation (5 restaurants) */}
       <AnimatePresence>
         {phase === 'boom' && (
           <motion.div
@@ -207,7 +232,7 @@ export default function BoomPage() {
         )}
       </AnimatePresence>
 
-      {/* Phase: picking (3 remaining) */}
+      {/* Phase: picking (3 quán còn lại + countdown) */}
       <AnimatePresence>
         {phase === 'picking' && (
           <motion.div
@@ -225,27 +250,51 @@ export default function BoomPage() {
             </motion.div>
             <p className={styles.boomSubtitle}>Chọn quán chốt!</p>
 
+            {/* Countdown */}
+            <div className={`${styles.pickCountdown} ${isUrgent ? styles.pickCountdownUrgent : ''}`}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 6v6l4 2"/>
+              </svg>
+              <span>
+                {remaining > 0
+                  ? `Tự động chọn top 1 sau ${timeDisplay}`
+                  : 'Đang chốt quán...'}
+              </span>
+            </div>
+
             <div className={styles.pickGrid}>
               {(boomData.remaining || []).map((rest, i) => (
                 <motion.button
                   key={rest.id}
-                  className={styles.pickCard}
+                  className={`${styles.pickCard} ${!isHost ? styles.pickCardDisabled : ''}`}
                   onClick={() => handlePick(rest.id)}
+                  disabled={!isHost || pickingDone}
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: i * 0.15, type: 'spring', stiffness: 200, damping: 20 }}
-                  whileTap={{ scale: 0.96 }}
+                  whileTap={isHost && !pickingDone ? { scale: 0.96 } : {}}
                 >
                   <div className={styles.pickRank}>{i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉'}</div>
-                  <div className={styles.pickName}>{rest.name}</div>
-                  {rest.address && <div className={styles.pickAddress}>{rest.address}</div>}
-                  {rest.priceDisplay && <div className={styles.pickPrice}>{rest.priceDisplay}</div>}
+                  <div className={styles.pickInfo}>
+                    <div className={styles.pickName}>{rest.name}</div>
+                    {rest.address && <div className={styles.pickAddress}>{rest.address}</div>}
+                    {rest.priceDisplay && <div className={styles.pickPrice}>{rest.priceDisplay}</div>}
+                  </div>
+                  {!isHost && (
+                    <div className={styles.pickLock}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                      </svg>
+                    </div>
+                  )}
                 </motion.button>
               ))}
             </div>
 
-            {isHost && (
-              <p className={styles.autoPickNote}>Sẽ tự động chọn quán top 1 sau 2s...</p>
+            {!isHost && (
+              <p className={styles.hostOnlyNote}>Chỉ Host mới có quyền chốt quán</p>
             )}
           </motion.div>
         )}

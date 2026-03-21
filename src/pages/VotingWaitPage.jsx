@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { message } from 'antd';
 import { motion } from 'framer-motion';
@@ -7,6 +7,7 @@ import { useSession } from '@/hooks/useSession';
 import { useReconnect } from '@/hooks/useReconnect';
 import { useSessionStore } from '@/store/sessionStore';
 import { useVotingStore } from '@/store/votingStore';
+import { VOTING_AUTO_CLOSE_SECONDS } from '@/utils/constants';
 import styles from './VotingWaitPage.module.css';
 
 export default function VotingWaitPage() {
@@ -14,13 +15,59 @@ export default function VotingWaitPage() {
   const navigate = useNavigate();
   const { participants, isHost } = useSessionStore();
   const { submitted } = useVotingStore();
+  const { votingStartedAt } = useSessionStore();
   const [votedCount, setVotedCount] = useState(0);
+  const [totalParticipants, setTotalParticipants] = useState(0);
+  const [remainingSeconds, setRemainingSeconds] = useState(VOTING_AUTO_CLOSE_SECONDS);
+  const [closing, setClosing] = useState(false);
+  const autoCloseFired = useRef(false);
+
+  // Tính thời gian còn lại dựa trên votingStartedAt
+  useEffect(() => {
+    if (!votingStartedAt) return;
+
+    const updateRemaining = () => {
+      const elapsed = Math.floor((Date.now() - new Date(votingStartedAt).getTime()) / 1000);
+      const remaining = VOTING_AUTO_CLOSE_SECONDS - elapsed;
+      setRemainingSeconds(Math.max(0, remaining));
+    };
+
+    updateRemaining();
+    const interval = setInterval(updateRemaining, 1000);
+    return () => clearInterval(interval);
+  }, [votingStartedAt]);
+
+  // Tự động chốt kết quả khi countdown về 0
+  useEffect(() => {
+    if (remainingSeconds > 0 || !isHost || autoCloseFired.current || votedCount < 1) return;
+    autoCloseFired.current = true;
+    setClosing(true);
+
+    mockHandlers.closeVoting(pin).then((res) => {
+      if (!res.error) {
+        message.warning('Đã tự động chốt kết quả!');
+        navigate(`/results/${pin}`);
+      } else {
+        setClosing(false);
+        autoCloseFired.current = false;
+      }
+    });
+  }, [remainingSeconds, isHost, votedCount, pin, navigate]);
 
   const fetchStatus = useCallback(async () => {
     try {
       const res = await mockHandlers.getStatus(pin);
       if (res.error) return;
-      setVotedCount(res.participantsVoted || 0);
+
+      const voted = res.participantsVoted || 0;
+      const total = res.participantsJoined || participants.length || 0;
+      setVotedCount(voted);
+      setTotalParticipants(total);
+
+      if (res.votingStartedAt) {
+        useSessionStore.getState().setVotingStartedAt(res.votingStartedAt);
+      }
+
       if (res.status === 'results') {
         navigate(`/results/${pin}`);
       } else if (res.status === 'voting') {
@@ -29,7 +76,7 @@ export default function VotingWaitPage() {
         navigate(`/waiting/${pin}`);
       }
     } catch {}
-  }, [pin, navigate]);
+  }, [pin, navigate, participants.length]);
 
   useSession({ pin, onStatus: fetchStatus, enabled: true });
   useReconnect({ onReconnect: fetchStatus, enabled: true });
@@ -63,8 +110,13 @@ export default function VotingWaitPage() {
     );
   }
 
-  const totalOthers = Math.max(0, participants.length - 1);
-  const waitingOthers = Math.max(0, totalOthers - votedCount + 1);
+  const voted = votedCount;
+  const total = totalParticipants || participants.length || 0;
+  const notVoted = Math.max(0, total - voted);
+  const progressPct = total > 0 ? Math.min(100, (voted / total) * 100) : 0;
+  const mins = Math.floor(remainingSeconds / 60);
+  const secs = remainingSeconds % 60;
+  const timeDisplay = mins > 0 ? `${mins}:${String(secs).padStart(2, '0')}` : `${secs}s`;
 
   return (
     <div className={styles.page}>
@@ -110,8 +162,8 @@ export default function VotingWaitPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
         >
-          {waitingOthers > 0
-            ? `Đang chờ ${waitingOthers} người khác bình chọn...`
+          {notVoted > 0
+            ? `Đang chờ ${notVoted} người khác bình chọn...`
             : 'Tất cả đã bình chọn! Đang tổng hợp kết quả...'}
         </motion.p>
 
@@ -123,20 +175,20 @@ export default function VotingWaitPage() {
           transition={{ delay: 0.6 }}
         >
           <div className={styles.votedCount}>
-            <span className={styles.votedNum}>{votedCount}</span>
-            <span className={styles.votedTotal}>/ {participants.length} đã vote</span>
+            <span className={styles.votedNum}>{voted}</span>
+            <span className={styles.votedTotal}>/ {total} đã vote</span>
           </div>
           <div className={styles.progressTrack}>
             <motion.div
               className={styles.progressFill}
               initial={{ width: 0 }}
-              animate={{ width: `${(votedCount / participants.length) * 100}%` }}
+              animate={{ width: `${progressPct}%` }}
               transition={{ duration: 0.5, delay: 0.6 }}
             />
           </div>
         </motion.div>
 
-        {/* Host action */}
+        {/* Countdown + Host action */}
         {isHost && (
           <motion.div
             className={styles.hostActions}
@@ -144,17 +196,43 @@ export default function VotingWaitPage() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7 }}
           >
+            {/* Countdown */}
+            <div className={styles.countdownWrap}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={styles.countdownIcon}>
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 6v6l4 2"/>
+              </svg>
+              <span className={`${styles.countdown} ${remainingSeconds <= 15 ? styles.countdownUrgent : ''}`}>
+                {remainingSeconds > 0 ? `Tự động chốt sau ${timeDisplay}` : 'Đang chốt kết quả...'}
+              </span>
+            </div>
+
+            {/* Nút chốt kết quả cho Host */}
             <button
               className={styles.hostBtn}
               onClick={async () => {
+                if (votedCount < 1) {
+                  message.warning('Cần ít nhất 1 người đã bỏ phiếu để chốt kết quả.');
+                  return;
+                }
+                setClosing(true);
                 try {
                   await mockHandlers.closeVoting(pin);
-                  message.info('Đã chốt kết quả!');
-                } catch {}
+                  message.success('Đã chốt kết quả!');
+                  navigate(`/results/${pin}`);
+                } catch {
+                  message.error('Thao tác thất bại.');
+                  setClosing(false);
+                }
               }}
+              disabled={closing || votedCount < 1}
             >
-              Chốt kết quả ngay
+              {closing ? 'Đang chốt...' : 'Chốt kết quả ngay'}
             </button>
+
+            {votedCount < 1 && (
+              <p className={styles.waitingHint}>Chờ ít nhất 1 người bỏ phiếu để có thể chốt</p>
+            )}
           </motion.div>
         )}
       </div>

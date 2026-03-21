@@ -17,6 +17,8 @@ export const PRICE_TIERS = [
 
 // Voting config
 export const TIMER_DURATION = 15;    // giây/câu
+export const VOTING_AUTO_CLOSE_SECONDS = 90; // giây tự động đóng voting
+export const MAX_SKIP_COUNT = 2;      // số câu tối đa được skip
 export const MIN_PARTICIPANTS = 3;
 export const MAX_PARTICIPANTS = 8;
 export const SESSION_EXPIRY_MINUTES = 15;

@@ -276,23 +276,30 @@ export const mockHandlers = {
     if (!mockSession || mockSession.pin !== pin) {
       return delay({ error: { code: 'SESSION_NOT_FOUND' } });
     }
+    // Tăng votedCount lên 1 cho mỗi vote — KHÔNG instant-complete
+    const prevVoted = mockSession.votedCount || 0;
+    mockSession.votedCount = prevVoted + 1;
+
     const total = mockSession.participants.length;
-    // Cách 1: user vote → coi như tất cả cùng vote xong → instant results
-    mockSession.votedCount = total;
-    mockSession.status = 'results';
-    mockSession.results = {
-      topDishes: [
-        { id: 'dish-2', name: 'Bún riêu', category: 'Phở & Bún nước', score: 0.85, rank: 1 },
-        { id: 'dish-1', name: 'Phở bò', category: 'Phở & Bún nước', score: 0.72, rank: 2 },
-        { id: 'dish-3', name: 'Bún bò Huế', category: 'Phở & Bún nước', score: 0.68, rank: 3 },
-      ],
-      topRestaurants: MOCK_RESTAURANTS.map((r, i) => ({ ...r, score: 0.9 - i * 0.1, rank: i + 1 })),
-      boomTriggeredAt: null,
-      eliminated: [],
-      remaining: [],
-      finalRestaurant: null,
-    };
-    return delay({ status: 'voted', totalVoted: mockSession.votedCount, totalParticipants: total });
+    const currentVoted = mockSession.votedCount;
+
+    // Chỉ chuyển sang results khi TẤT CẢ đã vote
+    if (currentVoted >= total) {
+      mockSession.status = 'results';
+      mockSession.results = {
+        topDishes: [
+          { id: 'dish-2', name: 'Bún riêu', category: 'Phở & Bún nước', score: 0.85, rank: 1 },
+          { id: 'dish-1', name: 'Phở bò', category: 'Phở & Bún nước', score: 0.72, rank: 2 },
+          { id: 'dish-3', name: 'Bún bò Huế', category: 'Phở & Bún nước', score: 0.68, rank: 3 },
+        ],
+        topRestaurants: MOCK_RESTAURANTS.map((r, i) => ({ ...r, score: 0.9 - i * 0.1, rank: i + 1 })),
+        boomTriggeredAt: null,
+        eliminated: [],
+        remaining: [],
+        finalRestaurant: null,
+      };
+    }
+    return delay({ status: 'voted', totalVoted: currentVoted, totalParticipants: total });
   },
 
   // POST /sessions/{pin}/boom
@@ -325,9 +332,18 @@ export const mockHandlers = {
       return delay({ error: { code: 'SESSION_NOT_FOUND' } });
     }
     const result = mockSession.results || {};
+    // Ưu tiên dùng eliminated/remaining đã được boom() thiết lập
+    const hasBoomData = result.eliminated?.length > 0 || result.remaining?.length > 0;
+    let eliminated, remaining;
+    if (hasBoomData) {
+      eliminated = result.eliminated;
+      remaining = result.remaining;
+    } else {
+      // Trước khi boom: chưa có eliminated/remaining
+      eliminated = [];
+      remaining = [];
+    }
     const restaurants = result.topRestaurants || MOCK_RESTAURANTS.map((r, i) => ({ ...r, score: 0.9 - i * 0.1, rank: i + 1 }));
-    const eliminated = restaurants.slice(2).map(r => ({ id: r.id, name: r.name, rank: r.rank }));
-    const remaining = restaurants.slice(0, 3).map(r => ({ id: r.id, name: r.name, rank: r.rank }));
     return delay({
       ...result,
       topRestaurants: restaurants,
@@ -348,8 +364,12 @@ export const mockHandlers = {
     if (!mockSession || mockSession.pin !== pin) {
       return delay({ error: { code: 'SESSION_NOT_FOUND' } });
     }
+    const votedCount = mockSession.votedCount || 0;
+    if (votedCount < 1) {
+      return delay({ error: { code: 'VALIDATION_ERROR', message: 'Cần ít nhất 1 người đã bỏ phiếu để chốt kết quả.' } });
+    }
     mockSession.status = 'results';
-    return delay({ status: 'results', totalVoted: mockSession.votedCount || 0, totalParticipants: mockSession.participants.length });
+    return delay({ status: 'results', totalVoted: votedCount, totalParticipants: mockSession.participants.length });
   },
 
   // DELETE /sessions/{pin} (host cancel)
@@ -437,6 +457,36 @@ export const mockHandlers = {
     };
     MOCK_SUBMISSIONS.unshift(submission);
     return delay({ success: true, id: submission.id });
+  },
+
+  // GET /restaurants/search?q=keyword — fuzzy search
+  searchRestaurants: (query) => {
+    if (!query || query.trim().length < 2) {
+      return delay([]);
+    }
+    const q = query.toLowerCase().trim();
+    const matches = MOCK_RESTAURANTS.filter(r => {
+      const nameMatch = r.name.toLowerCase().includes(q);
+      const addrMatch = r.address.toLowerCase().includes(q);
+      return nameMatch || addrMatch;
+    }).map(r => ({
+      id: r.id,
+      name: r.name,
+      address: r.address,
+      priceDisplay: r.priceDisplay,
+      rating: r.rating,
+      thumbnailUrl: r.thumbnailUrl,
+      upvotes: r.upvotes || 0,
+    }));
+    return delay(matches);
+  },
+
+  // POST /restaurants/{id}/upvote
+  upvoteRestaurant: (restaurantId) => {
+    const restaurant = MOCK_RESTAURANTS.find(r => r.id === restaurantId);
+    if (!restaurant) return delay({ error: { code: 'NOT_FOUND' } });
+    restaurant.upvotes = (restaurant.upvotes || 0) + 1;
+    return delay({ success: true, upvotes: restaurant.upvotes });
   },
 };
 

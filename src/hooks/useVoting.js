@@ -1,30 +1,38 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useVotingStore } from '@/store/votingStore';
-import { TIMER_DURATION } from '@/utils/constants';
+import { TIMER_DURATION, MAX_SKIP_COUNT } from '@/utils/constants';
 
 export function useVoting({ choices, onSubmit, autoAdvanceDelay = 300 }) {
   const [timeLeft, setTimeLeft] = useState(TIMER_DURATION);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [answers, setAnswers] = useState([]);
+  const [skipped, setSkipped] = useState([]);
   const transitioningRef = useRef(false);
   const currentIndexRef = useRef(0);
   const onSubmitRef = useRef(onSubmit);
   onSubmitRef.current = onSubmit;
 
-  // Subscribe to store for currentIndex changes
+  // Sync from store after mount (avoid setState during render)
   useEffect(() => {
-    const unsub = useVotingStore.subscribe((state) => {
-      currentIndexRef.current = state.currentIndex;
-      setCurrentIndex(state.currentIndex);
+    const state = useVotingStore.getState();
+    currentIndexRef.current = state.currentIndex;
+    setCurrentIndex(state.currentIndex);
+    setAnswers(state.answers);
+    setSkipped(state.skipped);
+
+    const unsub = useVotingStore.subscribe((s) => {
+      setCurrentIndex(s.currentIndex);
+      currentIndexRef.current = s.currentIndex;
+      setAnswers(s.answers);
+      setSkipped(s.skipped);
     });
-    // Init
-    setCurrentIndex(useVotingStore.getState().currentIndex);
-    currentIndexRef.current = useVotingStore.getState().currentIndex;
     return unsub;
   }, []);
 
   const currentChoice = choices?.[currentIndex];
   const isLast = currentIndex === 7;
+  const skipRemaining = 2 - skipped.filter(Boolean).length;
 
   const selectOption = useCallback((option) => {
     if (transitioningRef.current) return;
@@ -40,7 +48,35 @@ export function useVoting({ choices, onSubmit, autoAdvanceDelay = 300 }) {
 
       if (nextIndex > 7) {
         useVotingStore.getState().submit();
-        const choicesStr = useVotingStore.getState().answers.join('');
+        const choicesStr = useVotingStore.getState().getChoicesString();
+        onSubmitRef.current?.(choicesStr);
+      } else {
+        useVotingStore.getState().nextQuestion();
+        currentIndexRef.current = nextIndex;
+        setTimeLeft(TIMER_DURATION);
+        transitioningRef.current = false;
+        setIsTransitioning(false);
+      }
+    }, autoAdvanceDelay);
+  }, [autoAdvanceDelay]);
+
+  const handleSkip = useCallback(() => {
+    if (transitioningRef.current) return;
+    const skipRemaining = useVotingStore.getState().getSkipRemaining();
+    if (skipRemaining <= 0) return;
+    if (navigator.vibrate) navigator.vibrate(10);
+
+    transitioningRef.current = true;
+    setIsTransitioning(true);
+    useVotingStore.getState().skipQuestion();
+
+    setTimeout(() => {
+      const { currentIndex: idx } = useVotingStore.getState();
+      const nextIndex = idx + 1;
+
+      if (nextIndex > 7) {
+        useVotingStore.getState().submit();
+        const choicesStr = useVotingStore.getState().getChoicesString();
         onSubmitRef.current?.(choicesStr);
       } else {
         useVotingStore.getState().nextQuestion();
@@ -58,16 +94,20 @@ export function useVoting({ choices, onSubmit, autoAdvanceDelay = 300 }) {
       if (transitioningRef.current) return;
       setTimeLeft((prev) => {
         if (prev <= 1) {
-          selectOption('A');
+          // Hết giờ: skip nếu còn quota, không thì auto-chọn A
+          const skipRemaining = useVotingStore.getState().getSkipRemaining();
+          if (skipRemaining > 0) {
+            handleSkip();
+          } else {
+            selectOption('A');
+          }
           return TIMER_DURATION;
         }
         return prev - 1;
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [selectOption]);
-
-  const answers = useVotingStore((s) => s.answers);
+  }, [selectOption, handleSkip]);
 
   const startVoting = useCallback(() => {
     useVotingStore.getState().reset();
@@ -76,6 +116,8 @@ export function useVoting({ choices, onSubmit, autoAdvanceDelay = 300 }) {
     transitioningRef.current = false;
     setTimeLeft(TIMER_DURATION);
     setIsTransitioning(false);
+    setAnswers([]);
+    setSkipped([]);
   }, []);
 
   return {
@@ -83,10 +125,13 @@ export function useVoting({ choices, onSubmit, autoAdvanceDelay = 300 }) {
     currentChoice,
     currentIndex,
     answers,
+    skipped,
+    skipRemaining,
     isLast,
     isComplete: answers.filter(Boolean).length === 8,
     isTransitioning,
     selectOption,
+    handleSkip,
     startVoting,
   };
 }

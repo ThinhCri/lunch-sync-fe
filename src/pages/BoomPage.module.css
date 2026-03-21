@@ -174,6 +174,60 @@
   font-style: italic;
 }
 
+/* ── Picking countdown ── */
+.pickCountdown {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-container-high);
+  margin-bottom: var(--space-4);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-on-surface-variant);
+  transition: color 0.3s;
+}
+
+.pickCountdownUrgent {
+  color: #e65100;
+  background: rgba(230, 81, 0, 0.1);
+  animation: countdownPulse 1s ease-in-out infinite;
+}
+
+@keyframes countdownPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* ── Pick card disabled (non-host) ── */
+.pickInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.pickCardDisabled {
+  cursor: not-allowed !important;
+  opacity: 0.7;
+}
+
+.pickCardDisabled:hover {
+  border-color: var(--color-surface-variant) !important;
+  background: var(--color-surface-container-lowest) !important;
+}
+
+.pickLock {
+  color: var(--color-outline-variant);
+  flex-shrink: 0;
+}
+
+.hostOnlyNote {
+  font-size: var(--font-size-xs);
+  color: var(--color-outline-variant);
+  margin: var(--space-3) 0 0;
+  text-align: center;
+}
+
 /* Loading */
 .loadingDots {
   display: flex;

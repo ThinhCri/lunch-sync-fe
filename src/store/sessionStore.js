@@ -13,6 +13,9 @@ export const useSessionStore = create(
     priceTier: null,
     participants: [],
     results: null,
+    votingStartedAt: null,
+    votedCount: 0,
+    totalParticipants: 0,
 
     // Thiết lập session (host hoặc participant)
     setSession: ({ pin, sessionId, participantId, isHost }) => {
@@ -33,6 +36,12 @@ export const useSessionStore = create(
     // Cập nhật kết quả
     setResults: (results) => set({ results }),
 
+    // Cập nhật thời điểm bắt đầu vote (cho countdown 90s)
+    setVotingStartedAt: (votingStartedAt) => set({ votingStartedAt }),
+
+    // Cập nhật số người đã vote
+    setVotedCount: (votedCount, totalParticipants) => set({ votedCount, totalParticipants }),
+
     // Reset khi session kết thúc
     reset: () => {
       set({
@@ -46,6 +55,9 @@ export const useSessionStore = create(
         priceTier: null,
         participants: [],
         results: null,
+        votingStartedAt: null,
+        votedCount: 0,
+        totalParticipants: 0,
       });
     },
   })

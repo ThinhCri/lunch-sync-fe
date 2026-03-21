@@ -1,7 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { mockHandlers } from '@/api/mock';
-import { PRICE_TIERS, MOCK_COLLECTIONS } from '@/api/mock';
+import { mockHandlers, PRICE_TIERS, MOCK_COLLECTIONS } from '@/api/mock';
 import styles from './CrowdsourcePage.module.css';
 
 const TIER_OPTIONS = [
@@ -11,10 +10,167 @@ const TIER_OPTIONS = [
   { key: 'tren_120k', label: 'Trên 120k' },
 ];
 
-export default function CrowdsourcePage() {
-  const navigate = useNavigate();
+// ── Step 1: Search ───────────────────────────────────────────────────────────
+function SearchStep({ onNext }) {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+  const [upvotingId, setUpvotingId] = useState(null);
+  const [upvotedIds, setUpvotedIds] = useState({});
+  const debounceRef = useRef(null);
+
+  const handleSearch = useCallback(async (q) => {
+    if (!q || q.trim().length < 2) {
+      setResults([]);
+      return;
+    }
+    setSearching(true);
+    const res = await mockHandlers.searchRestaurants(q);
+    setResults(res);
+    setSearching(false);
+  }, []);
+
+  const handleQueryChange = (e) => {
+    const val = e.target.value;
+    setQuery(val);
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => handleSearch(val), 400);
+  };
+
+  const handleUpvote = async (restaurant) => {
+    setUpvotingId(restaurant.id);
+    const res = await mockHandlers.upvoteRestaurant(restaurant.id);
+    setUpvotedIds(prev => ({ ...prev, [restaurant.id]: res.upvotes }));
+    setUpvotingId(null);
+  };
+
+  const handleNotFound = () => {
+    onNext({ query });
+  };
+
+  return (
+    <>
+      {/* Search bar */}
+      <div className={styles.searchWrap}>
+        <div className={styles.searchInputWrap}>
+          <svg className={styles.searchIcon} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input
+            type="text"
+            className={styles.searchInput}
+            placeholder="Tìm quán ăn..."
+            value={query}
+            onChange={handleQueryChange}
+            autoFocus
+          />
+          {query && (
+            <button className={styles.searchClear} onClick={() => { setQuery(''); setResults([]); }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Hint text */}
+      <p className={styles.dedupHint}>
+        Gõ tên quán để kiểm tra xem đã có trong hệ thống chưa
+      </p>
+
+      {/* Loading */}
+      {searching && (
+        <div className={styles.searchLoading}>
+          <span className={styles.loadingDot} /><span className={styles.loadingDot} /><span className={styles.loadingDot} />
+          <span className={styles.searchLoadingText}>Đang tìm...</span>
+        </div>
+      )}
+
+      {/* Results */}
+      {!searching && results.length > 0 && (
+        <div className={styles.dedupResults}>
+          <h3 className={styles.dedupTitle}>Có phải quán này không?</h3>
+          {results.map(rest => {
+            const upvotedCount = upvotedIds[rest.id];
+            const isUpvoted = upvotedCount !== undefined;
+            return (
+              <div key={rest.id} className={styles.dedupCard}>
+                {rest.thumbnailUrl && (
+                  <img className={styles.dedupThumb} src={rest.thumbnailUrl} alt={rest.name} />
+                )}
+                <div className={styles.dedupCardBody}>
+                  <div className={styles.dedupCardTop}>
+                    <div>
+                      <p className={styles.dedupName}>{rest.name}</p>
+                      <p className={styles.dedupAddr}>{rest.address}</p>
+                      <div className={styles.dedupMeta}>
+                        {rest.priceDisplay && (
+                          <span className={styles.dedupTag}>{rest.priceDisplay}</span>
+                        )}
+                        {rest.rating && (
+                          <span className={styles.dedupTag}>★ {rest.rating}</span>
+                        )}
+                      </div>
+                    </div>
+                    {isUpvoted && (
+                      <div className={styles.dedupUpvoted}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                        </svg>
+                        <span>{upvotedCount}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className={styles.dedupActions}>
+                    {isUpvoted ? (
+                      <button className={styles.upvotedBtn} disabled>
+                        ✓ Đã Upvote
+                      </button>
+                    ) : (
+                      <button
+                        className={styles.upvoteBtn}
+                        onClick={() => handleUpvote(rest)}
+                        disabled={upvotingId === rest.id}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/>
+                          <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+                        </svg>
+                        Upvote
+                      </button>
+                    )}
+                    <button className={styles.newBtn} onClick={() => onNext({ query })}>
+                      Không phải — Đề xuất quán mới
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* No results + "not found" button */}
+      {!searching && query.length >= 2 && results.length === 0 && (
+        <div className={styles.dedupNotFound}>
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={styles.dedupNotFoundIcon}>
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <p>Chưa có quán nào trong hệ thống</p>
+          <button className={styles.newBtn} onClick={handleNotFound}>
+            Đề xuất quán mới
+          </button>
+        </div>
+      )}
+    </>
+  );
+}
+
+// ── Step 2: Suggestion Form ────────────────────────────────────────────────────
+function SuggestForm({ initialQuery, onSuccess }) {
   const [form, setForm] = useState({
-    restaurantName: '',
+    restaurantName: initialQuery || '',
     address: '',
     collectionId: MOCK_COLLECTIONS[0]?.id || '',
     priceTier: TIER_OPTIONS[1].key,
@@ -23,7 +179,6 @@ export default function CrowdsourcePage() {
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  const [done, setDone] = useState(false);
 
   const validate = () => {
     const errs = {};
@@ -55,13 +210,153 @@ export default function CrowdsourcePage() {
         thumbnailUrl: form.thumbnailUrl.trim(),
         priceDisplay: TIER_OPTIONS.find(t => t.key === form.priceTier)?.label || '',
       });
-      setDone(true);
+      onSuccess();
     } finally {
       setLoading(false);
     }
   };
 
-  if (done) {
+  return (
+    <form className={styles.form} onSubmit={handleSubmit} noValidate>
+      {/* Tên quán */}
+      <div className={styles.field}>
+        <label className={styles.fieldLabel} htmlFor="name">Tên quán *</label>
+        <input
+          id="name"
+          type="text"
+          className={`${styles.textField} ${errors.restaurantName ? styles.inputError : ''}`}
+          placeholder="VD: Quán Cơm Bình Dân"
+          value={form.restaurantName}
+          onChange={e => handleChange('restaurantName', e.target.value)}
+          disabled={loading}
+        />
+        {errors.restaurantName && <p className={styles.fieldError}>{errors.restaurantName}</p>}
+      </div>
+
+      {/* Địa chỉ */}
+      <div className={styles.field}>
+        <label className={styles.fieldLabel} htmlFor="address">Địa chỉ / Link Google Maps *</label>
+        <input
+          id="address"
+          type="text"
+          className={`${styles.textField} ${errors.address ? styles.inputError : ''}`}
+          placeholder="VD: 88 Nguyễn Trãi, Q1 hoặc https://maps.google.com/..."
+          value={form.address}
+          onChange={e => handleChange('address', e.target.value)}
+          disabled={loading}
+        />
+        {errors.address && <p className={styles.fieldError}>{errors.address}</p>}
+      </div>
+
+      {/* Khu vực */}
+      <div className={styles.field}>
+        <label className={styles.fieldLabel} htmlFor="collection">Khu vực</label>
+        <select
+          id="collection"
+          className={`${styles.textField} ${styles.select}`}
+          value={form.collectionId}
+          onChange={e => handleChange('collectionId', e.target.value)}
+          disabled={loading}
+        >
+          {MOCK_COLLECTIONS.map(c => (
+            <option key={c.id} value={c.id}>{c.name}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Mức giá */}
+      <div className={styles.field}>
+        <label className={styles.fieldLabel}>Mức giá</label>
+        <div className={styles.tierGrid}>
+          {TIER_OPTIONS.map(tier => (
+            <button
+              key={tier.key}
+              type="button"
+              className={`${styles.tierChip} ${form.priceTier === tier.key ? styles.tierSelected : ''}`}
+              onClick={() => handleChange('priceTier', tier.key)}
+              disabled={loading}
+            >
+              {tier.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Món nổi bật */}
+      <div className={styles.field}>
+        <label className={styles.fieldLabel} htmlFor="dishes">Món nổi bật</label>
+        <input
+          id="dishes"
+          type="text"
+          className={styles.textField}
+          placeholder="VD: Phở cuốn, Bún bò"
+          value={form.notableDishes}
+          onChange={e => handleChange('notableDishes', e.target.value)}
+          disabled={loading}
+        />
+        <p className={styles.fieldHint}>Có thể điền nhiều món, cách nhau bằng dấu phẩy</p>
+      </div>
+
+      {/* URL ảnh */}
+      <div className={styles.field}>
+        <label className={styles.fieldLabel} htmlFor="thumb">Ảnh quán (URL, tùy chọn)</label>
+        <input
+          id="thumb"
+          type="url"
+          className={styles.textField}
+          placeholder="https://..."
+          value={form.thumbnailUrl}
+          onChange={e => handleChange('thumbnailUrl', e.target.value)}
+          disabled={loading}
+        />
+      </div>
+
+      <button
+        type="submit"
+        className={`${styles.submitBtn} ${loading ? styles.loading : ''}`}
+        disabled={loading}
+      >
+        {loading ? (
+          <span className={styles.spinner} />
+        ) : (
+          <>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+            Gửi đề xuất
+          </>
+        )}
+      </button>
+    </form>
+  );
+}
+
+// ── Main CrowdsourcePage ───────────────────────────────────────────────────────
+export default function CrowdsourcePage() {
+  const navigate = useNavigate();
+  const [step, setStep] = useState('search'); // 'search' | 'form' | 'done'
+  const [formQuery, setFormQuery] = useState('');
+
+  const handleSearchNext = ({ query }) => {
+    setFormQuery(query || '');
+    setStep('form');
+  };
+
+  const handleSuccess = () => {
+    setStep('done');
+  };
+
+  const handleBack = () => {
+    if (step === 'form') {
+      setStep('search');
+      setFormQuery('');
+    } else {
+      navigate('/');
+    }
+  };
+
+  // ── Done state ──
+  if (step === 'done') {
     return (
       <div className={styles.page}>
         <div className={styles.header}>
@@ -96,129 +391,35 @@ export default function CrowdsourcePage() {
   return (
     <div className={styles.page}>
       <div className={styles.header}>
-        <button className={styles.backBtn} onClick={() => navigate('/')}>
+        <button className={styles.backBtn} onClick={handleBack}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M19 12H5M12 5l-7 7 7 7"/>
           </svg>
         </button>
-        <span className={styles.headerTitle}>Đề xuất quán mới</span>
+        <span className={styles.headerTitle}>
+          {step === 'form' ? 'Đề xuất quán mới' : 'Tìm quán'}
+        </span>
         <div style={{ width: 40 }} />
       </div>
 
       <div className={styles.content}>
-        <p className={styles.desc}>
-          Biết một quán ngon mà chưa có trong danh sách? Hãy gợi ý để cả nhóm cùng thưởng thức!
-        </p>
-
-        <form className={styles.form} onSubmit={handleSubmit} noValidate>
-          {/* Tên quán */}
-          <div className={styles.field}>
-            <label className="field-label" htmlFor="name">Tên quán *</label>
-            <input
-              id="name"
-              type="text"
-              className={`text-field ${errors.restaurantName ? styles.inputError : ''}`}
-              placeholder="VD: Quán Cơm Bình Dân"
-              value={form.restaurantName}
-              onChange={e => handleChange('restaurantName', e.target.value)}
-              disabled={loading}
-            />
-            {errors.restaurantName && <p className="field-error">{errors.restaurantName}</p>}
-          </div>
-
-          {/* Địa chỉ */}
-          <div className={styles.field}>
-            <label className="field-label" htmlFor="address">Địa chỉ *</label>
-            <input
-              id="address"
-              type="text"
-              className={`text-field ${errors.address ? styles.inputError : ''}`}
-              placeholder="VD: 88 Nguyễn Trãi, Q1"
-              value={form.address}
-              onChange={e => handleChange('address', e.target.value)}
-              disabled={loading}
-            />
-            {errors.address && <p className="field-error">{errors.address}</p>}
-          </div>
-
-          {/* Khu vực */}
-          <div className={styles.field}>
-            <label className="field-label" htmlFor="collection">Khu vực</label>
-            <select
-              id="collection"
-              className={`text-field ${styles.select}`}
-              value={form.collectionId}
-              onChange={e => handleChange('collectionId', e.target.value)}
-              disabled={loading}
-            >
-              {MOCK_COLLECTIONS.map(c => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Mức giá */}
-          <div className={styles.field}>
-            <label className="field-label">Mức giá</label>
-            <div className={styles.tierGrid}>
-              {TIER_OPTIONS.map(tier => (
-                <button
-                  key={tier.key}
-                  type="button"
-                  className={`${styles.tierChip} ${form.priceTier === tier.key ? styles.tierSelected : ''}`}
-                  onClick={() => handleChange('priceTier', tier.key)}
-                  disabled={loading}
-                >
-                  {tier.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Món nổi bật */}
-          <div className={styles.field}>
-            <label className="field-label" htmlFor="dishes">Món nổi bật</label>
-            <input
-              id="dishes"
-              type="text"
-              className="text-field"
-              placeholder="VD: Phở cuốn, Bún bò"
-              value={form.notableDishes}
-              onChange={e => handleChange('notableDishes', e.target.value)}
-              disabled={loading}
-            />
-            <p className={styles.fieldHint}>Có thể điền nhiều món, cách nhau bằng dấu phẩy</p>
-          </div>
-
-          {/* URL ảnh */}
-          <div className={styles.field}>
-            <label className="field-label" htmlFor="thumb">Ảnh quán (URL, tùy chọn)</label>
-            <input
-              id="thumb"
-              type="url"
-              className="text-field"
-              placeholder="https://..."
-              value={form.thumbnailUrl}
-              onChange={e => handleChange('thumbnailUrl', e.target.value)}
-              disabled={loading}
-            />
-          </div>
-
-          <button
-            type="submit"
-            className={`btn-filled ${loading ? styles.loading : ''}`}
-            disabled={loading}
-          >
-            {loading ? (
-              <span className="material-symbols-outlined animate-spin">progress_activity</span>
-            ) : (
-              <>
-                <span className="material-symbols-outlined" style={{ fontSize: 20 }}>send</span>
-                Gửi đề xuất
-              </>
-            )}
-          </button>
-        </form>
+        {step === 'search' ? (
+          <>
+            <h2 className={styles.stepTitle}>Tìm quán có sẵn</h2>
+            <p className={styles.stepDesc}>
+              Trước khi đề xuất quán mới, hãy kiểm tra xem quán đó đã có trong hệ thống chưa nhé!
+            </p>
+            <SearchStep onNext={handleSearchNext} />
+          </>
+        ) : (
+          <>
+            <h2 className={styles.stepTitle}>Đề xuất quán mới</h2>
+            <p className={styles.stepDesc}>
+              Quán này chưa có trong hệ thống. Hãy điền thông tin để đóng góp cho cả nhóm!
+            </p>
+            <SuggestForm initialQuery={formQuery} onSuccess={handleSuccess} />
+          </>
+        )}
       </div>
     </div>
   );
