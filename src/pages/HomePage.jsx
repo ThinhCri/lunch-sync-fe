@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import Layout from '@/components/layout/Layout';
+import JoinModal from '@/components/modals/JoinModal';
 import homeHero from '@/assets/images/home-hero.jpg';
 import homeFeatureFood from '@/assets/images/home-feature-food.jpg';
 import homeFeatureRestaurant from '@/assets/images/home-feature-restaurant.jpg';
@@ -8,6 +10,7 @@ import homeFeatureRestaurant from '@/assets/images/home-feature-restaurant.jpg';
 export default function HomePage() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
+  const [showJoinModal, setShowJoinModal] = useState(false);
 
   const handleCreateLunch = () => {
     if (isAuthenticated()) {
@@ -18,7 +21,7 @@ export default function HomePage() {
   };
 
   const handleJoin = () => {
-    navigate('/join');
+    setShowJoinModal(true);
   };
 
   const handleSuggest = () => {
@@ -229,6 +232,10 @@ export default function HomePage() {
           <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-[#9a410f]/10 rounded-full blur-3xl" />
         </div>
       </section>
+      <JoinModal
+        open={showJoinModal}
+        onClose={() => setShowJoinModal(false)}
+      />
     </Layout>
   );
 }

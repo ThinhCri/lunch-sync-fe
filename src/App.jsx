@@ -63,7 +63,7 @@ function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
-              <Route path="/join" element={<JoinPage />} />
+              <Route path="/join" element={<Navigate to="/" replace />} />
               <Route path="/join/:pin" element={<JoinPage />} />
               <Route path="/suggest" element={<CrowdsourcePage />} />
               <Route path="/create" element={<RequireAuth><CreateSessionPage /></RequireAuth>} />
