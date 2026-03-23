@@ -1,4 +1,4 @@
-import { API_CONFIG } from './index';
+import { API_CONFIG } from '@/config';
 import { mockHandlers } from '@/api/mock';
 import { authApi } from '@/api/auth';
 import { sessionsApi } from '@/api/sessions';
