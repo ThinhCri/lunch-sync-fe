@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { message } from 'antd';
-import { mockHandlers } from '@/api/mock';
+import { api } from '@/api';
 import { useSessionStore } from '@/store/sessionStore';
 import { useSession } from '@/hooks/useSession';
 import { useReconnect } from '@/hooks/useReconnect';
@@ -19,16 +19,18 @@ export default function WaitingRoomPage() {
 
   const fetchStatus = async () => {
     try {
-      const res = await mockHandlers.getStatus(pin);
-      if (res.error) {
-        message.error(res.error.message);
+      const res = await api.sessions.getStatus(pin);
+      const data = res.data;
+      if (data.error) {
+        message.error(data.error.message);
         navigate('/');
         return;
       }
-      setParticipants(res.participants || []);
-      if (res.status === 'voting') {
+      // Note: getStatus does NOT return participants. For participant list,
+      // we rely on SessionContext/localStorage which is updated by other pages.
+      if (data.status === 'voting') {
         navigate(`/vote/${pin}`);
-      } else if (res.status === 'results') {
+      } else if (data.status === 'results') {
         navigate(`/results/${pin}`);
       }
     } catch {
@@ -47,9 +49,10 @@ export default function WaitingRoomPage() {
 
   const handleStart = async () => {
     try {
-      const res = await mockHandlers.startSession(pin);
-      if (res.error) {
-        message.error(res.error.message);
+      const res = await api.sessions.start(pin);
+      const data = res.data;
+      if (data.error) {
+        message.error(data.error.message);
         return;
       }
       navigate(`/vote/${pin}`);

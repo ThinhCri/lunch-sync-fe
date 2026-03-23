@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { message } from 'antd';
 import { motion } from 'framer-motion';
-import { mockHandlers } from '@/api/mock';
+import { api } from '@/api';
 import { useSessionStore } from '@/store/sessionStore';
 import styles from './ResultsPage.module.css';
 
@@ -98,16 +98,17 @@ export default function ResultsPage() {
 
   const fetchResults = useCallback(async () => {
     try {
-      const res = await mockHandlers.getResults(pin);
-      if (res.error) {
-        message.error(res.error.message);
+      const res = await api.sessions.getResults(pin);
+      const data = res.data;
+      if (data.error) {
+        message.error(data.error.message);
         return;
       }
-      setResults(res);
+      setResults(data);
 
-      if (res.status === 'picking') {
+      if (data.status === 'picking') {
         navigate(`/boom/${pin}`);
-      } else if (res.status === 'done') {
+      } else if (data.status === 'done') {
         navigate(`/done/${pin}`);
       }
     } catch {
@@ -125,12 +126,13 @@ export default function ResultsPage() {
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
-        const res = await mockHandlers.getStatus(pin);
-        if (res.error) return;
-        if (res.status === 'picking') {
+        const res = await api.sessions.getStatus(pin);
+        const data = res.data;
+        if (data.error) return;
+        if (data.status === 'picking') {
           clearInterval(interval);
           navigate(`/boom/${pin}`);
-        } else if (res.status === 'done') {
+        } else if (data.status === 'done') {
           clearInterval(interval);
           navigate(`/done/${pin}`);
         }
@@ -143,9 +145,10 @@ export default function ResultsPage() {
     if (booming) return;
     setBooming(true);
     try {
-      const res = await mockHandlers.boom(pin);
-      if (res.error) {
-        message.error(res.error.message);
+      const res = await api.sessions.boom(pin);
+      const data = res.data;
+      if (data.error) {
+        message.error(data.error.message);
         setBooming(false);
         return;
       }
@@ -158,7 +161,7 @@ export default function ResultsPage() {
 
   const handleCloseVoting = async () => {
     try {
-      await mockHandlers.closeVoting(pin);
+      await api.sessions.closeVoting(pin);
       message.success('Đã chốt kết quả!');
       fetchResults();
     } catch {

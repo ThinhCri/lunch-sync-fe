@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { mockHandlers } from '@/api/mock';
+import { api } from '@/api';
 import { useAdminStore } from '@/store/adminStore';
 import AdminLayout from '@/components/admin/AdminLayout';
 import styles from './SubmissionsPage.module.css';
@@ -26,9 +26,11 @@ export default function SubmissionsPage() {
   const { setPendingCount } = useAdminStore();
 
   useEffect(() => {
-    mockHandlers.getSubmissions().then(res => {
-      setSubmissions(res);
-      setPendingCount(res.filter(s => s.status === 'pending').length);
+    api.admin.submissions.list({ status: 'all' }).then(res => {
+      const data = res.data;
+      if (data.error) return;
+      setSubmissions(data.submissions || []);
+      setPendingCount((data.submissions || []).filter(s => s.status === 'pending').length);
       setLoading(false);
     });
   }, []);
@@ -37,8 +39,9 @@ export default function SubmissionsPage() {
 
   const handleReview = async (id, status) => {
     setActioning(id);
-    await mockHandlers.reviewSubmission(id, status);
-    setSubmissions(prev => prev.map(s => s.id === id ? { ...s, status } : s));
+    const res = await api.admin.submissions.review(id, { action: status, collectionIds: ['col-1'] });
+    const data = res.data;
+    setSubmissions(prev => prev.map(s => s.id === id ? { ...s, status: data.status, reviewedBy: data.reviewedBy, reviewedAt: data.reviewedAt } : s));
     if (status !== 'pending') {
       setPendingCount(prev => Math.max(0, prev - 1));
     }
@@ -87,8 +90,8 @@ export default function SubmissionsPage() {
             const cfg = STATUS_CONFIG[sub.status];
             return (
               <div key={sub.id} className={styles.card}>
-                {sub.thumbnailUrl && (
-                  <img className={styles.cardImg} src={sub.thumbnailUrl} alt={sub.restaurantName} />
+                {sub.photos?.[0] && (
+                  <img className={styles.cardImg} src={sub.photos[0].url} alt={sub.restaurantName} />
                 )}
                 <div className={styles.cardBody}>
                   <div className={styles.cardTop}>
@@ -119,15 +122,15 @@ export default function SubmissionsPage() {
                         {sub.priceDisplay}
                       </span>
                     )}
-                    {sub.notableDishes && (
+                    {sub.notes && (
                       <span className={styles.metaChip}>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>
                         </svg>
-                        {sub.notableDishes}
+                        {sub.notes}
                       </span>
                     )}
-                    <span className={styles.timeAgo}>{timeAgo(sub.submittedAt)}</span>
+                    <span className={styles.timeAgo}>{timeAgo(sub.createdAt)}</span>
                   </div>
 
                   {sub.status === 'pending' && (

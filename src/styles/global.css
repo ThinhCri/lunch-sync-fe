@@ -1,244 +1,203 @@
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-html {
-  scroll-behavior: smooth;
-  -webkit-text-size-adjust: 100%;
-}
-
-body {
-  font-family: var(--font-body);
-  font-size: var(--font-size-base);
-  color: var(--color-on-surface);
-  background-color: var(--color-background);
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  padding-top: var(--safe-area-inset-top);
-  padding-bottom: var(--safe-area-inset-bottom);
-}
-
-a {
-  color: var(--color-primary);
-  text-decoration: none;
-}
-
-a:hover {
-  text-decoration: underline;
-}
-
-button {
-  cursor: pointer;
-  font-family: inherit;
-  border: none;
-  background: none;
-}
-
-input, textarea, select {
-  font-family: inherit;
-}
-
-/* Custom scrollbar */
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb {
-  background: var(--color-outline-variant);
-  border-radius: var(--radius-full);
-}
-
-/* Material Symbols */
-.material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-  user-select: none;
-  display: inline-block;
-  vertical-align: middle;
-}
-
-/* Glass card */
-.glass-card {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-/* Page layout */
-.page-container {
-  min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
-  background-color: var(--color-surface);
-}
-
-/* Filled button (M3) */
-.btn-filled {
-  width: 100%;
-  height: 56px;
-  background: var(--color-primary);
-  color: var(--color-on-primary);
-  border-radius: var(--radius-xl);
-  font-family: var(--font-headline);
-  font-size: var(--font-size-base);
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  box-shadow: 0 4px 16px rgba(156, 63, 0, 0.25);
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
-  cursor: pointer;
-}
-
-.btn-filled:hover {
-  transform: scale(1.01);
-  box-shadow: 0 6px 20px rgba(156, 63, 0, 0.3);
-}
-
-.btn-filled:active {
-  transform: scale(0.98);
-}
-
-.btn-filled:disabled {
-  background: var(--color-surface-container-high);
-  color: var(--color-on-surface-variant);
-  box-shadow: none;
-  cursor: not-allowed;
-  transform: none;
-}
-
-/* Outlined button (M3) */
-.btn-outlined {
-  width: 100%;
-  height: 56px;
-  background: transparent;
-  color: var(--color-on-surface);
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--color-outline);
-  font-family: var(--font-headline);
-  font-size: var(--font-size-base);
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  transition: background var(--transition-fast), border-color var(--transition-fast);
-  cursor: pointer;
-}
-
-.btn-outlined:hover {
-  background: var(--color-surface-container-low);
-}
-
-/* Text button */
-.btn-text {
-  background: transparent;
-  border: none;
-  color: var(--color-primary);
-  font-weight: 700;
-  font-size: var(--font-size-sm);
-  cursor: pointer;
-  padding: var(--space-2);
-}
-
-/* Text field (M3) */
-.text-field {
-  width: 100%;
-  height: 56px;
-  padding: 0 var(--space-6);
-  background: var(--color-surface-container-high);
-  border: none;
-  border-radius: var(--radius-lg);
-  font-size: var(--font-size-base);
-  color: var(--color-on-surface);
-  outline: none;
-  transition: background var(--transition-fast), box-shadow var(--transition-fast);
-}
-
-.text-field::placeholder {
-  color: var(--color-outline-variant);
-}
-
-.text-field:focus {
-  background: var(--color-surface-container-lowest);
-  box-shadow: 0 0 0 2px var(--color-primary);
-}
-
-/* Label */
-.field-label {
-  display: block;
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  color: var(--color-on-surface-variant);
-  margin-bottom: var(--space-2);
-  padding-left: var(--space-1);
-}
-
-.field-error {
-  font-size: var(--font-size-xs);
-  color: var(--color-error);
-  margin-top: var(--space-1);
-  padding-left: var(--space-1);
-}
-
-/* Avatar */
-.avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-full);
-  background: var(--color-primary-container);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: var(--font-size-sm);
-  color: var(--color-on-primary-container);
-  flex-shrink: 0;
-}
-
-/* ── Responsive: 375px baseline ── */
-@media (min-width: 768px) {
-  .page-container {
-    max-width: 640px;
-    margin: 0 auto;
+/* Global styles — imported after index.css (which sets up Tailwind + design tokens) */
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
   }
 
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    font-family: var(--font-body);
+    font-size: var(--font-size-base, 16px);
+    color: var(--color-on-surface);
+    background-color: var(--color-background);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  a {
+    color: var(--color-primary);
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+  button {
+    cursor: pointer;
+    font-family: inherit;
+    border: none;
+    background: none;
+  }
+
+  input, textarea, select {
+    font-family: inherit;
+  }
+
+  /* ─── Form components ─────────────────────────────── */
+  .text-field {
+    width: 100%;
+    height: 56px;
+    padding: 0 var(--space-6);
+    background: var(--color-surface-container-high);
+    border: none;
+    border-radius: var(--radius-lg);
+    font-size: var(--font-size-base);
+    color: var(--color-on-surface);
+    outline: none;
+    transition: background var(--transition-fast), box-shadow var(--transition-fast);
+  }
+
+  .text-field::placeholder {
+    color: var(--color-outline-variant);
+  }
+
+  .text-field:focus {
+    background: var(--color-surface-container-lowest);
+    box-shadow: 0 0 0 2px var(--color-primary);
+  }
+
+  .field-label {
+    display: block;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--color-on-surface-variant);
+    margin-bottom: var(--space-2);
+    padding-left: var(--space-1);
+  }
+
+  .field-error {
+    font-size: var(--font-size-xs);
+    color: var(--color-error);
+    margin-top: var(--space-1);
+    padding-left: var(--space-1);
+  }
+
+  /* ─── Buttons ─────────────────────────────────── */
   .btn-filled {
-    height: 52px;
-    font-size: var(--font-size-lg) !important;
+    width: 100%;
+    height: 56px;
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    border-radius: var(--radius-xl);
+    font-family: var(--font-headline);
+    font-size: var(--font-size-base);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    box-shadow: 0 4px 16px rgba(156, 63, 0, 0.25);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    cursor: pointer;
+    border: none;
+  }
+
+  .btn-filled:hover {
+    transform: scale(1.01);
+    box-shadow: 0 6px 20px rgba(156, 63, 0, 0.3);
+  }
+
+  .btn-filled:active {
+    transform: scale(0.98);
+  }
+
+  .btn-filled:disabled {
+    background: var(--color-surface-container-high);
+    color: var(--color-on-surface-variant);
+    box-shadow: none;
+    cursor: not-allowed;
+    transform: none;
   }
 
   .btn-outlined {
-    height: 52px;
-    font-size: var(--font-size-lg) !important;
+    width: 100%;
+    height: 56px;
+    background: transparent;
+    color: var(--color-on-surface);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-outline);
+    font-family: var(--font-headline);
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    transition: background var(--transition-fast), border-color var(--transition-fast);
+    cursor: pointer;
   }
 
-  .text-field {
-    height: 52px;
-    font-size: var(--font-size-lg);
+  .btn-outlined:hover {
+    background: var(--color-surface-container-low);
   }
-}
 
-@media (min-width: 1024px) {
+  .btn-text {
+    background: transparent;
+    border: none;
+    color: var(--color-primary);
+    font-weight: 700;
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    padding: var(--space-2);
+  }
+
+  /* ─── Avatar ───────────────────────────────────── */
+  .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-full);
+    background: var(--color-primary-container);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: var(--font-size-sm);
+    color: var(--color-on-primary-container);
+    flex-shrink: 0;
+  }
+
+  /* ─── Page layout ───────────────────────────────── */
   .page-container {
-    max-width: 960px;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--color-surface);
   }
-}
 
-/* ── Mobile: fix bottom CTA always visible ── */
-@media (max-width: 480px) {
-  /* Ensure sticky/bottom elements don't get cut by nav bar */
-  .page-container > *:last-child {
-    padding-bottom: calc(var(--space-6) + env(safe-area-inset-bottom, 0px));
+  /* ─── Responsive: 768px baseline ─────────────────── */
+  @media (min-width: 768px) {
+    .page-container {
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    .btn-filled {
+      height: 52px;
+      font-size: var(--font-size-lg);
+    }
+
+    .btn-outlined {
+      height: 52px;
+      font-size: var(--font-size-lg);
+    }
+
+    .text-field {
+      height: 52px;
+      font-size: var(--font-size-lg);
+    }
   }
-}
 
-/* ── Reduce motion for accessibility ── */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
+  @media (min-width: 1024px) {
+    .page-container {
+      max-width: 960px;
+    }
   }
 }

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { mockHandlers } from '@/api/mock';
+import { api } from '@/api';
 import styles from './LoginPage.module.css';
 
 export default function LoginPage() {
@@ -39,14 +39,20 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const res = await mockHandlers.login(email, password);
-      if (res.error) {
-        setGeneralError(res.error.message);
+      const res = await api.auth.login({ email, password });
+      const data = res.data;
+      if (data.error) {
+        setGeneralError(data.error.message);
         return;
       }
-      login(res.token, res.user);
-      // Redirect theo role: admin → admin page, user/host → create session
-      const destination = res.user?.role === 'admin' ? '/admin/submissions' : '/create';
+      // Spec response: { accessToken, expiresIn, userId, email, fullName, role }
+      login(data.accessToken, {
+        id: data.userId,
+        email: data.email,
+        fullName: data.fullName,
+        role: data.role,
+      });
+      const destination = data.role === 'admin' ? '/admin/submissions' : '/create';
       navigate(destination, { replace: true });
     } catch {
       setGeneralError('Đăng nhập thất bại. Vui lòng thử lại.');

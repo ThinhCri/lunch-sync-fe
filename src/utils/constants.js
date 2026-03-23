@@ -9,10 +9,10 @@ export const SESSION_STATUS = {
 
 // Price tier options (theo spec)
 export const PRICE_TIERS = [
-  { key: 'duoi_40k', label: 'Dưới 40k' },
-  { key: '40_70k', label: '40–70k' },
-  { key: '70_120k', label: '70–120k' },
-  { key: 'tren_120k', label: 'Trên 120k' },
+  { key: 'duoi_40k', label: 'Dưới 40k', priceDisplay: 'Dưới 40k/phần' },
+  { key: '40_70k', label: '40–70k', priceDisplay: '40–70k/phần' },
+  { key: '70_120k', label: '70–120k', priceDisplay: '70–120k/phần' },
+  { key: 'tren_120k', label: 'Trên 120k', priceDisplay: 'Trên 120k/phần' },
 ];
 
 // Voting config

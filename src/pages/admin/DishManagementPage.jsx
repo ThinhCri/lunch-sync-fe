@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { mockHandlers } from '@/api/mock';
+import { api } from '@/api';
 import AdminLayout from '@/components/admin/AdminLayout';
 import styles from './DishManagementPage.module.css';
 
@@ -29,8 +29,10 @@ export default function DishManagementPage() {
   const [uploadFile, setUploadFile] = useState(null);
 
   useEffect(() => {
-    mockHandlers.getDishes().then(res => {
-      setDishes(res);
+    api.admin.dishes.list().then(res => {
+      const data = res.data;
+      if (data.error) return;
+      setDishes(data.dishes || []);
       setLoading(false);
     });
   }, []);
@@ -48,13 +50,14 @@ export default function DishManagementPage() {
   const handleSaveProfile = async () => {
     if (!selectedDish) return;
     setSaving(true);
-    const res = await mockHandlers.updateDishProfile(selectedDish.id, editingProfile);
-    if (!res.error) {
+    const res = await api.admin.dishes.updateProfile(selectedDish.id, { profile: editingProfile });
+    const data = res.data;
+    if (!data.error) {
       setDishes(prev => prev.map(d => d.id === selectedDish.id ? {
         ...d,
         profile: editingProfile,
-        version: res.dish.version,
-        lastDiff: res.diff,
+        version: data.dish.version,
+        lastDiff: data.diff,
       } : d));
     }
     setSaving(false);
@@ -63,7 +66,8 @@ export default function DishManagementPage() {
 
   const handleExport = async () => {
     setExportLoading(true);
-    const data = await mockHandlers.exportDishes();
+    const res = await api.admin.dishes.export();
+    const data = res.data;
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -81,9 +85,10 @@ export default function DishManagementPage() {
       const text = await file.text();
       const parsed = JSON.parse(text);
       const arr = Array.isArray(parsed) ? parsed : parsed.dishes || [];
-      const res = await mockHandlers.uploadDishes(arr);
-      setDishes(await mockHandlers.getDishes());
-      alert(`Đã import thành công ${res.count} món`);
+      const res = await api.admin.dishes.upload(arr);
+      const data = res.data;
+      setDishes(data.dishes || []);
+      alert(`Đã import thành công ${data.summary?.added || 0} món mới, cập nhật ${data.summary?.updated || 0} món.`);
     } catch {
       alert('File không hợp lệ. Vui lòng upload JSON.');
     }
@@ -92,7 +97,7 @@ export default function DishManagementPage() {
 
   const handleReloadCache = async () => {
     setCacheLoading(true);
-    await mockHandlers.reloadDishCache();
+    await api.admin.dishes.reloadCache();
     setCacheLoading(false);
     setCacheDone(true);
     setTimeout(() => setCacheDone(false), 3000);

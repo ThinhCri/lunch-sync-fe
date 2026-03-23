@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Button, message, Modal } from 'antd';
 import { useParams, useNavigate } from 'react-router-dom';
-import { mockHandlers } from '@/api/mock';
+import { api } from '@/api';
 import { useSessionStore } from '@/store/sessionStore';
 import { useSession } from '@/hooks/useSession';
 import { useReconnect } from '@/hooks/useReconnect';
@@ -25,18 +25,20 @@ export default function LobbyPage() {
   const fetchStatus = useCallback(async () => {
     try {
       const [infoRes, statusRes] = await Promise.all([
-        mockHandlers.getSessionInfo(pin),
-        mockHandlers.getStatus(pin),
+        api.sessions.getInfo(pin),
+        api.sessions.getStatus(pin),
       ]);
-      if (infoRes.error) {
-        message.error(infoRes.error.message);
+      const infoData = infoRes.data;
+      const statusData = statusRes.data;
+      if (infoData.error) {
+        message.error(infoData.error.message);
         navigate('/');
         return;
       }
-      setSessionInfo(infoRes);
-      setParticipants(infoRes.participants || []);
-      setCreatedAt(infoRes.createdAt || Date.now());
-      if (statusRes.status === 'voting') {
+      setSessionInfo(infoData);
+      setParticipants(infoData.participants || []);
+      setCreatedAt(infoData.createdAt || Date.now());
+      if (statusData.status === 'voting') {
         navigate(`/vote/${pin}`);
       }
     } catch {
@@ -56,9 +58,10 @@ export default function LobbyPage() {
   const handleStart = async () => {
     setStarting(true);
     try {
-      const res = await mockHandlers.startSession(pin);
-      if (res.error) {
-        message.error(res.error.message);
+      const res = await api.sessions.start(pin);
+      const data = res.data;
+      if (data.error) {
+        message.error(data.error.message);
         return;
       }
       navigate(`/vote/${pin}`);
@@ -71,7 +74,7 @@ export default function LobbyPage() {
 
   const handleCancel = async () => {
     try {
-      await mockHandlers.cancelSession(pin);
+      await api.sessions.cancel(pin);
     } catch {
       // ignore API errors on cancel
     }

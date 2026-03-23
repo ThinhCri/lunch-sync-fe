@@ -1,12 +1,14 @@
 import { create } from 'zustand';
-import { mockHandlers } from '@/api/mock';
+import { api } from '@/api';
 
 export const useAdminStore = create((set, get) => ({
   pendingCount: 0,
 
   loadPendingCount: async () => {
-    const subs = await mockHandlers.getSubmissions();
-    const count = subs.filter(s => s.status === 'pending').length;
+    const res = await api.admin.submissions.list({ status: 'pending' });
+    const data = res.data;
+    if (data.error) return 0;
+    const count = (data.submissions || []).filter(s => s.status === 'pending').length;
     set({ pendingCount: count });
     return count;
   },

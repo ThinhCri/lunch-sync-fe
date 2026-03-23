@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { mockHandlers, PRICE_TIERS, MOCK_COLLECTIONS } from '@/api/mock';
+import { api } from '@/api';
+import { PRICE_TIERS } from '@/utils/constants';
 import styles from './CrowdsourcePage.module.css';
 
 const TIER_OPTIONS = [
@@ -25,8 +26,8 @@ function SearchStep({ onNext }) {
       return;
     }
     setSearching(true);
-    const res = await mockHandlers.searchRestaurants(q);
-    setResults(res);
+    const res = await api.crowdsource.search(q);
+    setResults(res.data || []);
     setSearching(false);
   }, []);
 
@@ -39,8 +40,8 @@ function SearchStep({ onNext }) {
 
   const handleUpvote = async (restaurant) => {
     setUpvotingId(restaurant.id);
-    const res = await mockHandlers.upvoteRestaurant(restaurant.id);
-    setUpvotedIds(prev => ({ ...prev, [restaurant.id]: res.upvotes }));
+    const res = await api.crowdsource.upvote(restaurant.id);
+    setUpvotedIds(prev => ({ ...prev, [restaurant.id]: res.data.upvotes }));
     setUpvotingId(null);
   };
 
@@ -169,16 +170,31 @@ function SearchStep({ onNext }) {
 
 // ── Step 2: Suggestion Form ────────────────────────────────────────────────────
 function SuggestForm({ initialQuery, onSuccess }) {
+  const [collections, setCollections] = useState([]);
   const [form, setForm] = useState({
     restaurantName: initialQuery || '',
     address: '',
-    collectionId: MOCK_COLLECTIONS[0]?.id || '',
+    googleMapsUrl: '',
+    collectionId: '',
     priceTier: TIER_OPTIONS[1].key,
-    notableDishes: '',
-    thumbnailUrl: '',
+    notes: '',
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+
+  // Load collections on mount
+  useEffect(() => {
+    api.collections.list().then((res) => {
+      const data = res.data;
+      if (data && data.collections) {
+        setCollections(data.collections);
+        setForm(prev => ({ ...prev, collectionId: data.collections[0]?.id || '' }));
+      } else if (Array.isArray(data)) {
+        setCollections(data);
+        setForm(prev => ({ ...prev, collectionId: data[0]?.id || '' }));
+      }
+    });
+  }, []);
 
   const validate = () => {
     const errs = {};
@@ -201,15 +217,21 @@ function SuggestForm({ initialQuery, onSuccess }) {
     }
     setLoading(true);
     try {
-      await mockHandlers.submitSuggestion({
+      const res = await api.crowdsource.submit({
         restaurantName: form.restaurantName.trim(),
         address: form.address.trim(),
-        collectionId: form.collectionId,
+        googleMapsUrl: form.googleMapsUrl?.trim() || null,
         priceTier: form.priceTier,
-        notableDishes: form.notableDishes.trim(),
-        thumbnailUrl: form.thumbnailUrl.trim(),
         priceDisplay: TIER_OPTIONS.find(t => t.key === form.priceTier)?.label || '',
+        notes: form.notes.trim(),
+        photoUrls: [],
+        dishIds: [],
       });
+      const data = res.data;
+      if (data.error) {
+        message.error(data.error.message);
+        return;
+      }
       onSuccess();
     } finally {
       setLoading(false);
@@ -258,7 +280,7 @@ function SuggestForm({ initialQuery, onSuccess }) {
           onChange={e => handleChange('collectionId', e.target.value)}
           disabled={loading}
         >
-          {MOCK_COLLECTIONS.map(c => (
+          {collections.map(c => (
             <option key={c.id} value={c.id}>{c.name}</option>
           ))}
         </select>
@@ -282,32 +304,17 @@ function SuggestForm({ initialQuery, onSuccess }) {
         </div>
       </div>
 
-      {/* Món nổi bật */}
+      {/* Ghi chú */}
       <div className={styles.field}>
-        <label className={styles.fieldLabel} htmlFor="dishes">Món nổi bật</label>
-        <input
-          id="dishes"
-          type="text"
-          className={styles.textField}
-          placeholder="VD: Phở cuốn, Bún bò"
-          value={form.notableDishes}
-          onChange={e => handleChange('notableDishes', e.target.value)}
+        <label className={styles.fieldLabel} htmlFor="notes">Ghi chú</label>
+        <textarea
+          id="notes"
+          className={`${styles.textField} ${styles.textarea}`}
+          placeholder="VD: Quán đông vào buổi trưa, nên đi sớm"
+          value={form.notes}
+          onChange={e => handleChange('notes', e.target.value)}
           disabled={loading}
-        />
-        <p className={styles.fieldHint}>Có thể điền nhiều món, cách nhau bằng dấu phẩy</p>
-      </div>
-
-      {/* URL ảnh */}
-      <div className={styles.field}>
-        <label className={styles.fieldLabel} htmlFor="thumb">Ảnh quán (URL, tùy chọn)</label>
-        <input
-          id="thumb"
-          type="url"
-          className={styles.textField}
-          placeholder="https://..."
-          value={form.thumbnailUrl}
-          onChange={e => handleChange('thumbnailUrl', e.target.value)}
-          disabled={loading}
+          rows={3}
         />
       </div>
 

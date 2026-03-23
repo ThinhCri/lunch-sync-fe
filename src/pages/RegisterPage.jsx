@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { mockHandlers } from '@/api/mock';
+import { api } from '@/api';
 import styles from './RegisterPage.module.css';
 
 export default function RegisterPage() {
@@ -9,6 +9,7 @@ export default function RegisterPage() {
   const { login } = useAuth();
 
   const [email, setEmail] = useState('');
+  const [fullName, setFullName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState({});
@@ -22,10 +23,15 @@ export default function RegisterPage() {
     } else if (!/\S+@\S+\.\S+/.test(email)) {
       errs.email = 'Email không hợp lệ';
     }
+    if (!fullName.trim()) {
+      errs.fullName = 'Vui lòng nhập họ tên';
+    } else if (fullName.trim().length < 2) {
+      errs.fullName = 'Họ tên tối thiểu 2 ký tự';
+    }
     if (!password) {
       errs.password = 'Vui lòng nhập mật khẩu';
-    } else if (password.length < 6) {
-      errs.password = 'Mật khẩu tối thiểu 6 ký tự';
+    } else if (password.length < 8) {
+      errs.password = 'Mật khẩu tối thiểu 8 ký tự';
     }
     if (!confirmPassword) {
       errs.confirmPassword = 'Vui lòng xác nhận mật khẩu';
@@ -47,14 +53,15 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const res = await mockHandlers.register(email, password);
-      if (res.error) {
-        setGeneralError(res.error.message);
+      const res = await api.auth.register({ email, password, fullName: fullName.trim() });
+      const data = res.data;
+      if (data.error) {
+        setGeneralError(data.error.message);
         return;
       }
-      login(res.token, res.user);
-      const destination = res.user?.role === 'admin' ? '/admin/submissions' : '/create';
-      navigate(destination, { replace: true });
+      // Register response: { userId, email, fullName, role, message }
+      // After register, redirect to login (or auto-login if token provided)
+      navigate('/login', { replace: true });
     } catch {
       setGeneralError('Đăng ký thất bại. Vui lòng thử lại.');
     } finally {
@@ -123,6 +130,22 @@ export default function RegisterPage() {
               {errors.email && <p className="field-error">{errors.email}</p>}
             </div>
 
+            {/* Full Name */}
+            <div className={styles.fieldGroup}>
+              <label className="field-label" htmlFor="fullName">Họ tên</label>
+              <input
+                id="fullName"
+                type="text"
+                className={`text-field ${errors.fullName ? styles.inputError : ''}`}
+                placeholder="Nguyễn Văn Minh"
+                value={fullName}
+                onChange={(e) => { setFullName(e.target.value); setErrors((p) => ({ ...p, fullName: '' })); }}
+                autoComplete="name"
+                disabled={loading}
+              />
+              {errors.fullName && <p className="field-error">{errors.fullName}</p>}
+            </div>
+
             {/* Password */}
             <div className={styles.fieldGroup}>
               <label className="field-label" htmlFor="password">Mật khẩu</label>
@@ -130,7 +153,7 @@ export default function RegisterPage() {
                 id="password"
                 type="password"
                 className={`text-field ${errors.password ? styles.inputError : ''}`}
-                placeholder="Tối thiểu 6 ký tự"
+                placeholder="Tối thiểu 8 ký tự"
                 value={password}
                 onChange={(e) => { setPassword(e.target.value); setErrors((p) => ({ ...p, password: '' })); }}
                 autoComplete="new-password"

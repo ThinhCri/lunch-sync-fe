@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { message } from 'antd';
 import { AnimatePresence, motion } from 'framer-motion';
-import { mockHandlers } from '@/api/mock';
+import { api } from '@/api';
 import { useSessionStore } from '@/store/sessionStore';
 import { useVoting } from '@/hooks/useVoting';
 import { useSession } from '@/hooks/useSession';
@@ -69,11 +69,12 @@ export default function VotingPage() {
   // Reconnect: sync status when tab comes back
   const fetchStatus = useCallback(async () => {
     try {
-      const res = await mockHandlers.getStatus(pin);
-      if (res.error) return;
-      if (res.status === 'results') {
+      const res = await api.sessions.getStatus(pin);
+      const data = res.data;
+      if (data.error) return;
+      if (data.status === 'results') {
         navigate(`/results/${pin}`);
-      } else if (res.status === 'waiting') {
+      } else if (data.status === 'waiting') {
         navigate(`/waiting/${pin}`);
       }
     } catch {}
@@ -85,10 +86,10 @@ export default function VotingPage() {
   // Load choices + restore voting state
   useEffect(() => {
     Promise.all([
-      mockHandlers.getChoices(),
+      api.sessions.getChoices(pin),
       Promise.resolve(),
-    ]).then(([choicesData]) => {
-      setChoices(choicesData);
+    ]).then(([choicesRes]) => {
+      setChoices(choicesRes.data);
       setCardKey((k) => k + 1);
       setLoading(false);
     });
@@ -98,7 +99,7 @@ export default function VotingPage() {
     if (submitting) return;
     setSubmitting(true);
     try {
-      await mockHandlers.submitVote(pin, participantId, choicesStr);
+      await api.sessions.vote(pin, { participantId, choices: choicesStr });
     } catch {
       message.error('Gửi phiếu thất bại, đang thử lại...');
       setSubmitting(false);

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { mockHandlers } from '@/api/mock';
+import { api } from '@/api';
 import { useSessionStore } from '@/store/sessionStore';
 import { PRICE_TIERS, MIN_PARTICIPANTS } from '@/utils/constants';
 import styles from './CreateSessionPage.module.css';
@@ -35,10 +35,11 @@ export default function CreateSessionPage() {
 
   // Load collections + auto-select from history
   useEffect(() => {
-    mockHandlers.getCollections().then((res) => {
-      setCollections(res);
+    api.collections.list().then((res) => {
+      const data = res.data;
+      setCollections(data);
       if (savedHistory?.collectionId) {
-        const found = res.find(c => c.id === savedHistory.collectionId);
+        const found = data.find(c => c.id === savedHistory.collectionId);
         if (found) setSelectedCollection(found);
       }
       if (savedHistory?.priceTier) {
@@ -53,33 +54,26 @@ export default function CreateSessionPage() {
     if (!selectedCollection || !selectedTier) return;
     setCreating(true);
     try {
-      const res = await mockHandlers.createSession({
+      const res = await api.sessions.create({
         collectionId: selectedCollection.id,
         priceTier: selectedTier.key,
+        nickname: 'Host',
       });
-      if (res.error) {
-        message.error(res.error.message);
+      const data = res.data;
+      if (data.error) {
+        message.error(data.error.message);
         return;
       }
-      setCreatedSession(res);
+      setCreatedSession(data);
       setSession({
-        pin: res.pin,
-        sessionId: res.sessionId,
-        participantId: null,
+        pin: data.pin,
+        sessionId: data.sessionId,
+        participantId: data.participantId,
         isHost: true,
         collectionId: selectedCollection.id,
         collectionName: selectedCollection.name,
         priceTier: selectedTier.key,
       });
-      // Lưu lịch sử tạo gần nhất
-      localStorage.setItem('lunchsync-create-history', JSON.stringify({
-        collectionId: selectedCollection.id,
-        collectionName: selectedCollection.name,
-        priceTier: selectedTier.key,
-      }));
-      // Host tự join vào session
-      const joinRes = await mockHandlers.joinSession(res.pin, 'Host');
-      setParticipants([{ id: joinRes.participantId, nickname: 'Host', joinedAt: new Date().toISOString() }]);
     } catch (err) {
       message.error('Tạo phiên thất bại');
     } finally {

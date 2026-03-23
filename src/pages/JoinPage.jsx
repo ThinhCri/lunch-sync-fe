@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button, Input, message } from 'antd';
-import { mockHandlers } from '@/api/mock';
+import { api } from '@/api';
 import { useSessionStore } from '@/store/sessionStore';
 import styles from './JoinPage.module.css';
 
@@ -45,17 +45,18 @@ export default function JoinPage() {
       // Optimistic redirect
       navigate(`/waiting/${pin}`);
 
-      const res = await mockHandlers.joinSession(pin, nickname.trim());
-      if (res.error) {
-        message.error(res.error.message);
+      const res = await api.sessions.join(pin, { nickname: nickname.trim() });
+      const data = res.data;
+      if (data.error) {
+        message.error(data.error.message);
         navigate(`/join/${pin}`);
         return;
       }
 
       setSession({
         pin,
-        sessionId: res.sessionId,
-        participantId: res.participantId,
+        sessionId: data.sessionId,
+        participantId: data.participantId,
         isHost: false,
       });
     } catch (err) {

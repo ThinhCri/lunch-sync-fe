@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { message } from 'antd';
 import { motion } from 'framer-motion';
 import confetti from 'canvas-confetti';
-import { mockHandlers, MOCK_RESTAURANTS } from '@/api/mock';
+import { api } from '@/api';
 import { useSessionStore } from '@/store/sessionStore';
 import styles from './DonePage.module.css';
 
@@ -40,13 +40,12 @@ export default function DonePage() {
 
   useEffect(() => {
     // Try to get final restaurant from results
-    mockHandlers.getResults(pin).then((res) => {
-      if (res.finalRestaurant) {
-        setRestaurant(res.finalRestaurant);
-      } else {
-        // Fallback to top 1 mock
-        setRestaurant(MOCK_RESTAURANTS[0]);
+    api.sessions.getResults(pin).then((res) => {
+      const data = res.data;
+      if (data.finalRestaurant) {
+        setRestaurant(data.finalRestaurant);
       }
+      // Fallback is handled by the mock - returning the first restaurant
     });
   }, [pin]);
 

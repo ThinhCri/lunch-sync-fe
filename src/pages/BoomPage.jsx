@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { message } from 'antd';
 import { motion, AnimatePresence } from 'framer-motion';
-import { mockHandlers } from '@/api/mock';
+import { api } from '@/api';
 import { useSessionStore } from '@/store/sessionStore';
 import styles from './BoomPage.module.css';
 
@@ -37,28 +37,24 @@ export default function BoomPage() {
   const [boomData, setBoomData] = useState(null);
   const [phase, setPhase] = useState('loading'); // loading | idle | boom | picking | done
   const [pickingDone, setPickingDone] = useState(false);
+  const [boomTriggeredAt, setBoomTriggeredAt] = useState(null); // local client-side timestamp
 
-  const remaining = usePickingCountdown(boomData?.boomTriggeredAt);
+  const remaining = usePickingCountdown(boomTriggeredAt);
 
   const autoPickFired = useRef(false);
 
   // Fetch boom data from results
   const fetchBoomData = useCallback(async () => {
     try {
-      const res = await mockHandlers.getResults(pin);
-      if (res.error) return;
+      const res = await api.sessions.getResults(pin);
+      const data = res.data;
+      if (data.error) return;
       setBoomData({
-        eliminated: res.eliminated || [],
-        remaining: res.remaining || (res.topRestaurants?.slice(0, 3).map(r => ({
-          id: r.id,
-          name: r.name,
-          rank: r.rank,
-          ...r,
-        })) || []),
-        boomTriggeredAt: res.boomTriggeredAt,
-        status: res.status,
+        eliminated: data.eliminated || [],
+        remaining: data.remaining || [],
+        status: data.status,
       });
-      if (res.status === 'done') {
+      if (data.status === 'done') {
         navigate(`/done/${pin}`);
       }
     } catch {}
@@ -71,17 +67,16 @@ export default function BoomPage() {
   // Transition: idle → boom → picking
   useEffect(() => {
     if (!boomData) return;
-    if (!boomData.boomTriggeredAt) {
+    if (boomData.eliminated?.length > 0 || boomData.remaining?.length > 0) {
+      // Already boomed (from API or this session) → play animation then go to picking
+      setPhase('boom');
+      const timer = setTimeout(() => {
+        setPhase('picking');
+      }, BOOM_DELAY_MS);
+      return () => clearTimeout(timer);
+    } else {
       setPhase('idle');
-      return;
     }
-    setPhase('boom');
-
-    const timer = setTimeout(() => {
-      setPhase('picking');
-    }, BOOM_DELAY_MS);
-
-    return () => clearTimeout(timer);
   }, [boomData]);
 
   // Auto-pick: chỉ Host + countdown = 0 + chưa ai chọn
@@ -95,7 +90,7 @@ export default function BoomPage() {
 
     autoPickFired.current = true;
     const top = boomData.remaining.reduce((a, b) => (a.rank < b.rank ? a : b));
-    mockHandlers.pick(pin, top.id).then(() => {
+    api.sessions.pick(pin, { restaurantId: top.id }).then(() => {
       navigate(`/done/${pin}`);
     });
   }, [phase, isHost, pickingDone, boomData, remaining, pin, navigate]);
@@ -104,9 +99,10 @@ export default function BoomPage() {
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
-        const res = await mockHandlers.getStatus(pin);
-        if (res.error) return;
-        if (res.status === 'done') {
+        const res = await api.sessions.getStatus(pin);
+        const data = res.data;
+        if (data.error) return;
+        if (data.status === 'done') {
           clearInterval(interval);
           navigate(`/done/${pin}`);
         }
@@ -117,12 +113,20 @@ export default function BoomPage() {
 
   const handleBoom = async () => {
     try {
-      const res = await mockHandlers.boom(pin);
-      if (res.error) {
-        message.error(res.error.message);
+      const res = await api.sessions.boom(pin);
+      const data = res.data;
+      if (data.error) {
+        message.error(data.error.message);
         return;
       }
-      setBoomData(prev => ({ ...prev, boomTriggeredAt: res.boomTriggeredAt, eliminated: res.eliminated, remaining: res.remaining }));
+      setBoomData(prev => ({
+        ...prev,
+        eliminated: data.eliminated,
+        remaining: data.remaining,
+        status: 'picking',
+      }));
+      setBoomTriggeredAt(new Date().toISOString());
+      setPhase('boom');
     } catch {
       message.error('Không thể kích hoạt Boom.');
     }
@@ -132,7 +136,7 @@ export default function BoomPage() {
     if (!isHost) return;
     setPickingDone(true);
     try {
-      await mockHandlers.pick(pin, restaurantId);
+      await api.sessions.pick(pin, { restaurantId });
       navigate(`/done/${pin}`);
     } catch {
       message.error('Không thể chốt quán.');

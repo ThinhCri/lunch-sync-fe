@@ -2,7 +2,7 @@ import { useCallback, useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { message } from 'antd';
 import { motion } from 'framer-motion';
-import { mockHandlers } from '@/api/mock';
+import { api } from '@/api';
 import { useSession } from '@/hooks/useSession';
 import { useReconnect } from '@/hooks/useReconnect';
 import { useSessionStore } from '@/store/sessionStore';
@@ -43,8 +43,9 @@ export default function VotingWaitPage() {
     autoCloseFired.current = true;
     setClosing(true);
 
-    mockHandlers.closeVoting(pin).then((res) => {
-      if (!res.error) {
+    api.sessions.closeVoting(pin).then((res) => {
+      const data = res.data;
+      if (!data.error) {
         message.warning('Đã tự động chốt kết quả!');
         navigate(`/results/${pin}`);
       } else {
@@ -56,23 +57,24 @@ export default function VotingWaitPage() {
 
   const fetchStatus = useCallback(async () => {
     try {
-      const res = await mockHandlers.getStatus(pin);
-      if (res.error) return;
+      const res = await api.sessions.getStatus(pin);
+      const data = res.data;
+      if (data.error) return;
 
-      const voted = res.participantsVoted || 0;
-      const total = res.participantsJoined || participants.length || 0;
+      const voted = data.participantsVoted || 0;
+      const total = data.participantsJoined || participants.length || 0;
       setVotedCount(voted);
       setTotalParticipants(total);
 
-      if (res.votingStartedAt) {
-        useSessionStore.getState().setVotingStartedAt(res.votingStartedAt);
+      if (data.votingStartedAt) {
+        useSessionStore.getState().setVotingStartedAt(data.votingStartedAt);
       }
 
-      if (res.status === 'results') {
+      if (data.status === 'results') {
         navigate(`/results/${pin}`);
-      } else if (res.status === 'voting') {
+      } else if (data.status === 'voting') {
         navigate(`/vote/${pin}`);
-      } else if (res.status === 'waiting') {
+      } else if (data.status === 'waiting') {
         navigate(`/waiting/${pin}`);
       }
     } catch {}
@@ -217,7 +219,7 @@ export default function VotingWaitPage() {
                 }
                 setClosing(true);
                 try {
-                  await mockHandlers.closeVoting(pin);
+                  await api.sessions.closeVoting(pin);
                   message.success('Đã chốt kết quả!');
                   navigate(`/results/${pin}`);
                 } catch {

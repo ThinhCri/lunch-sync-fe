@@ -1,99 +1,314 @@
-import { Button } from 'antd';
-import { useAuth } from '@/hooks/useAuth';
-import styles from './HomePage.module.css';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuthStore } from '@/store/authStore';
 
 export default function HomePage() {
-  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  const { isAuthenticated, user, logout } = useAuthStore();
+  const [showUserMenu, setShowUserMenu] = useState(false);
+
+  const handleCreateLunch = () => {
+    if (isAuthenticated()) {
+      navigate('/create');
+    } else {
+      navigate('/register');
+    }
+  };
+
+  const handleJoin = () => {
+    navigate('/join');
+  };
+
+  const handleSuggest = () => {
+    navigate('/suggest');
+  };
 
   return (
-    <div className={styles.page}>
-      {/* Auth nav */}
-      {!isAuthenticated && (
-        <div className={styles.authNav}>
-          <a href="/login" className={styles.navBtn}>Đăng nhập</a>
-          <a href="/register" className={styles.navBtnPrimary}>Đăng ký</a>
-        </div>
-      )}
+    <div className="min-h-screen bg-[#fdf9f4] font-['Be_Vietnam_Pro',sans-serif] text-[#1c1c19]">
 
-      <div className={styles.hero}>
-        <div className={styles.logoWrap}>
-          <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-            <rect width="64" height="64" rx="16" fill="#6C63FF" />
-            <path d="M32 18c-7.732 0-14 6.268-14 14s6.268 14 14 14 14-6.268 14-14-6.268-14-14-14zm0 4c5.523 0 10 4.477 10 10s-4.477 10-10 10-10-4.477-10-10 4.477-10 10-10z" fill="white"/>
-            <path d="M32 24v8l5.657 5.657" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
-            <circle cx="32" cy="32" r="3" fill="white"/>
-          </svg>
+      {/* ── TopAppBar ── */}
+      <header className="fixed top-0 left-0 right-0 z-50 glass-nav">
+        <div className="flex justify-between items-center w-full px-6 py-4 max-w-screen-2xl mx-auto">
+          <div className="text-2xl font-bold tracking-tight text-[#8a4b31] font-['Plus_Jakarta_Sans',sans-serif]">
+            LunchSync
+          </div>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={handleSuggest}
+              className="px-6 py-2 border-2 border-[#897269] text-[#56423a] rounded-full font-bold hover:bg-[#ebe8e3] transition-all active:scale-95 duration-300"
+            >
+              Đề xuất quán mới
+            </button>
+            {isAuthenticated() ? (
+              <div className="relative">
+                <button
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="flex items-center gap-2 px-4 py-2 bg-[#f7f3ee] rounded-full hover:bg-[#ebe8e3] transition-all"
+                >
+                  <span className="material-symbols-outlined text-[#9a410f]" style={{ fontVariationSettings: "'FILL' 1" }}>account_circle</span>
+                  <span className="font-medium text-[#56423a]">{user?.fullName}</span>
+                  <span className="material-symbols-outlined text-[#56423a] text-sm">expand_more</span>
+                </button>
+                {showUserMenu && (
+                  <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-50">
+                    <button
+                      onClick={() => {
+                        logout();
+                        setShowUserMenu(false);
+                      }}
+                      className="w-full px-4 py-2 text-left text-[#56423a] hover:bg-[#f7f3ee] transition-all"
+                    >
+                      Đăng xuất
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                <button
+                  onClick={() => navigate('/login')}
+                  className="px-6 py-2 text-[#56423a] font-medium hover:bg-[#f7f3ee]/50 transition-all active:scale-95"
+                >
+                  Đăng nhập
+                </button>
+                <button
+                  onClick={() => navigate('/register')}
+                  className="px-6 py-2 bg-[#9a410f] text-white rounded-full font-bold hover:bg-[#ba5826] transition-all active:scale-95"
+                  style={{ boxShadow: '0 20px 40px rgba(28, 28, 25, 0.06)' }}
+                >
+                  Đăng ký
+                </button>
+              </>
+            )}
+          </div>
         </div>
-        <h1 className={styles.appName}>LunchSync</h1>
-        <p className={styles.tagline}>Giúp cả nhóm chọn bữa trưa trong 3 phút</p>
-      </div>
+      </header>
 
-      <div className={styles.cta}>
-        <Button
-          type="primary"
-          size="large"
-          block
-          className={styles.btnPrimary}
-          href={isAuthenticated ? '/create' : '/login'}
-        >
-          Tạo bữa trưa
-        </Button>
-        <Button
-          size="large"
-          block
-          className={styles.btnSecondary}
-          href="/join"
-        >
-          Tham gia
-        </Button>
-        <Button
-          size="small"
-          block
-          className={styles.btnSuggest}
-          href="/suggest"
-        >
-          Đề xuất quán mới
-        </Button>
-      </div>
+      {/* ── Hero Section ── */}
+      <main className="pt-20">
+        <section className="relative px-6 max-w-screen-2xl mx-auto overflow-hidden py-16 md:py-24">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
 
-      <div className={styles.features}>
-        <div className={styles.feature}>
-          <div className={styles.featureIcon}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-              <circle cx="9" cy="7" r="4"/>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
-            </svg>
+            {/* Left: Copy */}
+            <div className="lg:col-span-7 z-10">
+              <h1 className="text-5xl md:text-7xl font-extrabold leading-[1.1] tracking-tight mb-6 font-['Plus_Jakarta_Sans',sans-serif]"
+                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+              >
+                Giúp cả nhóm chọn bữa trưa trong{' '}
+                <span className="text-[#9a410f] italic not-italic font-black">3 phút</span>
+              </h1>
+              <p className="text-xl text-[#56423a] max-w-xl mb-10 leading-relaxed">
+                Tạm biệt những cuộc thảo luận kéo dài vô tận. LunchSync kết nối đồng nghiệp qua những bữa trưa ấm cúng và nhanh chóng.
+              </p>
+
+              {/* CTA buttons */}
+              <div className="flex flex-wrap gap-4">
+                <button
+                  onClick={handleCreateLunch}
+                  className="px-8 py-4 bg-gradient-to-br from-[#9a410f] to-[#ba5826] text-white rounded-xl text-lg font-bold transition-all hover:scale-[1.02] active:scale-95 duration-300"
+                  style={{ boxShadow: '0 20px 40px rgba(28, 28, 25, 0.06)' }}
+                >
+                  Tạo bữa trưa
+                </button>
+                <button
+                  onClick={handleJoin}
+                  className="px-8 py-4 bg-[#ebe8e3] text-[#715000] rounded-xl text-lg font-bold transition-all hover:bg-[#e6e2dd] active:scale-95 duration-300"
+                >
+                  Tham gia
+                </button>
+              </div>
+
+              {/* Stats */}
+              <div className="mt-12 flex flex-wrap gap-8">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-[#ffc247] flex items-center justify-center text-[#8a4b31]">
+                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>group</span>
+                  </div>
+                  <div>
+                    <p className="font-bold text-[#1c1c19]">3-8 người</p>
+                    <p className="text-sm text-[#56423a]">Quy mô lý tưởng</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-[#ffc247] flex items-center justify-center text-[#8a4b31]">
+                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>schedule</span>
+                  </div>
+                  <div>
+                    <p className="font-bold text-[#1c1c19]">3 phút</p>
+                    <p className="text-sm text-[#56423a]">Chốt nhanh chóng</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-[#ffc247] flex items-center justify-center text-[#8a4b31]">
+                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>how_to_vote</span>
+                  </div>
+                  <div>
+                    <p className="font-bold text-[#1c1c19]">Bỏ phiếu dễ dàng</p>
+                    <p className="text-sm text-[#56423a]">Minh bạch &amp; vui vẻ</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Hero image */}
+            <div className="lg:col-span-5 relative">
+              <div
+                className="relative w-full aspect-square rounded-[3rem] overflow-hidden transform rotate-2"
+                style={{ boxShadow: '0 20px 40px rgba(28, 28, 25, 0.06)' }}
+              >
+                <img
+                  alt="Colleagues having lunch together"
+                  className="w-full h-full object-cover"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlXAx06OWp8sThP1tW3qFXROS5ToE3lSy6rqH7yhq2PYE6-kDZutbNsJuyMC2TjByhXxXgdiMnQIuAWwAmxxNwuH__eJSklK2SP12yBaSa5yPPWyoFdLX1T_ltLjHzmGPpyBmOcVL7mgnsK-OE23CZdg776b6yAGj1CoucAFDBnpHak-ICMQ1AbhwTwbVTF4IsgrkZXM-IAiG5W7TJUZdO4GCsHqfvLCUWr1j5hQJ4RipQn6U9fyHzFI5GJvRB9FHbX4JbTo1ROC6t"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#9a410f]/20 to-transparent" />
+              </div>
+
+              {/* Hearth badge */}
+              <div
+                className="absolute -bottom-6 -left-6 bg-white p-6 rounded-2xl z-20 flex flex-col gap-1"
+                style={{ boxShadow: '0 20px 40px rgba(28, 28, 25, 0.06)', border: '1px solid rgba(220, 193, 182, 0.3)' }}
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-8 h-8 rounded-full bg-[#9a410f]/10 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-[#9a410f] text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>timer</span>
+                  </div>
+                  <span className="font-bold text-[#1c1c19] font-['Plus_Jakarta_Sans',sans-serif]">Quyết định nhanh</span>
+                </div>
+                <p className="text-xs text-[#56423a] font-medium">
+                  Trung bình tiết kiệm <span className="text-[#9a410f] font-bold">15 phút</span> mỗi ngày
+                </p>
+              </div>
+            </div>
+
           </div>
-          <div>
-            <p className={styles.featureTitle}>3–8 người</p>
-            <p className={styles.featureDesc}>Phù hợp nhóm văn phòng</p>
+        </section>
+
+        {/* ── Bento Features Section ── */}
+        <section className="bg-[#f7f3ee] py-24 px-6">
+          <div className="max-w-screen-2xl mx-auto">
+            <h2 className="text-4xl font-extrabold mb-16 text-center font-['Plus_Jakarta_Sans',sans-serif]">
+              Trải nghiệm bữa trưa hiện đại
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+              {/* Feature 1 — 2 cols */}
+              <div className="md:col-span-2 bg-white p-10 rounded-lg flex flex-col md:flex-row gap-8 items-center border border-[rgba(220,193,182,0.2)] transition-all hover:scale-[1.01]"
+                style={{ borderRadius: '1rem' }}
+              >
+                <div className="flex-1">
+                  <h3 className="text-2xl font-bold mb-4 text-[#9a410f] font-['Plus_Jakarta_Sans',sans-serif]">Khám phá hương vị mới</h3>
+                  <p className="text-[#56423a] leading-relaxed">
+                    Hệ thống gợi ý thông minh dựa trên sở thích của cả nhóm, giúp bạn không bao giờ phải ăn đi ăn lại một món nhàm chán.
+                  </p>
+                </div>
+                <div className="w-full md:w-64 h-48 rounded-lg overflow-hidden">
+                  <img
+                    alt="Delicious dishes variety"
+                    className="w-full h-full object-cover"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYfqJs8Ag7VAj8hWMZi0oxL_1cyEX9y5tjqkvPP_2obdrlDsbwBwekXWn1IJLjhqiINRPMnXXI4_GDXHJttJQMT6XbaNhlLUlDZGiEay6n305hUg1KUvinvV00zqJyWb3pSO2GQPdZLidphN0ifLwQ_dHlDOf0GRJWgIuV9_wDb390U-OkHjsvsMTfW4FNTCf2FJzNjQXolmTWaHCpkGASoGa8z3MiPCUVbINAaB-ZxVemAB2D7fxSfrzZsI9QG5vFqSWPQmKm8dCW"
+                  />
+                </div>
+              </div>
+
+              {/* Feature 2 — accent card */}
+              <div className="bg-[#ba5826] p-10 rounded-lg text-white flex flex-col justify-between transition-all hover:scale-[1.01]"
+                style={{ borderRadius: '1rem' }}
+              >
+                <span className="material-symbols-outlined text-5xl mb-6" style={{ fontVariationSettings: "'FILL' 1" }}>timer</span>
+                <div>
+                  <h3 className="text-2xl font-bold mb-4 font-['Plus_Jakarta_Sans',sans-serif]">Tiết kiệm thời gian</h3>
+                  <p className="opacity-90 leading-relaxed">
+                    Quy trình vote được tối ưu hóa để đưa ra quyết định nhanh nhất, dành thêm thời gian cho việc thưởng thức.
+                  </p>
+                </div>
+              </div>
+
+              {/* Feature 3 */}
+              <div className="bg-[#e6e2dd] p-10 rounded-lg flex flex-col transition-all hover:scale-[1.01]"
+                style={{ borderRadius: '1rem' }}
+              >
+                <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center mb-6">
+                  <span className="material-symbols-outlined text-[#9a410f] text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>favorite</span>
+                </div>
+                <h3 className="text-2xl font-bold mb-4 text-[#1c1c19] font-['Plus_Jakarta_Sans',sans-serif]">Kết nối đồng nghiệp</h3>
+                <p className="text-[#56423a] leading-relaxed">
+                  Bữa trưa không chỉ là ăn uống, đó là lúc chúng ta xích lại gần nhau hơn trong một không gian ấm cúng.
+                </p>
+              </div>
+
+              {/* Feature 4 — 2 cols, reversed */}
+              <div className="md:col-span-2 bg-white p-10 rounded-lg flex flex-col md:flex-row-reverse gap-8 items-center border border-[rgba(220,193,182,0.2)] transition-all hover:scale-[1.01]"
+                style={{ borderRadius: '1rem' }}
+              >
+                <div className="flex-1">
+                  <h3 className="text-2xl font-bold mb-4 text-[#7c5800] font-['Plus_Jakarta_Sans',sans-serif]">Đề xuất địa điểm</h3>
+                  <p className="text-[#56423a] leading-relaxed">
+                    Thêm những quán "ruột" của bạn vào danh sách chung để cả nhóm cùng trải nghiệm những khám phá mới của bạn.
+                  </p>
+                </div>
+                <div className="w-full md:w-64 h-48 rounded-[2rem] overflow-hidden">
+                  <img
+                    alt="Cozy restaurant interior"
+                    className="w-full h-full object-cover"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxa3q_nidXF7NXXY22sR6cukk4kJJovjrEB9nTcYDNaLwoKOqWpiVfzT7khqGeSfJuOJms_IR8bS23Ok7GjcNDFUNB2dOVsiCuWTWDgYSdtRctrqcyrmHDLZJwDzLYEOhgkDSRRiQqYmbvTO5B3E7HqDlS1mLkqIN8fKrrJgO8UaRX85C6NsiGya01A3QTCS5CQ22p8aSMkGugtyk5JB3TtLmYmcmaNK0AIYRBa2OQ0TdcIYQp95eZ-Cn7YlMEiuE0IN7AowWdMG9G"
+                  />
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        {/* ── CTA Section ── */}
+        <section className="py-24 px-6 max-w-screen-xl mx-auto text-center">
+          <div
+            className="bg-[#ebe8e3] rounded-[4rem] p-16 relative overflow-hidden"
+            style={{ borderRadius: '4rem' }}
+          >
+            <div className="relative z-10">
+              <h2 className="text-4xl md:text-5xl font-extrabold mb-8 font-['Plus_Jakarta_Sans',sans-serif]">
+                Sẵn sàng cho bữa trưa hôm nay?
+              </h2>
+              <p className="text-xl text-[#56423a] mb-12 max-w-2xl mx-auto">
+                Đừng để việc chọn món làm hỏng tâm trạng của cả nhóm. Bắt đầu ngay với LunchSync.
+              </p>
+              <div className="flex flex-col sm:flex-row justify-center gap-6">
+                <button
+                  onClick={handleCreateLunch}
+                  className="px-12 py-5 bg-[#9a410f] text-white rounded-full text-xl font-bold hover:bg-[#ba5826] transition-all"
+                  style={{ boxShadow: '0 20px 40px rgba(28, 28, 25, 0.06)' }}
+                >
+                  Tạo bữa trưa ngay
+                </button>
+              </div>
+            </div>
+            {/* Decorative blobs */}
+            <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#ffc247]/20 rounded-full blur-3xl" />
+            <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-[#9a410f]/10 rounded-full blur-3xl" />
+          </div>
+        </section>
+      </main>
+
+      {/* ── Footer ── */}
+      <footer className="bg-[#f7f3ee]">
+        <div className="w-full py-12 px-8 flex flex-col md:flex-row justify-between items-center gap-6 max-w-screen-2xl mx-auto">
+          <div className="flex flex-col items-center md:items-start gap-4">
+            <div className="text-lg font-semibold text-[#56423a] font-['Plus_Jakarta_Sans',sans-serif]">LunchSync</div>
+            <p className="text-sm text-[#56423a]">© 2024 LunchSync Editorial. All rights reserved.</p>
+          </div>
+          <div className="flex flex-wrap justify-center gap-8">
+            <a href="#" className="text-sm font-medium text-[#56423a] hover:text-[#9a410f] transition-all">Chính sách bảo mật</a>
+            <a href="#" className="text-sm font-medium text-[#56423a] hover:text-[#9a410f] transition-all">Điều khoản dịch vụ</a>
+            <a href="#" className="text-sm font-medium text-[#56423a] hover:text-[#9a410f] transition-all">Hỗ trợ khách hàng</a>
+          </div>
+          <div className="flex gap-4">
+            <span className="material-symbols-outlined text-[#9a410f] cursor-pointer">social_leaderboard</span>
+            <span className="material-symbols-outlined text-[#9a410f] cursor-pointer">language</span>
           </div>
         </div>
-        <div className={styles.feature}>
-          <div className={styles.featureIcon}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10"/>
-              <path d="M12 6v6l4 2"/>
-            </svg>
-          </div>
-          <div>
-            <p className={styles.featureTitle}>3 phút</p>
-            <p className={styles.featureDesc}>Quyết định nhanh gọn</p>
-          </div>
-        </div>
-        <div className={styles.feature}>
-          <div className={styles.featureIcon}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-            </svg>
-          </div>
-          <div>
-            <p className={styles.featureTitle}>Vote dễ dàng</p>
-            <p className={styles.featureDesc}>Chọn A hoặc B, không phân vân</p>
-          </div>
-        </div>
-      </div>
+      </footer>
+
     </div>
   );
 }
