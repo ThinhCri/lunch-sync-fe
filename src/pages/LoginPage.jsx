@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { api } from '@/api';
+import Layout from '@/components/layout/Layout';
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { login, logout, user, isAuthenticated } = useAuthStore();
-  const [showUserMenu, setShowUserMenu] = useState(false);
+  const { login } = useAuthStore();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -61,68 +61,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#fdf9f4] font-body text-[#1c1c19] flex flex-col">
-
-      {/* ── TopAppBar ── */}
-      <header className="fixed top-0 left-0 right-0 z-50 glass-nav">
-        <div className="flex justify-between items-center w-full px-6 py-4 max-w-screen-2xl mx-auto">
-          <div className="text-2xl font-bold tracking-tight text-[#8a4b31] font-['Plus_Jakarta_Sans',sans-serif]">
-            LunchSync
-          </div>
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => navigate('/suggest')}
-              className="px-6 py-2 border-2 border-[#897269] text-[#56423a] rounded-full font-bold hover:bg-[#ebe8e3] transition-all active:scale-95 duration-300"
-            >
-              Đề xuất quán mới
-            </button>
-            {isAuthenticated() ? (
-              <div className="relative">
-                <button
-                  onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="flex items-center gap-2 px-4 py-2 bg-[#f7f3ee] rounded-full hover:bg-[#ebe8e3] transition-all"
-                >
-                  <span className="material-symbols-outlined text-[#9a410f]" style={{ fontVariationSettings: "'FILL' 1" }}>account_circle</span>
-                  <span className="font-medium text-[#56423a]">{user?.fullName}</span>
-                  <span className="material-symbols-outlined text-[#56423a] text-sm">expand_more</span>
-                </button>
-                {showUserMenu && (
-                  <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-50">
-                    <button
-                      onClick={() => {
-                        logout();
-                        setShowUserMenu(false);
-                      }}
-                      className="w-full px-4 py-2 text-left text-[#56423a] hover:bg-[#f7f3ee] transition-all"
-                    >
-                      Đăng xuất
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <>
-                <button
-                  onClick={() => navigate('/login')}
-                  className="px-6 py-2 text-[#56423a] font-medium hover:bg-[#f7f3ee]/50 transition-all active:scale-95"
-                >
-                  Đăng nhập
-                </button>
-                <button
-                  onClick={() => navigate('/register')}
-                  className="px-6 py-2 bg-[#9a410f] text-white rounded-full font-bold hover:bg-[#ba5826] transition-all active:scale-95"
-                  style={{ boxShadow: '0 20px 40px rgba(28, 28, 25, 0.06)' }}
-                >
-                  Đăng ký
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
-
-      {/* ── Main Content ── */}
-      <main className="flex-grow pt-32 pb-16 px-6 flex items-center justify-center">
+    <Layout>
+      <div className="flex-grow flex items-center justify-center px-6 py-16">
         <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 bg-[#f7f3ee] rounded-lg overflow-hidden editorial-shadow border border-[#dcc1b6]/10">
 
           {/* Branding / Value Prop (Left Column) */}
@@ -184,7 +124,6 @@ export default function LoginPage() {
             )}
 
             <form className="space-y-6" onSubmit={handleSubmit} noValidate>
-              {/* Email */}
               <div>
                 <label className="block text-sm font-bold text-[#56423a] mb-2 ml-1" htmlFor="email">
                   Email
@@ -207,7 +146,6 @@ export default function LoginPage() {
                 )}
               </div>
 
-              {/* Password */}
               <div>
                 <div className="flex justify-between items-center mb-2 ml-1">
                   <label className="block text-sm font-bold text-[#56423a]" htmlFor="password">
@@ -235,7 +173,6 @@ export default function LoginPage() {
                 )}
               </div>
 
-              {/* Remember */}
               <div className="flex items-center gap-3 py-2">
                 <input
                   className="w-5 h-5 rounded border-[#dcc1b6] text-[#9a410f] focus:ring-[#9a410f]/30 accent-[#9a410f]"
@@ -247,7 +184,6 @@ export default function LoginPage() {
                 </label>
               </div>
 
-              {/* Submit */}
               <button
                 type="submit"
                 className="w-full bg-gradient-to-br from-[#9a410f] to-[#ba5826] text-white py-4 rounded-full font-bold text-lg shadow-lg hover:shadow-xl active:scale-95 transition-all duration-300 flex justify-center items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
@@ -274,27 +210,7 @@ export default function LoginPage() {
             </div>
           </div>
         </div>
-      </main>
-
-      {/* ── Footer ── */}
-      <footer className="bg-[#f7f3ee]">
-        <div className="w-full py-12 px-8 flex flex-col md:flex-row justify-between items-center gap-6 max-w-screen-2xl mx-auto">
-          <div className="flex flex-col items-center md:items-start gap-4">
-            <div className="text-lg font-semibold text-[#56423a] font-['Plus_Jakarta_Sans',sans-serif]">LunchSync</div>
-            <p className="text-sm text-[#56423a]">© 2024 LunchSync Editorial. All rights reserved.</p>
-          </div>
-          <div className="flex flex-wrap justify-center gap-8">
-            <a href="#" className="text-sm font-medium text-[#56423a] hover:text-[#9a410f] transition-all">Chính sách bảo mật</a>
-            <a href="#" className="text-sm font-medium text-[#56423a] hover:text-[#9a410f] transition-all">Điều khoản dịch vụ</a>
-            <a href="#" className="text-sm font-medium text-[#56423a] hover:text-[#9a410f] transition-all">Hỗ trợ khách hàng</a>
-          </div>
-          <div className="flex gap-4">
-            <span className="material-symbols-outlined text-[#9a410f] cursor-pointer">social_leaderboard</span>
-            <span className="material-symbols-outlined text-[#9a410f] cursor-pointer">language</span>
-          </div>
-        </div>
-      </footer>
-
-    </div>
+      </div>
+    </Layout>
   );
 }

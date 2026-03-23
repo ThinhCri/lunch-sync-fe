@@ -1,11 +1,10 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
+import Layout from '@/components/layout/Layout';
 
 export default function HomePage() {
   const navigate = useNavigate();
-  const { isAuthenticated, user, logout } = useAuthStore();
-  const [showUserMenu, setShowUserMenu] = useState(false);
+  const { isAuthenticated } = useAuthStore();
 
   const handleCreateLunch = () => {
     if (isAuthenticated()) {
@@ -24,69 +23,9 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#fdf9f4] font-['Be_Vietnam_Pro',sans-serif] text-[#1c1c19]">
-
-      {/* ── TopAppBar ── */}
-      <header className="fixed top-0 left-0 right-0 z-50 glass-nav">
-        <div className="flex justify-between items-center w-full px-6 py-4 max-w-screen-2xl mx-auto">
-          <div className="text-2xl font-bold tracking-tight text-[#8a4b31] font-['Plus_Jakarta_Sans',sans-serif]">
-            LunchSync
-          </div>
-          <div className="flex items-center gap-4">
-            <button
-              onClick={handleSuggest}
-              className="px-6 py-2 border-2 border-[#897269] text-[#56423a] rounded-full font-bold hover:bg-[#ebe8e3] transition-all active:scale-95 duration-300"
-            >
-              Đề xuất quán mới
-            </button>
-            {isAuthenticated() ? (
-              <div className="relative">
-                <button
-                  onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="flex items-center gap-2 px-4 py-2 bg-[#f7f3ee] rounded-full hover:bg-[#ebe8e3] transition-all"
-                >
-                  <span className="material-symbols-outlined text-[#9a410f]" style={{ fontVariationSettings: "'FILL' 1" }}>account_circle</span>
-                  <span className="font-medium text-[#56423a]">{user?.fullName}</span>
-                  <span className="material-symbols-outlined text-[#56423a] text-sm">expand_more</span>
-                </button>
-                {showUserMenu && (
-                  <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-50">
-                    <button
-                      onClick={() => {
-                        logout();
-                        setShowUserMenu(false);
-                      }}
-                      className="w-full px-4 py-2 text-left text-[#56423a] hover:bg-[#f7f3ee] transition-all"
-                    >
-                      Đăng xuất
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <>
-                <button
-                  onClick={() => navigate('/login')}
-                  className="px-6 py-2 text-[#56423a] font-medium hover:bg-[#f7f3ee]/50 transition-all active:scale-95"
-                >
-                  Đăng nhập
-                </button>
-                <button
-                  onClick={() => navigate('/register')}
-                  className="px-6 py-2 bg-[#9a410f] text-white rounded-full font-bold hover:bg-[#ba5826] transition-all active:scale-95"
-                  style={{ boxShadow: '0 20px 40px rgba(28, 28, 25, 0.06)' }}
-                >
-                  Đăng ký
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
-
+    <Layout>
       {/* ── Hero Section ── */}
-      <main className="pt-20">
-        <section className="relative px-6 max-w-screen-2xl mx-auto overflow-hidden py-16 md:py-24">
+      <section className="relative px-6 max-w-screen-2xl mx-auto overflow-hidden py-16 md:py-24">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
 
             {/* Left: Copy */}
@@ -260,55 +199,33 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── CTA Section ── */}
-        <section className="py-24 px-6 max-w-screen-xl mx-auto text-center">
-          <div
-            className="bg-[#ebe8e3] rounded-[4rem] p-16 relative overflow-hidden"
-            style={{ borderRadius: '4rem' }}
-          >
-            <div className="relative z-10">
-              <h2 className="text-4xl md:text-5xl font-extrabold mb-8 font-['Plus_Jakarta_Sans',sans-serif]">
-                Sẵn sàng cho bữa trưa hôm nay?
-              </h2>
-              <p className="text-xl text-[#56423a] mb-12 max-w-2xl mx-auto">
-                Đừng để việc chọn món làm hỏng tâm trạng của cả nhóm. Bắt đầu ngay với LunchSync.
-              </p>
-              <div className="flex flex-col sm:flex-row justify-center gap-6">
-                <button
-                  onClick={handleCreateLunch}
-                  className="px-12 py-5 bg-[#9a410f] text-white rounded-full text-xl font-bold hover:bg-[#ba5826] transition-all"
-                  style={{ boxShadow: '0 20px 40px rgba(28, 28, 25, 0.06)' }}
-                >
-                  Tạo bữa trưa ngay
-                </button>
-              </div>
+      {/* ── CTA Section ── */}
+      <section className="py-24 px-6 max-w-screen-xl mx-auto text-center">
+        <div
+          className="bg-[#ebe8e3] rounded-[4rem] p-16 relative overflow-hidden"
+          style={{ borderRadius: '4rem' }}
+        >
+          <div className="relative z-10">
+            <h2 className="text-4xl md:text-5xl font-extrabold mb-8 font-['Plus_Jakarta_Sans',sans-serif]">
+              Sẵn sàng cho bữa trưa hôm nay?
+            </h2>
+            <p className="text-xl text-[#56423a] mb-12 max-w-2xl mx-auto">
+              Đừng để việc chọn món làm hỏng tâm trạng của cả nhóm. Bắt đầu ngay với LunchSync.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center gap-6">
+              <button
+                onClick={handleCreateLunch}
+                className="px-12 py-5 bg-[#9a410f] text-white rounded-full text-xl font-bold hover:bg-[#ba5826] transition-all"
+                style={{ boxShadow: '0 20px 40px rgba(28, 28, 25, 0.06)' }}
+              >
+                Tạo bữa trưa ngay
+              </button>
             </div>
-            {/* Decorative blobs */}
-            <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#ffc247]/20 rounded-full blur-3xl" />
-            <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-[#9a410f]/10 rounded-full blur-3xl" />
           </div>
-        </section>
-      </main>
-
-      {/* ── Footer ── */}
-      <footer className="bg-[#f7f3ee]">
-        <div className="w-full py-12 px-8 flex flex-col md:flex-row justify-between items-center gap-6 max-w-screen-2xl mx-auto">
-          <div className="flex flex-col items-center md:items-start gap-4">
-            <div className="text-lg font-semibold text-[#56423a] font-['Plus_Jakarta_Sans',sans-serif]">LunchSync</div>
-            <p className="text-sm text-[#56423a]">© 2024 LunchSync Editorial. All rights reserved.</p>
-          </div>
-          <div className="flex flex-wrap justify-center gap-8">
-            <a href="#" className="text-sm font-medium text-[#56423a] hover:text-[#9a410f] transition-all">Chính sách bảo mật</a>
-            <a href="#" className="text-sm font-medium text-[#56423a] hover:text-[#9a410f] transition-all">Điều khoản dịch vụ</a>
-            <a href="#" className="text-sm font-medium text-[#56423a] hover:text-[#9a410f] transition-all">Hỗ trợ khách hàng</a>
-          </div>
-          <div className="flex gap-4">
-            <span className="material-symbols-outlined text-[#9a410f] cursor-pointer">social_leaderboard</span>
-            <span className="material-symbols-outlined text-[#9a410f] cursor-pointer">language</span>
-          </div>
+          <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#ffc247]/20 rounded-full blur-3xl" />
+          <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-[#9a410f]/10 rounded-full blur-3xl" />
         </div>
-      </footer>
-
-    </div>
+      </section>
+    </Layout>
   );
 }
