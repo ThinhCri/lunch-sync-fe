@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { api } from '@/api';
 import Layout from '@/components/layout/Layout';
+import registerTestimonial from '@/assets/images/register-testimonial.jpg';
+import loginAvatar3 from '@/assets/images/login-avatar-3.jpg';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -31,8 +33,23 @@ export default function RegisterPage() {
     }
     if (!password) {
       errs.password = 'Vui lòng nhập mật khẩu';
-    } else if (password.length < 8) {
-      errs.password = 'Mật khẩu tối thiểu 8 ký tự';
+    } else {
+      const passwordErrors = [];
+      if (password.length < 8) {
+        passwordErrors.push('tối thiểu 8 ký tự');
+      }
+      if (!/[A-Z]/.test(password)) {
+        passwordErrors.push('ít nhất 1 chữ hoa');
+      }
+      if (!/[0-9]/.test(password)) {
+        passwordErrors.push('ít nhất 1 chữ số');
+      }
+      if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+        passwordErrors.push('ít nhất 1 ký tự đặc biệt');
+      }
+      if (passwordErrors.length > 0) {
+        errs.password = 'Mật khẩu cần có: ' + passwordErrors.join(', ');
+      }
     }
     if (!confirmPassword) {
       errs.confirmPassword = 'Vui lòng xác nhận mật khẩu';
@@ -96,7 +113,7 @@ export default function RegisterPage() {
             <img
               alt="Colleagues having lunch"
               className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuAeAh0AJwJi7DshkaJXubij29KOjLY4qXg1945W9R04uCQ-NhiPxaXU0g-uc3ffsed4PmbX9JtIuQ6jnZ8V-3fp5i2ccrDHvN20KoUI660v3UemF9U3GVHeHzNgSy4XlxKG3ok_oujp-G4MWw29IRFJt1CMN-HylXiVV9cU0baqIlQrLOtGe9rNUuYCzx1-3XSswV8AcYE5nwp4-DrS_xMbTbNOekkotxD_PnYye1M0DtUmAK592juIADm5psKaoiDyhPyMyZBFcKAW"
+              src={registerTestimonial}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#1c1c19]/40 to-transparent" />
             <div className="absolute bottom-6 left-6 flex items-center gap-3">
@@ -104,7 +121,7 @@ export default function RegisterPage() {
                 <img
                   alt="Minh Anh avatar"
                   className="object-cover w-full h-full"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuAeAh0AJwJi7DshkaJXubij29KOjLY4qXg1945W9R04uCQ-NhiPxaXU0g-uc3ffsed4PmbX9JtIuQ6jnZ8V-3fp5i2ccrDHvN20KoUI660v3UemF9U3GVHeHzNgSy4XlxKG3ok_oujp-G4MWw29IRFJt1CMN-HylXiVV9cU0baqIlQrLOtGe9rNUuYCzx1-3XSswV8AcYE5nwp4-DrS_xMbTbNOekkotxD_PnYye1M0DtUmAK592juIADm5psKaoiDyhPyMyZBFcKAW"
+                  src={loginAvatar3}
                 />
               </div>
               <div className="text-white">
@@ -167,7 +184,7 @@ export default function RegisterPage() {
                     id="email"
                     type="email"
                     className={`w-full pl-12 pr-4 py-4 bg-[#f7f3ee] border-none rounded-md focus:ring-2 focus:ring-[#ffb599] focus:bg-white transition-all duration-300 outline-none ${errors.email ? 'ring-2 ring-[#ba1a1a]' : ''}`}
-                    placeholder="example@company.com"
+                    placeholder="nguyenvana@gmail.com"
                     value={email}
                     onChange={(e) => { setEmail(e.target.value); setErrors((p) => ({ ...p, email: '' })); }}
                     autoComplete="email"

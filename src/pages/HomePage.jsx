@@ -1,6 +1,9 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import Layout from '@/components/layout/Layout';
+import homeHero from '@/assets/images/home-hero.jpg';
+import homeFeatureFood from '@/assets/images/home-feature-food.jpg';
+import homeFeatureRestaurant from '@/assets/images/home-feature-restaurant.jpg';
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -98,7 +101,7 @@ export default function HomePage() {
                 <img
                   alt="Colleagues having lunch together"
                   className="w-full h-full object-cover"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlXAx06OWp8sThP1tW3qFXROS5ToE3lSy6rqH7yhq2PYE6-kDZutbNsJuyMC2TjByhXxXgdiMnQIuAWwAmxxNwuH__eJSklK2SP12yBaSa5yPPWyoFdLX1T_ltLjHzmGPpyBmOcVL7mgnsK-OE23CZdg776b6yAGj1CoucAFDBnpHak-ICMQ1AbhwTwbVTF4IsgrkZXM-IAiG5W7TJUZdO4GCsHqfvLCUWr1j5hQJ4RipQn6U9fyHzFI5GJvRB9FHbX4JbTo1ROC6t"
+                  src={homeHero}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#9a410f]/20 to-transparent" />
               </div>
@@ -145,7 +148,7 @@ export default function HomePage() {
                   <img
                     alt="Delicious dishes variety"
                     className="w-full h-full object-cover"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYfqJs8Ag7VAj8hWMZi0oxL_1cyEX9y5tjqkvPP_2obdrlDsbwBwekXWn1IJLjhqiINRPMnXXI4_GDXHJttJQMT6XbaNhlLUlDZGiEay6n305hUg1KUvinvV00zqJyWb3pSO2GQPdZLidphN0ifLwQ_dHlDOf0GRJWgIuV9_wDb390U-OkHjsvsMTfW4FNTCf2FJzNjQXolmTWaHCpkGASoGa8z3MiPCUVbINAaB-ZxVemAB2D7fxSfrzZsI9QG5vFqSWPQmKm8dCW"
+                    src={homeFeatureFood}
                   />
                 </div>
               </div>
@@ -190,7 +193,7 @@ export default function HomePage() {
                   <img
                     alt="Cozy restaurant interior"
                     className="w-full h-full object-cover"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxa3q_nidXF7NXXY22sR6cukk4kJJovjrEB9nTcYDNaLwoKOqWpiVfzT7khqGeSfJuOJms_IR8bS23Ok7GjcNDFUNB2dOVsiCuWTWDgYSdtRctrqcyrmHDLZJwDzLYEOhgkDSRRiQqYmbvTO5B3E7HqDlS1mLkqIN8fKrrJgO8UaRX85C6NsiGya01A3QTCS5CQ22p8aSMkGugtyk5JB3TtLmYmcmaNK0AIYRBa2OQ0TdcIYQp95eZ-Cn7YlMEiuE0IN7AowWdMG9G"
+                    src={homeFeatureRestaurant}
                   />
                 </div>
               </div>

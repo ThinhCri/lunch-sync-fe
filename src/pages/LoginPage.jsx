@@ -3,6 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { api } from '@/api';
 import Layout from '@/components/layout/Layout';
+import loginHero from '@/assets/images/login-hero.jpg';
+import loginAvatar1 from '@/assets/images/login-avatar-1.jpg';
+import loginAvatar2 from '@/assets/images/login-avatar-2.jpg';
+import loginAvatar3 from '@/assets/images/login-avatar-3.jpg';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -51,7 +55,7 @@ export default function LoginPage() {
         fullName: data.fullName,
         role: data.role,
       });
-      const destination = data.role === 'admin' ? '/admin/submissions' : '/create';
+      const destination = data.role === 'admin' ? '/admin/submissions' : '/';
       navigate(destination, { replace: true });
     } catch {
       setGeneralError('Đăng nhập thất bại. Vui lòng thử lại.');
@@ -71,13 +75,13 @@ export default function LoginPage() {
               <img
                 alt="Delicious office lunch"
                 className="w-full h-full object-cover"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdHi4Jhonq30MssGJDdhkLSgqVslVX22pXJCb9jtCto6BY7TacgawfomtzuPF1hemFtIwFObre1946hgWuRM2IB93Qg0ocIMC5AW8_8Wiiv0IbgMtU8waUpdQwMtYI-wF29ppnx7z-qv82rrTJ2QaO9eNh8mpd-kbpsVma9v4VdD8ZJPMg1dj04IutuIRlzY67pj9Z2RQIGgpZAI0vC6Wu_uXSaWIFQRF6G8RUdLQQJelIbihBIvzgSSpm7s1NNsJT0mw1bPH5Nl0f"
+                src={loginHero}
               />
             </div>
             <div className="relative z-10">
               <div className="inline-flex items-center gap-2 bg-[#ffc247] text-[#715000] px-4 py-1.5 rounded-full text-sm font-bold mb-6">
                 <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>timer</span>
-                <span>Quyết định trong 3 phút</span>
+                <span>Quyết định bữa trưa chỉ trong 3 phút</span>
               </div>
               <h1 className="text-4xl lg:text-5xl font-extrabold text-[#56423a] font-headline tracking-tight leading-tight mb-6">
                 Bữa trưa văn phòng<br />
@@ -91,17 +95,17 @@ export default function LoginPage() {
                   <img
                     className="w-10 h-10 rounded-full border-2 border-[#fdf9f4]"
                     alt="User avatar 1"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuDIOo_UhsF8OVkyWoMpJv2NguT_eVdRhHMM2JO5NdC6qlN046fnKJSCEZp5s5kbWERhaON10jOfmc3eN_Zok0uUST9nawLYXkEgRvC-wWWAyfC4ADOK6HSDhGgqiOc0_DFeKvAmGNNis-n2Nc_b5kZOpgsGaxL242ZNJTpu4g2rw7DsyhFBsyUFsKvgeZVByi53hNSVVo4dd5aygwNVGgZeMOjy3O4UGwIc3RdwjlIo4ElJYTQP9N86rkJC1mIhwEmmRgCpTbnfgbg2"
+                    src={loginAvatar1}
                   />
                   <img
                     className="w-10 h-10 rounded-full border-2 border-[#fdf9f4]"
                     alt="User avatar 2"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuCRppqcgFT1pmc1MNAyFBypMRNm0JouRUd261JElrnacYxVupLvPl0NwNBXC6tXBhFYSWgMDaFvAlLcJ-_vHTYN8lFeJxcL-R9CQpaTHePTdk1JDPALIQnXYmI0CU8zTtY3nNkIJP1TsHRbca7RFJeEdYABDK8cl5zkBdzlkOhnmmfr8Ouwz9F4HjqSgen3FAWD38EXEOEwoV_BQaZyEcoivqC8TO6XTc1Xaorj3Hi6zTEXhUPTh2o80yX0Qby_XYVN2ulx_mtY46jv"
+                    src={loginAvatar2}
                   />
                   <img
                     className="w-10 h-10 rounded-full border-2 border-[#fdf9f4]"
                     alt="User avatar 3"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuDpeiR7QCISlWe2wNylxN_Pk4McOYi4Mu9dyYRUFHcdfE9_IKBdnUI_NGuFXekWETEPUhpG_NrWsZVzA5bR9UtfW_9kENgiYnel2Q1cGS5pQEzsAAYm98i4nyVn1fq9YbA55XhstF9BhyQ_ufScS5NCvq6q9_MqWpUt12l0mbxWWxDecBGI5i81VnJEhJJEe87LId0LYjbfFGrpTGgXEmpzDEy-UT-DTng8iPR9C0DMjYpZ2msNl0MYAqpXhYOTq5l_vfDu2XM1qZMn"
+                    src={loginAvatar3}
                   />
                 </div>
                 <span className="text-sm font-semibold text-[#56423a]">+500 dân văn phòng tin dùng</span>
@@ -134,7 +138,7 @@ export default function LoginPage() {
                     id="email"
                     type="email"
                     className={`w-full pl-12 pr-4 py-4 rounded-lg bg-[#f7f3ee] border-none focus:ring-2 focus:ring-[#9a410f]/20 focus:bg-white transition-all placeholder:text-[#dcc1b6] outline-none ${errors.email ? 'ring-2 ring-[#ba1a1a]' : ''}`}
-                    placeholder="ten@congty.com"
+                    placeholder="nguyenvana@gmail.com"
                     value={email}
                     onChange={(e) => { setEmail(e.target.value); setErrors((p) => ({ ...p, email: '' })); }}
                     autoComplete="email"
@@ -171,17 +175,6 @@ export default function LoginPage() {
                 {errors.password && (
                   <p className="text-xs text-[#ba1a1a] mt-1 ml-1">{errors.password}</p>
                 )}
-              </div>
-
-              <div className="flex items-center gap-3 py-2">
-                <input
-                  className="w-5 h-5 rounded border-[#dcc1b6] text-[#9a410f] focus:ring-[#9a410f]/30 accent-[#9a410f]"
-                  id="remember"
-                  type="checkbox"
-                />
-                <label className="text-sm font-medium text-[#56423a]" htmlFor="remember">
-                  Ghi nhớ đăng nhập
-                </label>
               </div>
 
               <button
