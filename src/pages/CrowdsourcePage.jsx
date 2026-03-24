@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { message } from 'antd';
+import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
 import { api } from '@/api';
-import { PRICE_TIERS } from '@/utils/constants';
-import styles from './CrowdsourcePage.module.css';
 
 const TIER_OPTIONS = [
   { key: 'duoi_40k', label: 'Dưới 40k' },
@@ -11,191 +12,90 @@ const TIER_OPTIONS = [
   { key: 'tren_120k', label: 'Trên 120k' },
 ];
 
-// ── Step 1: Search ───────────────────────────────────────────────────────────
-function SearchStep({ onNext }) {
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState([]);
+export default function CrowdsourcePage() {
+  const navigate = useNavigate();
+  const formRef = useRef(null);
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const [upvotingId, setUpvotingId] = useState(null);
   const [upvotedIds, setUpvotedIds] = useState({});
-  const debounceRef = useRef(null);
+  const [done, setDone] = useState(false);
 
-  const handleSearch = useCallback(async (q) => {
-    if (!q || q.trim().length < 2) {
-      setResults([]);
-      return;
-    }
-    setSearching(true);
-    const res = await api.crowdsource.search(q);
-    setResults(res.data || []);
-    setSearching(false);
-  }, []);
-
-  const handleQueryChange = (e) => {
-    const val = e.target.value;
-    setQuery(val);
-    clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => handleSearch(val), 400);
-  };
-
-  const handleUpvote = async (restaurant) => {
-    setUpvotingId(restaurant.id);
-    const res = await api.crowdsource.upvote(restaurant.id);
-    setUpvotedIds(prev => ({ ...prev, [restaurant.id]: res.data.upvotes }));
-    setUpvotingId(null);
-  };
-
-  const handleNotFound = () => {
-    onNext({ query });
-  };
-
-  return (
-    <>
-      {/* Search bar */}
-      <div className={styles.searchWrap}>
-        <div className={styles.searchInputWrap}>
-          <svg className={styles.searchIcon} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-          </svg>
-          <input
-            type="text"
-            className={styles.searchInput}
-            placeholder="Tìm quán ăn..."
-            value={query}
-            onChange={handleQueryChange}
-            autoFocus
-          />
-          {query && (
-            <button className={styles.searchClear} onClick={() => { setQuery(''); setResults([]); }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-              </svg>
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Hint text */}
-      <p className={styles.dedupHint}>
-        Gõ tên quán để kiểm tra xem đã có trong hệ thống chưa
-      </p>
-
-      {/* Loading */}
-      {searching && (
-        <div className={styles.searchLoading}>
-          <span className={styles.loadingDot} /><span className={styles.loadingDot} /><span className={styles.loadingDot} />
-          <span className={styles.searchLoadingText}>Đang tìm...</span>
-        </div>
-      )}
-
-      {/* Results */}
-      {!searching && results.length > 0 && (
-        <div className={styles.dedupResults}>
-          <h3 className={styles.dedupTitle}>Có phải quán này không?</h3>
-          {results.map(rest => {
-            const upvotedCount = upvotedIds[rest.id];
-            const isUpvoted = upvotedCount !== undefined;
-            return (
-              <div key={rest.id} className={styles.dedupCard}>
-                {rest.thumbnailUrl && (
-                  <img className={styles.dedupThumb} src={rest.thumbnailUrl} alt={rest.name} />
-                )}
-                <div className={styles.dedupCardBody}>
-                  <div className={styles.dedupCardTop}>
-                    <div>
-                      <p className={styles.dedupName}>{rest.name}</p>
-                      <p className={styles.dedupAddr}>{rest.address}</p>
-                      <div className={styles.dedupMeta}>
-                        {rest.priceDisplay && (
-                          <span className={styles.dedupTag}>{rest.priceDisplay}</span>
-                        )}
-                        {rest.rating && (
-                          <span className={styles.dedupTag}>★ {rest.rating}</span>
-                        )}
-                      </div>
-                    </div>
-                    {isUpvoted && (
-                      <div className={styles.dedupUpvoted}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                        </svg>
-                        <span>{upvotedCount}</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className={styles.dedupActions}>
-                    {isUpvoted ? (
-                      <button className={styles.upvotedBtn} disabled>
-                        ✓ Đã Upvote
-                      </button>
-                    ) : (
-                      <button
-                        className={styles.upvoteBtn}
-                        onClick={() => handleUpvote(rest)}
-                        disabled={upvotingId === rest.id}
-                      >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/>
-                          <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
-                        </svg>
-                        Upvote
-                      </button>
-                    )}
-                    <button className={styles.newBtn} onClick={() => onNext({ query })}>
-                      Không phải — Đề xuất quán mới
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* No results + "not found" button */}
-      {!searching && query.length >= 2 && results.length === 0 && (
-        <div className={styles.dedupNotFound}>
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={styles.dedupNotFoundIcon}>
-            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-          </svg>
-          <p>Chưa có quán nào trong hệ thống</p>
-          <button className={styles.newBtn} onClick={handleNotFound}>
-            Đề xuất quán mới
-          </button>
-        </div>
-      )}
-    </>
-  );
-}
-
-// ── Step 2: Suggestion Form ────────────────────────────────────────────────────
-function SuggestForm({ initialQuery, onSuccess }) {
-  const [collections, setCollections] = useState([]);
   const [form, setForm] = useState({
-    restaurantName: initialQuery || '',
+    restaurantName: '',
     address: '',
     googleMapsUrl: '',
-    collectionId: '',
-    priceTier: TIER_OPTIONS[1].key,
+    priceTier: TIER_OPTIONS[0].key,
     notes: '',
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [showResults, setShowResults] = useState(false);
 
-  // Load collections on mount
-  useEffect(() => {
-    api.collections.list().then((res) => {
-      const data = res.data;
-      if (data && data.collections) {
-        setCollections(data.collections);
-        setForm(prev => ({ ...prev, collectionId: data.collections[0]?.id || '' }));
-      } else if (Array.isArray(data)) {
-        setCollections(data);
-        setForm(prev => ({ ...prev, collectionId: data[0]?.id || '' }));
-      }
-    });
+  const debounceRef = useRef(null);
+
+  // ── Search ───────────────────────────────────────────────────────────────────
+  const handleSearch = useCallback(async (q) => {
+    if (!q || q.trim().length < 2) {
+      setSearchResults([]);
+      setShowResults(false);
+      return;
+    }
+    setSearching(true);
+    setShowResults(false);
+    try {
+      const res = await api.crowdsource.search(q);
+      setSearchResults(res.data || []);
+      setShowResults(true);
+    } catch {
+      setSearchResults([]);
+    } finally {
+      setSearching(false);
+    }
   }, []);
 
+  const handleSearchChange = (e) => {
+    const val = e.target.value;
+    setSearchQuery(val);
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => handleSearch(val), 400);
+  };
+
+  const handleCheck = () => {
+    if (searchQuery.trim().length >= 2) {
+      handleSearch(searchQuery);
+    }
+  };
+
+  const handleSearchKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleCheck();
+    }
+  };
+
+  const handleUpvote = async (restaurant) => {
+    setUpvotingId(restaurant.id);
+    try {
+      const res = await api.crowdsource.upvote(restaurant.id);
+      setUpvotedIds((prev) => ({ ...prev, [restaurant.id]: res.data.upvotes }));
+    } catch {
+      message.error('Không thể upvote. Vui lòng thử lại.');
+    } finally {
+      setUpvotingId(null);
+    }
+  };
+
+  const handleSuggestNew = (name) => {
+    setForm((prev) => ({ ...prev, restaurantName: name || searchQuery }));
+    setShowResults(false);
+    setSearchQuery('');
+    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  // ── Form ─────────────────────────────────────────────────────────────────────
   const validate = () => {
     const errs = {};
     if (!form.restaurantName.trim()) errs.restaurantName = 'Vui lòng nhập tên quán';
@@ -204,8 +104,8 @@ function SuggestForm({ initialQuery, onSuccess }) {
   };
 
   const handleChange = (field, value) => {
-    setForm(prev => ({ ...prev, [field]: value }));
-    setErrors(prev => ({ ...prev, [field]: '' }));
+    setForm((prev) => ({ ...prev, [field]: value }));
+    setErrors((prev) => ({ ...prev, [field]: '' }));
   };
 
   const handleSubmit = async (e) => {
@@ -222,7 +122,7 @@ function SuggestForm({ initialQuery, onSuccess }) {
         address: form.address.trim(),
         googleMapsUrl: form.googleMapsUrl?.trim() || null,
         priceTier: form.priceTier,
-        priceDisplay: TIER_OPTIONS.find(t => t.key === form.priceTier)?.label || '',
+        priceDisplay: TIER_OPTIONS.find((t) => t.key === form.priceTier)?.label || '',
         notes: form.notes.trim(),
         photoUrls: [],
         dishIds: [],
@@ -232,202 +132,370 @@ function SuggestForm({ initialQuery, onSuccess }) {
         message.error(data.error.message);
         return;
       }
-      onSuccess();
+      setDone(true);
+    } catch {
+      message.error('Gửi đề xuất thất bại. Vui lòng thử lại.');
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <form className={styles.form} onSubmit={handleSubmit} noValidate>
-      {/* Tên quán */}
-      <div className={styles.field}>
-        <label className={styles.fieldLabel} htmlFor="name">Tên quán *</label>
-        <input
-          id="name"
-          type="text"
-          className={`${styles.textField} ${errors.restaurantName ? styles.inputError : ''}`}
-          placeholder="VD: Quán Cơm Bình Dân"
-          value={form.restaurantName}
-          onChange={e => handleChange('restaurantName', e.target.value)}
-          disabled={loading}
-        />
-        {errors.restaurantName && <p className={styles.fieldError}>{errors.restaurantName}</p>}
-      </div>
-
-      {/* Địa chỉ */}
-      <div className={styles.field}>
-        <label className={styles.fieldLabel} htmlFor="address">Địa chỉ / Link Google Maps *</label>
-        <input
-          id="address"
-          type="text"
-          className={`${styles.textField} ${errors.address ? styles.inputError : ''}`}
-          placeholder="VD: 88 Nguyễn Trãi, Q1 hoặc https://maps.google.com/..."
-          value={form.address}
-          onChange={e => handleChange('address', e.target.value)}
-          disabled={loading}
-        />
-        {errors.address && <p className={styles.fieldError}>{errors.address}</p>}
-      </div>
-
-      {/* Khu vực */}
-      <div className={styles.field}>
-        <label className={styles.fieldLabel} htmlFor="collection">Khu vực</label>
-        <select
-          id="collection"
-          className={`${styles.textField} ${styles.select}`}
-          value={form.collectionId}
-          onChange={e => handleChange('collectionId', e.target.value)}
-          disabled={loading}
-        >
-          {collections.map(c => (
-            <option key={c.id} value={c.id}>{c.name}</option>
-          ))}
-        </select>
-      </div>
-
-      {/* Mức giá */}
-      <div className={styles.field}>
-        <label className={styles.fieldLabel}>Mức giá</label>
-        <div className={styles.tierGrid}>
-          {TIER_OPTIONS.map(tier => (
-            <button
-              key={tier.key}
-              type="button"
-              className={`${styles.tierChip} ${form.priceTier === tier.key ? styles.tierSelected : ''}`}
-              onClick={() => handleChange('priceTier', tier.key)}
-              disabled={loading}
-            >
-              {tier.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Ghi chú */}
-      <div className={styles.field}>
-        <label className={styles.fieldLabel} htmlFor="notes">Ghi chú</label>
-        <textarea
-          id="notes"
-          className={`${styles.textField} ${styles.textarea}`}
-          placeholder="VD: Quán đông vào buổi trưa, nên đi sớm"
-          value={form.notes}
-          onChange={e => handleChange('notes', e.target.value)}
-          disabled={loading}
-          rows={3}
-        />
-      </div>
-
-      <button
-        type="submit"
-        className={`${styles.submitBtn} ${loading ? styles.loading : ''}`}
-        disabled={loading}
-      >
-        {loading ? (
-          <span className={styles.spinner} />
-        ) : (
-          <>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
-            </svg>
-            Gửi đề xuất
-          </>
-        )}
-      </button>
-    </form>
-  );
-}
-
-// ── Main CrowdsourcePage ───────────────────────────────────────────────────────
-export default function CrowdsourcePage() {
-  const navigate = useNavigate();
-  const [step, setStep] = useState('search'); // 'search' | 'form' | 'done'
-  const [formQuery, setFormQuery] = useState('');
-
-  const handleSearchNext = ({ query }) => {
-    setFormQuery(query || '');
-    setStep('form');
-  };
-
-  const handleSuccess = () => {
-    setStep('done');
-  };
-
-  const handleBack = () => {
-    if (step === 'form') {
-      setStep('search');
-      setFormQuery('');
-    } else {
-      navigate('/');
-    }
-  };
-
-  // ── Done state ──
-  if (step === 'done') {
+  // ── Done state ──────────────────────────────────────────────────────────────
+  if (done) {
     return (
-      <div className={styles.page}>
-        <div className={styles.header}>
-          <button className={styles.backBtn} onClick={() => navigate('/')}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M19 12H5M12 5l-7 7 7 7"/>
-            </svg>
-          </button>
-          <span className={styles.headerTitle}>Đề xuất quán mới</span>
-          <div style={{ width: 40 }} />
-        </div>
-        <div className={styles.successPage}>
-          <div className={styles.successIcon}>
-            <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-              <circle cx="32" cy="32" r="32" fill="#e8f5e9"/>
-              <circle cx="32" cy="32" r="22" fill="#51CF66"/>
-              <path d="M22 32l8 8 12-14" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+      <div className="min-h-screen bg-surface flex flex-col">
+        <Header />
+        <main className="flex-grow pt-20 flex flex-col items-center justify-center px-6">
+          <div className="text-center max-w-md">
+            <div className="w-24 h-24 rounded-full bg-accent-green/10 flex items-center justify-center mx-auto mb-8">
+              <span className="material-symbols-outlined text-accent-green text-5xl">verified</span>
+            </div>
+            <h2 className="text-4xl font-headline font-extrabold text-on-surface mb-4 tracking-tighter">
+              Cảm ơn bạn!
+            </h2>
+            <p className="text-on-surface-variant text-lg leading-relaxed mb-8">
+              Đề xuất của bạn đã được gửi. Đội ngũ LunchSync sẽ xem xét trong thời gian sớm nhất.
+            </p>
+            <button
+              className="px-10 py-4 bg-primary text-white rounded-full font-bold hover:bg-primary-dark transition-all shadow-lg shadow-primary/20"
+              onClick={() => navigate('/')}
+            >
+              Quay về trang chủ
+            </button>
           </div>
-          <h2 className={styles.successTitle}>Cảm ơn bạn!</h2>
-          <p className={styles.successSubtitle}>
-            Đề xuất của bạn đã được gửi. Đội ngũ LunchSync sẽ xem xét trong thời gian sớm nhất.
-          </p>
-          <button className={styles.homeBtn} onClick={() => navigate('/')}>
-            Quay về trang chủ
-          </button>
-        </div>
+        </main>
+        <Footer />
       </div>
     );
   }
 
   return (
-    <div className={styles.page}>
-      <div className={styles.header}>
-        <button className={styles.backBtn} onClick={handleBack}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M19 12H5M12 5l-7 7 7 7"/>
-          </svg>
-        </button>
-        <span className={styles.headerTitle}>
-          {step === 'form' ? 'Đề xuất quán mới' : 'Tìm quán'}
-        </span>
-        <div style={{ width: 40 }} />
-      </div>
+    <div className="min-h-screen bg-surface flex flex-col">
+      <Header />
+      <main className="flex-grow pt-20 container mx-auto px-6 py-16 max-w-4xl">
 
-      <div className={styles.content}>
-        {step === 'search' ? (
-          <>
-            <h2 className={styles.stepTitle}>Tìm quán có sẵn</h2>
-            <p className={styles.stepDesc}>
-              Trước khi đề xuất quán mới, hãy kiểm tra xem quán đó đã có trong hệ thống chưa nhé!
-            </p>
-            <SearchStep onNext={handleSearchNext} />
-          </>
-        ) : (
-          <>
-            <h2 className={styles.stepTitle}>Đề xuất quán mới</h2>
-            <p className={styles.stepDesc}>
-              Quán này chưa có trong hệ thống. Hãy điền thông tin để đóng góp cho cả nhóm!
-            </p>
-            <SuggestForm initialQuery={formQuery} onSuccess={handleSuccess} />
-          </>
-        )}
-      </div>
+        {/* ── Editorial Header ── */}
+        <header className="mb-12 text-center">
+          <span className="inline-block px-4 py-1.5 rounded-full bg-secondary/10 text-secondary font-bold text-[10px] tracking-[0.2em] uppercase mb-6 border border-secondary/20">
+            The Editorial Table
+          </span>
+          <h1 className="text-5xl md:text-7xl font-headline font-extrabold text-on-surface tracking-tighter mb-6 leading-[1.1]">
+            Gợi ý <span className="text-primary italic">hương vị</span> yêu thích
+          </h1>
+          <p className="text-on-surface-variant max-w-xl mx-auto text-lg leading-relaxed">
+            Giúp cộng đồng tìm thấy những góc bếp tâm đắc nhất. Mỗi đề xuất là một câu chuyện về hương vị mà bạn muốn sẻ chia.
+          </p>
+        </header>
+
+        {/* ── Form Card ── */}
+        <section className="relative" ref={formRef}>
+          {/* Decorative background blobs */}
+          <div className="absolute -top-16 -right-16 w-64 h-64 bg-secondary/5 rounded-full blur-[100px] -z-10" />
+          <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-primary/5 rounded-full blur-[120px] -z-10" />
+
+          <div className="bg-white border border-outline shadow-xl shadow-primary/5 p-8 md:p-14 rounded-2xl relative overflow-visible">
+
+            {/* ── Search / Check existing ── */}
+            <div className="mb-12 pb-12 border-b border-outline/30">
+              <p className="text-sm font-bold text-primary mb-4 text-center">
+                Bạn có thể kiểm tra quán đã có hay chưa trước khi đề xuất
+              </p>
+              <div className="relative max-w-2xl mx-auto">
+                <div className="flex gap-3">
+                  <div className="relative flex-grow group">
+                    <span className="material-symbols-outlined absolute left-5 top-1/2 -translate-y-1/2 text-on-surface-variant/50 group-focus-within:text-primary transition-colors pointer-events-none">
+                      search
+                    </span>
+                    <input
+                      type="text"
+                      className="w-full pl-14 pr-6 py-5 bg-surface-container/50 border border-outline/50 rounded-lg focus:bg-white focus:border-primary transition-all text-on-surface placeholder:text-on-surface-variant/40 outline-none"
+                      placeholder="Tìm tên quán..."
+                      value={searchQuery}
+                      onChange={handleSearchChange}
+                      onKeyDown={handleSearchKeyDown}
+                    />
+                  </div>
+                  <button
+                    className="px-8 py-5 bg-on-surface text-white rounded-lg font-bold hover:bg-on-surface-variant transition-all shrink-0"
+                    onClick={handleCheck}
+                    disabled={searching || searchQuery.trim().length < 2}
+                  >
+                    Kiểm tra
+                  </button>
+                </div>
+
+                {/* Loading dots */}
+                {searching && (
+                  <div className="flex items-center gap-2 pt-4">
+                    <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                    <span className="w-2 h-2 bg-primary rounded-full animate-pulse delay-100" />
+                    <span className="w-2 h-2 bg-primary rounded-full animate-pulse delay-200" />
+                    <span className="ml-2 text-sm text-on-surface-variant">Đang tìm...</span>
+                  </div>
+                )}
+
+                {/* Search results dropdown */}
+                {showResults && searchResults.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-3 bg-white border border-outline rounded-lg shadow-xl z-20 overflow-hidden">
+                    {searchResults.map((rest) => {
+                      const upvotedCount = upvotedIds[rest.id];
+                      const isUpvoted = upvotedCount !== undefined;
+                      return (
+                        <div
+                          key={rest.id}
+                          className="p-4 hover:bg-surface-container/30 border-b border-outline/10 flex justify-between items-center cursor-pointer"
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className="material-symbols-outlined text-on-surface-variant/40">restaurant</span>
+                            <div>
+                              <p className="font-bold text-on-surface">{rest.name}</p>
+                              <p className="text-xs text-on-surface-variant">{rest.address}</p>
+                              {rest.priceDisplay && (
+                                <span className="text-[10px] font-semibold text-on-surface-variant">{rest.priceDisplay}</span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {isUpvoted && (
+                              <div className="flex items-center gap-1 text-red-500 font-bold text-sm">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                                </svg>
+                                <span>{upvotedCount}</span>
+                              </div>
+                            )}
+                            {isUpvoted ? (
+                              <button className="px-3 py-1.5 bg-red-50 text-red-500 text-[10px] font-black uppercase rounded-full border border-red-200 cursor-default" disabled>
+                                ✓ Đã Upvote
+                              </button>
+                            ) : (
+                              <button
+                                className="px-3 py-1.5 bg-accent-green/10 text-accent-green text-[10px] font-black uppercase rounded-full hover:bg-accent-green/20 transition-colors"
+                                onClick={() => handleUpvote(rest)}
+                                disabled={upvotingId === rest.id}
+                              >
+                                Upvote
+                              </button>
+                            )}
+                            <button
+                              className="px-3 py-1.5 bg-primary/10 text-primary text-[10px] font-black uppercase rounded-full hover:bg-primary/20 transition-colors"
+                              onClick={() => handleSuggestNew(rest.name)}
+                            >
+                              Đề xuất khác
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    <div className="p-4 bg-surface-container/20 text-center">
+                      <button className="text-sm font-bold text-primary hover:text-primary-dark transition-colors" onClick={() => handleSuggestNew(searchQuery)}>
+                        Không phải — Đề xuất quán mới →
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* No results */}
+                {showResults && searchQuery.length >= 2 && searchResults.length === 0 && !searching && (
+                  <div className="mt-4 p-6 bg-surface-container/20 border border-dashed border-outline rounded-lg text-center">
+                    <span className="material-symbols-outlined text-on-surface-variant/40 text-3xl mb-2 block">search</span>
+                    <p className="text-sm text-on-surface-variant mb-4">Chưa có quán nào trong hệ thống</p>
+                    <button className="px-6 py-3 bg-primary text-white rounded-full font-bold text-sm hover:bg-primary-dark transition-colors" onClick={() => handleSuggestNew(searchQuery)}>
+                      Đề xuất quán mới
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* ── Suggestion Form ── */}
+            <form className="grid grid-cols-1 md:grid-cols-2 gap-10" onSubmit={handleSubmit} noValidate>
+
+              {/* Store Name */}
+              <div className="md:col-span-2 group">
+                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3 ml-1" htmlFor="store-name">
+                  Tên quán ăn *
+                </label>
+                <div className="relative">
+                  <span className="material-symbols-outlined absolute left-5 top-1/2 -translate-y-1/2 text-on-surface-variant/50 group-focus-within:text-primary transition-colors pointer-events-none">
+                    restaurant
+                  </span>
+                  <input
+                    id="store-name"
+                    type="text"
+                    className={`w-full pl-14 pr-8 py-5 bg-surface-container/50 border rounded-lg transition-all text-on-surface placeholder:text-on-surface-variant/40 outline-none ${
+                      errors.restaurantName
+                        ? 'border-red-400 bg-red-50/30'
+                        : 'border-outline/50 focus:bg-white focus:border-primary'
+                    }`}
+                    placeholder="Ví dụ: Bếp Củi Nhà Tôi"
+                    value={form.restaurantName}
+                    onChange={(e) => handleChange('restaurantName', e.target.value)}
+                    disabled={loading}
+                  />
+                </div>
+                {errors.restaurantName && <p className="text-red-500 text-xs mt-1 ml-1">{errors.restaurantName}</p>}
+              </div>
+
+              {/* Address */}
+              <div className="group">
+                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3 ml-1" htmlFor="address">
+                  Địa chỉ *
+                </label>
+                <div className="relative">
+                  <span className="material-symbols-outlined absolute left-5 top-1/2 -translate-y-1/2 text-on-surface-variant/50 group-focus-within:text-primary transition-colors pointer-events-none">
+                    location_on
+                  </span>
+                  <input
+                    id="address"
+                    type="text"
+                    className={`w-full pl-14 pr-8 py-5 bg-surface-container/50 border rounded-lg transition-all text-on-surface placeholder:text-on-surface-variant/40 outline-none ${
+                      errors.address
+                        ? 'border-red-400 bg-red-50/30'
+                        : 'border-outline/50 focus:bg-white focus:border-primary'
+                    }`}
+                    placeholder="Tên đường, phường, quận..."
+                    value={form.address}
+                    onChange={(e) => handleChange('address', e.target.value)}
+                    disabled={loading}
+                  />
+                </div>
+                {errors.address && <p className="text-red-500 text-xs mt-1 ml-1">{errors.address}</p>}
+              </div>
+
+              {/* Google Maps Link */}
+              <div className="group">
+                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3 ml-1" htmlFor="maps-link">
+                  Google Maps
+                </label>
+                <div className="relative">
+                  <span className="material-symbols-outlined absolute left-5 top-1/2 -translate-y-1/2 text-on-surface-variant/50 group-focus-within:text-primary transition-colors pointer-events-none">
+                    map
+                  </span>
+                  <input
+                    id="maps-link"
+                    type="url"
+                    className="w-full pl-14 pr-8 py-5 bg-surface-container/50 border border-outline/50 rounded-lg focus:bg-white focus:border-primary transition-all text-on-surface placeholder:text-on-surface-variant/40 outline-none"
+                    placeholder="Dán đường dẫn tại đây..."
+                    value={form.googleMapsUrl}
+                    onChange={(e) => handleChange('googleMapsUrl', e.target.value)}
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+
+              {/* Price Range */}
+              <div className="md:col-span-2">
+                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-4 ml-1">
+                  Mức giá trung bình
+                </label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {TIER_OPTIONS.map((tier) => (
+                    <label
+                      key={tier.key}
+                      className={`relative flex items-center justify-center p-4 rounded-lg border cursor-pointer transition-all ${
+                        form.priceTier === tier.key
+                          ? 'bg-primary text-white border-primary'
+                          : 'bg-surface-container/30 border-outline/30 hover:border-primary/50'
+                      }`}
+                    >
+                      <input
+                        className="sr-only"
+                        name="price"
+                        type="radio"
+                        value={tier.key}
+                        checked={form.priceTier === tier.key}
+                        onChange={() => handleChange('priceTier', tier.key)}
+                        disabled={loading}
+                      />
+                      <span className="font-bold text-sm">{tier.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Notes */}
+              <div className="md:col-span-2 group">
+                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3 ml-1" htmlFor="notes">
+                  Ghi chú &amp; Đánh giá
+                </label>
+                <div className="relative">
+                  <span className="material-symbols-outlined absolute left-5 top-5 text-on-surface-variant/50 group-focus-within:text-primary transition-colors pointer-events-none">
+                    edit_note
+                  </span>
+                  <textarea
+                    id="notes"
+                    className="w-full pl-14 pr-8 py-5 bg-surface-container/50 border border-outline/50 rounded-lg focus:bg-white focus:border-primary transition-all text-on-surface placeholder:text-on-surface-variant/40 outline-none"
+                    placeholder="Điều gì làm nên sự khác biệt của quán này?"
+                    rows="4"
+                    value={form.notes}
+                    onChange={(e) => handleChange('notes', e.target.value)}
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+
+              {/* Upload Area */}
+              <div className="md:col-span-2">
+                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3 ml-1">
+                  Hình ảnh quán/món ăn
+                </label>
+                <div className="border-2 border-dashed border-outline rounded-lg p-12 bg-surface-container/20 flex flex-col items-center justify-center group hover:border-primary/60 transition-all cursor-pointer">
+                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <span className="material-symbols-outlined text-primary text-3xl">photo_camera</span>
+                  </div>
+                  <p className="text-on-surface font-bold text-sm mb-1 uppercase tracking-wider">Tải lên hình ảnh</p>
+                  <p className="text-on-surface-variant/70 text-xs">JPG hoặc PNG • Tối đa 5MB</p>
+                  <input accept="image/*" className="hidden" multiple type="file" />
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <div className="md:col-span-2 pt-4">
+                <button
+                  className={`w-full py-6 bg-primary text-white rounded-full font-headline font-extrabold text-lg flex items-center justify-center gap-4 shadow-2xl shadow-primary/30 hover:bg-primary-dark transition-all active:scale-[0.99] ${
+                    loading ? 'opacity-70 cursor-not-allowed' : ''
+                  }`}
+                  type="submit"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <span className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <span className="material-symbols-outlined">send</span>
+                      GỬI ĐỀ XUẤT NGAY
+                    </>
+                  )}
+                </button>
+                <p className="text-center mt-6 text-on-surface-variant text-[11px] font-bold uppercase tracking-widest opacity-60">
+                  Thành viên Ban biên tập sẽ phê duyệt trong 24 giờ
+                </p>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        {/* ── Aside cards ── */}
+        <aside className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="p-8 bg-gradient-to-br from-surface to-surface-container border border-outline/40 rounded-xl">
+            <span className="material-symbols-outlined text-accent-green mb-4 text-3xl block">verified</span>
+            <h3 className="font-extrabold text-on-surface mb-2 uppercase text-[10px] tracking-widest">Tính xác thực</h3>
+            <p className="text-sm text-on-surface-variant leading-relaxed">Giúp đồng nghiệp tin tưởng bằng thông tin chính xác nhất.</p>
+          </div>
+          <div className="p-8 bg-gradient-to-br from-surface to-surface-container border border-outline/40 rounded-xl">
+            <span className="material-symbols-outlined text-primary mb-4 text-3xl block">filter_vintage</span>
+            <h3 className="font-extrabold text-on-surface mb-2 uppercase text-[10px] tracking-widest">Góc nhìn riêng</h3>
+            <p className="text-sm text-on-surface-variant leading-relaxed">Những bức ảnh thật luôn có giá trị hơn ngàn lời quảng cáo.</p>
+          </div>
+          <div className="p-8 bg-gradient-to-br from-surface to-surface-container border border-outline/40 rounded-xl">
+            <span className="material-symbols-outlined text-secondary mb-4 text-3xl block">workspace_premium</span>
+            <h3 className="font-extrabold text-on-surface mb-2 uppercase text-[10px] tracking-widest">Vinh danh</h3>
+            <p className="text-sm text-on-surface-variant leading-relaxed">Mỗi đóng góp được tặng 50 Sync Points vào tài khoản.</p>
+          </div>
+        </aside>
+      </main>
+      <Footer />
     </div>
   );
 }

@@ -16,7 +16,7 @@ export default function HomePage() {
     if (isAuthenticated()) {
       navigate('/create');
     } else {
-      navigate('/register');
+      navigate('/login');
     }
   };
 

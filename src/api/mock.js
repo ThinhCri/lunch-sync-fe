@@ -34,6 +34,17 @@ export const PRICE_TIERS = [
   { key: 'tren_120k', label: 'Trên 120k', priceDisplay: 'Trên 120k/phần' },
 ];
 
+// Extra participants injected into the mock session for demo/UI purposes
+export const MOCK_EXTRA_PARTICIPANTS = [
+  { id: 'mock-1', nickname: 'Lan',     isHost: false },
+  { id: 'mock-2', nickname: 'Minh',    isHost: false },
+  { id: 'mock-3', nickname: 'Tú',     isHost: false },
+  { id: 'mock-4', nickname: 'Huyền',   isHost: false },
+  { id: 'mock-5', nickname: 'Nam',     isHost: false },
+  { id: 'mock-6', nickname: 'Phương',  isHost: false },
+  { id: 'mock-7', nickname: 'Thanh',   isHost: false },
+];
+
 // ─── Restaurants ───────────────────────────────────────────────────────────────
 
 export const MOCK_RESTAURANTS = [
@@ -492,6 +503,18 @@ export const mockHandlers = {
     }
     const s = mockSession;
     const hostName = s.participants.find(p => p.isHost)?.nickname || 'Host';
+
+    // ── Demo mode: inject extra mock participants into backend state so startSession validates correctly ──
+    if (s.status === 'waiting' && s.participants.length < 8) {
+      const extraParticipants = MOCK_EXTRA_PARTICIPANTS.slice(0, 8 - s.participants.length);
+      s.participants = [...s.participants, ...extraParticipants];
+    }
+
+    const participantList = s.participants.map(({ userId, ...rest }) => ({
+      ...rest,
+      isHost: rest.isHost || false,
+    }));
+
     return delay({
       sessionId: s.id,
       pin: s.pin,
@@ -500,10 +523,7 @@ export const mockHandlers = {
       collectionName: s.collectionName,
       priceTier: s.priceTier,
       priceDisplay: s.priceDisplay,
-      participants: s.participants.map(({ userId, ...rest }) => ({
-        ...rest,
-        isHost: rest.isHost || false,
-      })),
+      participants: participantList,
       participantCount: s.participants.length,
       createdAt: s.createdAt,
       expiresAt: s.expiresAt,

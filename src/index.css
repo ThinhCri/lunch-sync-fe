@@ -1,6 +1,19 @@
 @import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap');
 
+/* ─── Tailwind custom color extensions ─────────────────────── */
+@theme {
+  --color-primary: #CC6633;
+  --color-primary-dark: #A64D22;
+  --color-secondary: #D4AF37;
+  --color-surface: #FCF9F5;
+  --color-on-surface: #2D241E;
+  --color-on-surface-variant: #6D5C54;
+  --color-outline: #D9C9BE;
+  --color-surface-container: #F2E8DF;
+  --color-accent-green: #556B2F;
+}
+
 /* ─── Theme CSS custom properties ─────────────────────────────── */
 :root {
   /* Brand / Primary */
