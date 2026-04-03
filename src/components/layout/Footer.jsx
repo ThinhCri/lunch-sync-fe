@@ -1,4 +1,6 @@
 import { useNavigate } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChartBar, faGlobe } from '@fortawesome/free-solid-svg-icons';
 
 export default function Footer() {
   const navigate = useNavigate();
@@ -42,8 +44,8 @@ export default function Footer() {
           </button>
         </div>
         <div className="flex gap-4">
-          <span className="material-symbols-outlined text-[#9a410f] cursor-pointer">social_leaderboard</span>
-          <span className="material-symbols-outlined text-[#9a410f] cursor-pointer">language</span>
+          <FontAwesomeIcon icon={faChartBar} className="text-[#9a410f] cursor-pointer text-xl" />
+          <FontAwesomeIcon icon={faGlobe} className="text-[#9a410f] cursor-pointer text-xl" />
         </div>
       </div>
     </footer>

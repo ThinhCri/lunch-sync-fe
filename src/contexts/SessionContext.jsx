@@ -8,23 +8,26 @@ export function SessionProvider({ children }) {
 
   // Restore session từ localStorage khi app mount
   useEffect(() => {
-    const saved = localStorage.getItem('lunchsync-session');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        store.getState().restore(parsed);
-      } catch {}
-    }
+    store.getState().restore();
   }, []);
 
   // Persist session khi store thay đổi
   useEffect(() => {
     const unsub = store.subscribe((state) => {
-      localStorage.setItem('lunchsync-session', JSON.stringify({
-        pin: state.pin,
-        participantId: state.participantId,
-        isHost: state.isHost,
-      }));
+      if (state.pin) {
+        localStorage.setItem('lunchsync-session', JSON.stringify({
+          pin: state.pin,
+          sessionId: state.sessionId,
+          participantId: state.participantId,
+          isHost: state.isHost,
+          collectionId: state.collectionId,
+          collectionName: state.collectionName,
+          priceTier: state.priceTier,
+          priceDisplay: state.priceDisplay,
+        }));
+      } else {
+        localStorage.removeItem('lunchsync-session');
+      }
     });
     return unsub;
   }, []);

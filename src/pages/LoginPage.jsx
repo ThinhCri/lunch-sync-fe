@@ -7,6 +7,11 @@ import loginHero from '@/assets/images/login-hero.jpg';
 import loginAvatar1 from '@/assets/images/login-avatar-1.jpg';
 import loginAvatar2 from '@/assets/images/login-avatar-2.jpg';
 import loginAvatar3 from '@/assets/images/login-avatar-3.jpg';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { 
+  faStopwatch, faExclamationCircle, faEnvelope, 
+  faLock, faSpinner, faArrowRight 
+} from '@fortawesome/free-solid-svg-icons';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -80,7 +85,7 @@ export default function LoginPage() {
             </div>
             <div className="relative z-10">
               <div className="inline-flex items-center gap-2 bg-[#ffc247] text-[#715000] px-4 py-1.5 rounded-full text-sm font-bold mb-6">
-                <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>timer</span>
+                <FontAwesomeIcon icon={faStopwatch} className="text-sm" />
                 <span>Quyết định bữa trưa chỉ trong 3 phút</span>
               </div>
               <h1 className="text-4xl lg:text-5xl font-extrabold text-[#56423a] font-headline tracking-tight leading-tight mb-6">
@@ -122,7 +127,7 @@ export default function LoginPage() {
 
             {generalError && (
               <div className="mb-6 px-4 py-3 bg-[#ffdad6] text-[#93000a] rounded-lg flex items-center gap-2 text-sm font-medium">
-                <span className="material-symbols-outlined text-sm">error</span>
+                <FontAwesomeIcon icon={faExclamationCircle} className="text-sm" />
                 {generalError}
               </div>
             )}
@@ -133,7 +138,7 @@ export default function LoginPage() {
                   Email
                 </label>
                 <div className="relative">
-                  <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#897269]">mail</span>
+                  <FontAwesomeIcon icon={faEnvelope} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#897269]" />
                   <input
                     id="email"
                     type="email"
@@ -160,7 +165,7 @@ export default function LoginPage() {
                   </button>
                 </div>
                 <div className="relative">
-                  <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#897269]">lock</span>
+                  <FontAwesomeIcon icon={faLock} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#897269]" />
                   <input
                     id="password"
                     type="password"
@@ -183,11 +188,11 @@ export default function LoginPage() {
                 disabled={loading}
               >
                 {loading ? (
-                  <span className="material-symbols-outlined animate-spin">progress_activity</span>
+                  <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
                 ) : (
                   <>
                     <span>Đăng nhập ngay</span>
-                    <span className="material-symbols-outlined">arrow_forward</span>
+                    <FontAwesomeIcon icon={faArrowRight} />
                   </>
                 )}
               </button>

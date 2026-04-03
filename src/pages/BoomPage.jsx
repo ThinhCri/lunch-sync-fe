@@ -1,10 +1,17 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { message } from 'antd';
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '@/api';
 import { useSessionStore } from '@/store/sessionStore';
-import styles from './BoomPage.module.css';
+import Layout from '@/components/layout/Layout';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faBomb, faCheck,
+  faLock, faCircleNotch, faClock,
+  faTrophy, faMedal, faAward
+} from '@fortawesome/free-solid-svg-icons';
 
 const BOOM_DELAY_MS = 2500;  // thời gian animation boom
 const PICK_COUNTDOWN_SECONDS = 90; // countdown để auto-pick
@@ -53,15 +60,23 @@ export default function BoomPage() {
         eliminated: data.eliminated || [],
         remaining: data.remaining || [],
         status: data.status,
+        boomedAt: data.boomedAt,
       });
+      if (data.boomedAt) {
+        setBoomTriggeredAt(data.boomedAt);
+      }
       if (data.status === 'done') {
         navigate(`/done/${pin}`);
       }
-    } catch {}
+    } catch (err) {
+      console.error('Error fetching boom data:', err);
+    }
   }, [pin, navigate]);
 
   useEffect(() => {
-    fetchBoomData();
+    // Avoid synchronous setState in effect
+    const timer = setTimeout(() => fetchBoomData(), 0);
+    return () => clearTimeout(timer);
   }, [fetchBoomData]);
 
   // Transition: idle → boom → picking
@@ -69,13 +84,13 @@ export default function BoomPage() {
     if (!boomData) return;
     if (boomData.eliminated?.length > 0 || boomData.remaining?.length > 0) {
       // Already boomed (from API or this session) → play animation then go to picking
-      setPhase('boom');
+      setTimeout(() => setPhase('boom'), 0);
       const timer = setTimeout(() => {
         setPhase('picking');
       }, BOOM_DELAY_MS);
       return () => clearTimeout(timer);
     } else {
-      setPhase('idle');
+      setTimeout(() => setPhase('idle'), 0);
     }
   }, [boomData]);
 
@@ -101,12 +116,13 @@ export default function BoomPage() {
       try {
         const res = await api.sessions.getStatus(pin);
         const data = res.data;
-        if (data.error) return;
         if (data.status === 'done') {
           clearInterval(interval);
           navigate(`/done/${pin}`);
         }
-      } catch {}
+      } catch (err) {
+        console.error('Error polling status:', err);
+      }
     }, 2000);
     return () => clearInterval(interval);
   }, [pin, navigate]);
@@ -127,7 +143,8 @@ export default function BoomPage() {
       }));
       setBoomTriggeredAt(new Date().toISOString());
       setPhase('boom');
-    } catch {
+    } catch (err) {
+      console.error('Boom failed:', err);
       message.error('Không thể kích hoạt Boom.');
     }
   };
@@ -146,12 +163,12 @@ export default function BoomPage() {
 
   if (!boomData) {
     return (
-      <div className={styles.page}>
-        <div className={styles.centerContent}>
-          <div className={styles.loadingDots}><span /><span /><span /></div>
-          <p>Đang tải...</p>
+      <Layout>
+        <div className="flex-grow flex flex-col items-center justify-center gap-4 pt-24">
+          <FontAwesomeIcon icon={faCircleNotch} className="text-primary text-4xl animate-spin" />
+          <p className="font-bold text-on-surface-variant uppercase tracking-widest text-xs">Đang tải...</p>
         </div>
-      </div>
+      </Layout>
     );
   }
 
@@ -159,150 +176,185 @@ export default function BoomPage() {
 
   const mins = Math.floor(remaining / 60);
   const secs = remaining % 60;
-  const timeDisplay = mins > 0 ? `${mins}:${String(secs).padStart(2, '0')}` : `${secs}s`;
+  const timeDisplay = `${mins}:${String(secs).padStart(2, '0')}`;
   const isUrgent = remaining <= 15;
 
   return (
-    <div className={styles.page}>
-      {/* Phase: idle (host chưa kích hoạt) */}
-      <AnimatePresence>
-        {phase === 'idle' && (
-          <motion.div
-            className={styles.centerContent}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className={styles.boomTitle}
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-            >
-              💥 Boom!
-            </motion.div>
-            <p className={styles.boomSubtitle}>Sẵn sàng thu hẹp còn 3 quán ngon nhất?</p>
-            {isHost ? (
-              <button className={styles.boomBtn} onClick={handleBoom}>
-                Kích hoạt Boom 🔥
-              </button>
-            ) : (
-              <p className={styles.waitText}>Đang chờ host kích hoạt...</p>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
+    <Layout>
+      <div className="pt-24 flex-grow flex flex-col items-center justify-center px-6 pb-32 max-w-4xl mx-auto w-full overflow-hidden relative">
 
-      {/* Phase: boom animation (5 restaurants) */}
-      <AnimatePresence>
-        {phase === 'boom' && (
-          <motion.div
-            className={styles.centerContent}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            <motion.div
-              className={styles.boomTitle}
-              initial={{ scale: 0.5, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-            >
-              💥 BOOM!
-            </motion.div>
-            <p className={styles.boomSubtitle}>Loại bỏ 2 quán...</p>
+        {/* Background Effects */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] -z-10 pointer-events-none" />
 
-            <div className={styles.boomGrid}>
-              {allRestaurants.map((rest, i) => {
-                const isEliminated = boomData.eliminated.some(e => e.id === rest.id);
-                return (
-                  <motion.div
-                    key={rest.id}
-                    className={`${styles.boomCard} ${isEliminated ? styles.eliminated : styles.remaining}`}
-                    initial={{ scale: 1, opacity: 1 }}
-                    animate={isEliminated
-                      ? { x: i < 2 ? -200 : 200, y: -100, opacity: 0, scale: 0.5, rotate: i % 2 === 0 ? -15 : 15 }
-                      : { scale: 1.05 }
-                    }
-                    transition={{ duration: 0.8, delay: 0.3 + i * 0.1, ease: 'easeInBack' }}
+        <AnimatePresence mode="wait">
+          {phase === 'loading' && (
+            <motion.div
+              key="loading"
+              className="flex flex-col items-center gap-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <FontAwesomeIcon icon={faCircleNotch} className="text-primary text-4xl animate-spin" />
+              <p className="font-bold text-on-surface-variant uppercase tracking-widest text-xs">Đang chuẩn bị...</p>
+            </motion.div>
+          )}
+
+          {phase === 'idle' && (
+            <motion.div
+              key="idle"
+              className="w-full text-center space-y-8"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.1 }}
+            >
+              <div className="inline-flex items-center gap-3 px-6 py-3 bg-error/10 text-error rounded-full font-black text-sm uppercase tracking-widest border border-error/20">
+                <FontAwesomeIcon icon={faBomb} />
+                Sẵn sàng chưa?
+              </div>
+              <h1 className="text-5xl sm:text-7xl font-headline font-black text-on-surface tracking-tighter leading-tight italic">
+                BOOM! 🔥
+              </h1>
+              <p className="text-xl text-on-surface-variant font-medium max-w-md mx-auto">
+                Chúng ta sẽ loại bỏ những quán ít được ưa chuộng nhất để tìm ra top 3.
+              </p>
+
+              <div className="pt-8">
+                {isHost ? (
+                  <button
+                    disabled={pickingDone}
+                    className="group relative px-10 py-5 bg-error text-white rounded-full font-headline font-black text-lg shadow-2xl shadow-error/40 hover:bg-red-700 transition-all active:scale-95 disabled:opacity-50"
+                    onClick={handleBoom}
                   >
-                    <div className={styles.boomRank}>#{rest.rank}</div>
-                    <div className={styles.boomName}>{rest.name}</div>
-                    {isEliminated && <div className={styles.eliminatedLabel}>Loại!</div>}
-                  </motion.div>
-                );
-              })}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                    KÍCH HOẠT BOOM
+                  </button>
+                ) : (
+                  <div className="flex flex-col items-center gap-3">
+                    <FontAwesomeIcon icon={faCircleNotch} className="text-outline-variant text-2xl animate-spin" />
+                    <p className="text-on-surface-variant/40 font-bold uppercase tracking-widest text-xs">Đang chờ host khai hỏa...</p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
 
-      {/* Phase: picking (3 quán còn lại + countdown) */}
-      <AnimatePresence>
-        {phase === 'picking' && (
-          <motion.div
-            className={styles.centerContent}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.4 }}
-          >
+          {phase === 'boom' && (
             <motion.div
-              className={styles.boomTitle}
-              initial={{ opacity: 0, y: -20 }}
+              key="boom"
+              className="w-full text-center space-y-12"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              <motion.h2
+                className="text-6xl font-headline font-black text-error italic uppercase tracking-tighter"
+                initial={{ scale: 0.5 }}
+                animate={{ scale: [0.5, 1.2, 1] }}
+                transition={{ duration: 0.5 }}
+              >
+                BOOM!
+              </motion.h2>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 w-full max-w-3xl mx-auto">
+                {allRestaurants.map((rest, i) => {
+                  const isEliminated = boomData.eliminated?.some(e => e.id === rest.id);
+                  return (
+                    <motion.div
+                      key={rest.id}
+                      className={`p-6 rounded-3xl border-2 transition-all ${isEliminated
+                          ? 'bg-outline/5 border-outline/20 text-on-surface-variant/20'
+                          : 'bg-white border-primary shadow-xl shadow-primary/10 text-on-surface scale-105 z-10'
+                        }`}
+                      initial={{ opacity: 0, y: 50 }}
+                      animate={isEliminated
+                        ? { x: i % 2 === 0 ? -300 : 300, y: -200, rotate: i % 2 === 0 ? -20 : 20, opacity: 0, scale: 0.5 }
+                        : { opacity: 1, y: 0, scale: 1.05 }
+                      }
+                      transition={{ duration: 0.8, delay: 0.5 + i * 0.1, ease: [0.34, 1.56, 0.64, 1] }}
+                    >
+                      <div className="text-sm font-black uppercase tracking-widest mb-2 opacity-50">Hạng {rest.rank}</div>
+                      <div className="text-lg font-headline font-extrabold truncate">{rest.name}</div>
+                      {isEliminated && (
+                        <div className="mt-4 px-3 py-1 bg-error/10 text-error rounded-lg text-[10px] font-black uppercase tracking-widest w-fit mx-auto">
+                          Đã loại
+                        </div>
+                      )}
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </motion.div>
+          )}
+
+          {phase === 'picking' && (
+            <motion.div
+              key="picking"
+              className="w-full space-y-10"
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              3 quán còn lại
-            </motion.div>
-            <p className={styles.boomSubtitle}>Chọn quán chốt!</p>
+              <div className="text-center space-y-4">
+                <h2 className="text-4xl font-headline font-black text-on-surface tracking-tight leading-none italic uppercase">
+                  Chốt quán thôi nào! 🏁
+                </h2>
 
-            {/* Countdown */}
-            <div className={`${styles.pickCountdown} ${isUrgent ? styles.pickCountdownUrgent : ''}`}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M12 6v6l4 2"/>
-              </svg>
-              <span>
-                {remaining > 0
-                  ? `Tự động chọn top 1 sau ${timeDisplay}`
-                  : 'Đang chốt quán...'}
-              </span>
-            </div>
+                {/* Countdown */}
+                <div className={`inline-flex items-center gap-2.5 px-5 py-3 rounded-full bg-white border border-outline/30 shadow-sm mx-auto ${isUrgent ? 'border-error ring-4 ring-error/5' : ''}`}>
+                  <FontAwesomeIcon icon={faClock} className={`text-lg ${isUrgent ? 'text-error animate-pulse' : 'text-primary'}`} />
+                  <span className={`text-sm font-black uppercase tracking-widest ${isUrgent ? 'text-error' : 'text-on-surface'}`}>
+                    {remaining > 0 ? `Tự động chốt sau ${timeDisplay}` : 'Đang chốt...'}
+                  </span>
+                </div>
+              </div>
 
-            <div className={styles.pickGrid}>
-              {(boomData.remaining || []).map((rest, i) => (
-                <motion.button
-                  key={rest.id}
-                  className={`${styles.pickCard} ${!isHost ? styles.pickCardDisabled : ''}`}
-                  onClick={() => handlePick(rest.id)}
-                  disabled={!isHost || pickingDone}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: i * 0.15, type: 'spring', stiffness: 200, damping: 20 }}
-                  whileTap={isHost && !pickingDone ? { scale: 0.96 } : {}}
-                >
-                  <div className={styles.pickRank}>{i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉'}</div>
-                  <div className={styles.pickInfo}>
-                    <div className={styles.pickName}>{rest.name}</div>
-                    {rest.address && <div className={styles.pickAddress}>{rest.address}</div>}
-                    {rest.priceDisplay && <div className={styles.pickPrice}>{rest.priceDisplay}</div>}
-                  </div>
-                  {!isHost && (
-                    <div className={styles.pickLock}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                      </svg>
+              <div className="grid grid-cols-1 gap-4 max-w-xl mx-auto">
+                {(boomData.remaining || []).map((rest, i) => (
+                  <motion.button
+                    key={rest.id}
+                    className={`group relative flex items-center gap-6 p-6 bg-white border-2 rounded-[2rem] text-left transition-all ${isHost && !pickingDone
+                        ? 'border-outline/10 hover:border-primary hover:shadow-2xl hover:shadow-primary/20 active:scale-[0.98]'
+                        : 'border-outline/10 opacity-70 cursor-default'
+                      }`}
+                    onClick={() => handlePick(rest.id)}
+                    disabled={!isHost || pickingDone}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.1 }}
+                  >
+                    <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shadow-lg transition-transform group-hover:scale-110 ${i === 0 ? 'bg-amber-100 text-amber-600' :
+                        i === 1 ? 'bg-slate-100 text-slate-500' : 'bg-orange-100 text-orange-600'
+                      }`}>
+                      <FontAwesomeIcon icon={i === 0 ? faTrophy : i === 1 ? faMedal : faAward} />
                     </div>
-                  )}
-                </motion.button>
-              ))}
-            </div>
 
-            {!isHost && (
-              <p className={styles.hostOnlyNote}>Chỉ Host mới có quyền chốt quán</p>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+                    <div className="flex-grow min-w-0">
+                      <div className="text-sm font-black text-on-surface-variant/40 uppercase tracking-widest mb-1">Top {i + 1}</div>
+                      <div className="text-xl font-headline font-black text-on-surface truncate">{rest.name}</div>
+                      {rest.address && <div className="text-sm text-on-surface-variant font-medium truncate opacity-60">{rest.address}</div>}
+                    </div>
+
+                    {isHost && !pickingDone ? (
+                      <div className="w-12 h-12 rounded-full border-2 border-primary/20 flex items-center justify-center text-primary transition-all group-hover:bg-primary group-hover:text-white">
+                        <FontAwesomeIcon icon={faCheck} />
+                      </div>
+                    ) : (
+                      <div className="text-on-surface-variant/20 italic text-xs font-bold uppercase tracking-widest">
+                        {isHost ? 'Đang gửi...' : <FontAwesomeIcon icon={faLock} />}
+                      </div>
+                    )}
+                  </motion.button>
+                ))}
+              </div>
+
+              {!isHost && (
+                <div className="flex flex-col items-center gap-4 py-8">
+                  <FontAwesomeIcon icon={faCircleNotch} className="text-outline-variant text-3xl animate-spin" />
+                  <p className="text-on-surface-variant/50 font-bold uppercase tracking-widest text-[10px]">Đang chờ host chốt quán cuối cùng...</p>
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </Layout>
   );
 }

@@ -1,6 +1,8 @@
 import { useCallback, useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { message } from 'antd';
+import Layout from '@/components/layout/Layout';
+// eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
 import { api } from '@/api';
 import { useSession } from '@/hooks/useSession';
@@ -8,7 +10,8 @@ import { useReconnect } from '@/hooks/useReconnect';
 import { useSessionStore } from '@/store/sessionStore';
 import { useVotingStore } from '@/store/votingStore';
 import { VOTING_AUTO_CLOSE_SECONDS } from '@/utils/constants';
-import styles from './VotingWaitPage.module.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCheck, faClock, faCircleNotch, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 
 export default function VotingWaitPage() {
   const { pin } = useParams();
@@ -41,7 +44,9 @@ export default function VotingWaitPage() {
   useEffect(() => {
     if (remainingSeconds > 0 || !isHost || autoCloseFired.current || votedCount < 1) return;
     autoCloseFired.current = true;
-    setClosing(true);
+    
+    // Using setTimeout to avoid synchronous setState inside effect warning
+    setTimeout(() => setClosing(true), 0);
 
     api.sessions.closeVoting(pin).then((res) => {
       const data = res.data;
@@ -77,7 +82,9 @@ export default function VotingWaitPage() {
       } else if (data.status === 'waiting') {
         navigate(`/waiting/${pin}`);
       }
-    } catch {}
+      } catch (err) {
+        console.error('Error fetching status:', err);
+      }
   }, [pin, navigate, participants.length]);
 
   useSession({ pin, onStatus: fetchStatus, enabled: true });
@@ -93,22 +100,25 @@ export default function VotingWaitPage() {
   // Redirect if haven't voted yet
   if (!submitted) {
     return (
-      <div className={styles.page}>
-        <div className={styles.content}>
-          <div className={styles.iconWrap}>
-            <div className={styles.iconCircle} style={{ background: 'var(--color-text-muted)' }}>
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                <path d="M19 12H5M12 5l-7 7 7 7"/>
-              </svg>
+      <Layout>
+        <div className="flex-grow flex items-center justify-center px-6 pb-32">
+          <div className="bg-white border-2 border-dashed border-outline/50 rounded-3xl p-10 max-w-md w-full text-center flex flex-col items-center gap-6 shadow-sm">
+            <div className="w-20 h-20 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant/40">
+              <FontAwesomeIcon icon={faArrowLeft} className="text-3xl" />
             </div>
+            <div>
+              <h2 className="text-2xl font-headline font-black text-on-surface mb-2">Chưa bình chọn</h2>
+              <p className="text-on-surface-variant font-medium">Bạn chưa hoàn thành phiếu bình chọn.</p>
+            </div>
+            <button 
+              className="w-full py-4 bg-primary text-white rounded-full font-bold shadow-lg shadow-primary/30 hover:bg-primary-dark transition-all active:scale-95" 
+              onClick={() => navigate(`/vote/${pin}`)}
+            >
+              Quay lại bình chọn
+            </button>
           </div>
-          <h2 className={styles.title}>Chưa bình chọn</h2>
-          <p className={styles.subtitle}>Bạn chưa hoàn thành phiếu bình chọn.</p>
-          <button className={styles.startBtn} onClick={() => navigate(`/vote/${pin}`)}>
-            Quay lại bình chọn
-          </button>
         </div>
-      </div>
+      </Layout>
     );
   }
 
@@ -121,123 +131,138 @@ export default function VotingWaitPage() {
   const timeDisplay = mins > 0 ? `${mins}:${String(secs).padStart(2, '0')}` : `${secs}s`;
 
   return (
-    <div className={styles.page}>
-      <div className={styles.content}>
-        {/* Animated checkmark */}
-        <div className={styles.iconWrap}>
-          <motion.div
-            className={styles.iconCircle}
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-          >
-            <motion.svg
-              width="48" height="48" viewBox="0 0 48 48"
-              fill="none"
-              initial={{ pathLength: 0, opacity: 0 }}
-              animate={{ pathLength: 1, opacity: 1 }}
-              transition={{ delay: 0.3, duration: 0.5 }}
-            >
-              <motion.path
-                d="M12 24l9 9 15-18"
-                stroke="white"
-                strokeWidth="4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </motion.svg>
-          </motion.div>
-        </div>
+    <Layout>
+      <div className="flex-grow flex flex-col items-center justify-center px-6 pt-24 pb-32 max-w-2xl mx-auto w-full relative">
+        
+        {/* Decorative blobs */}
+        <div className="absolute top-40 right-0 w-80 h-80 bg-primary/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
+        <div className="absolute bottom-40 left-0 w-80 h-80 bg-secondary/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
 
-        <motion.div
-          className={styles.title}
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-        >
-          Đã gửi phiếu!
-        </motion.div>
-
-        <motion.p
-          className={styles.subtitle}
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-        >
-          {notVoted > 0
-            ? `Đang chờ ${notVoted} người khác bình chọn...`
-            : 'Tất cả đã bình chọn! Đang tổng hợp kết quả...'}
-        </motion.p>
-
-        {/* Voted progress */}
-        <motion.div
-          className={styles.votedBar}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-        >
-          <div className={styles.votedCount}>
-            <span className={styles.votedNum}>{voted}</span>
-            <span className={styles.votedTotal}>/ {total} đã vote</span>
-          </div>
-          <div className={styles.progressTrack}>
+        <div className="w-full text-center space-y-8">
+          {/* Animated checkmark */}
+          <div className="flex justify-center">
             <motion.div
-              className={styles.progressFill}
-              initial={{ width: 0 }}
-              animate={{ width: `${progressPct}%` }}
-              transition={{ duration: 0.5, delay: 0.6 }}
-            />
+              className="w-24 h-24 rounded-full bg-accent-green/10 flex items-center justify-center shadow-lg shadow-accent-green/5"
+              initial={{ scale: 0, rotate: -45 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+            >
+              <FontAwesomeIcon icon={faCheck} className="text-accent-green text-4xl" />
+            </motion.div>
           </div>
-        </motion.div>
 
-        {/* Countdown + Host action */}
-        {isHost && (
+          <div className="space-y-3">
+            <motion.h1
+              className="text-3xl sm:text-4xl font-headline font-black text-on-surface tracking-tight"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              Đã gửi phiếu!
+            </motion.h1>
+
+            <motion.p
+              className="text-lg text-on-surface-variant font-medium"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              {notVoted > 0
+                ? `Đang chờ ${notVoted} người khác bình chọn...`
+                : 'Tất cả đã bình chọn! Đang tổng hợp kết quả...'}
+            </motion.p>
+          </div>
+
+          {/* Voted progress */}
           <motion.div
-            className={styles.hostActions}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.7 }}
+            className="bg-white border border-outline/30 rounded-3xl p-8 shadow-sm space-y-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
           >
-            {/* Countdown */}
-            <div className={styles.countdownWrap}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={styles.countdownIcon}>
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M12 6v6l4 2"/>
-              </svg>
-              <span className={`${styles.countdown} ${remainingSeconds <= 15 ? styles.countdownUrgent : ''}`}>
-                {remainingSeconds > 0 ? `Tự động chốt sau ${timeDisplay}` : 'Đang chốt kết quả...'}
-              </span>
+            <div className="flex items-center justify-between px-2">
+              <div className="flex flex-col items-start">
+                <span className="text-[10px] font-black uppercase text-on-surface-variant/50 tracking-widest mb-1">Tiến độ</span>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-3xl font-headline font-black text-primary">{voted}</span>
+                  <span className="text-on-surface-variant font-bold">/ {total}</span>
+                </div>
+              </div>
+              <div className="w-12 h-12 rounded-full bg-primary/5 flex items-center justify-center">
+                 <FontAwesomeIcon icon={faCircleNotch} className={`text-primary text-xl ${notVoted > 0 ? 'animate-spin' : ''}`} />
+              </div>
             </div>
 
-            {/* Nút chốt kết quả cho Host */}
-            <button
-              className={styles.hostBtn}
-              onClick={async () => {
-                if (votedCount < 1) {
-                  message.warning('Cần ít nhất 1 người đã bỏ phiếu để chốt kết quả.');
-                  return;
-                }
-                setClosing(true);
-                try {
-                  await api.sessions.closeVoting(pin);
-                  message.success('Đã chốt kết quả!');
-                  navigate(`/results/${pin}`);
-                } catch {
-                  message.error('Thao tác thất bại.');
-                  setClosing(false);
-                }
-              }}
-              disabled={closing || votedCount < 1}
-            >
-              {closing ? 'Đang chốt...' : 'Chốt kết quả ngay'}
-            </button>
-
-            {votedCount < 1 && (
-              <p className={styles.waitingHint}>Chờ ít nhất 1 người bỏ phiếu để có thể chốt</p>
-            )}
+            <div className="relative h-4 bg-surface-container rounded-full overflow-hidden border border-outline/5 shadow-inner">
+              <motion.div
+                className="absolute top-0 left-0 h-full bg-gradient-to-r from-primary to-secondary rounded-full"
+                initial={{ width: 0 }}
+                animate={{ width: `${progressPct}%` }}
+                transition={{ duration: 1, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              />
+            </div>
           </motion.div>
-        )}
+
+          {/* Countdown + Host action */}
+          {isHost && (
+            <motion.div
+              className="space-y-6 pt-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
+            >
+              {/* Countdown badge */}
+              <div className="inline-flex items-center gap-2.5 px-5 py-3 rounded-full bg-white border border-outline/30 shadow-sm">
+                <FontAwesomeIcon icon={faClock} className={`text-lg ${remainingSeconds <= 15 ? 'text-error animate-pulse' : 'text-primary'}`} />
+                <span className={`text-sm font-black uppercase tracking-widest ${remainingSeconds <= 15 ? 'text-error' : 'text-on-surface'}`}>
+                  {remainingSeconds > 0 ? `Tự động chốt sau ${timeDisplay}` : 'Chốt ngay thôi!'}
+                </span>
+              </div>
+
+              {/* Nút chốt kết quả cho Host */}
+              <button
+                className={`w-full py-5 rounded-full font-headline font-extrabold text-base flex items-center justify-center gap-3 transition-all shadow-2xl ${
+                  closing || votedCount < 1
+                    ? 'bg-outline/40 text-white/50 cursor-not-allowed'
+                    : 'bg-primary text-white hover:bg-primary-dark active:scale-[0.99] shadow-primary/30'
+                }`}
+                onClick={async () => {
+                  if (votedCount < 1) {
+                    message.warning('Cần ít nhất 1 người đã bỏ phiếu để chốt kết quả.');
+                    return;
+                  }
+                  setClosing(true);
+                  try {
+                    await api.sessions.closeVoting(pin);
+                    message.success('Đã chốt kết quả!');
+                    navigate(`/results/${pin}`);
+                  } catch {
+                    message.error('Thao tác thất bại.');
+                    setClosing(false);
+                  }
+                }}
+                disabled={closing || votedCount < 1}
+              >
+                {closing ? (
+                  <>
+                    <FontAwesomeIcon icon={faCircleNotch} className="animate-spin text-xl" />
+                    ĐANG CHỐT...
+                  </>
+                ) : (
+                  <>
+                    <span>CHỐT KẾT QUẢ NGAY</span>
+                    <FontAwesomeIcon icon={faArrowLeft} className="rotate-180" />
+                  </>
+                )}
+              </button>
+
+              {votedCount < 1 && (
+                <p className="text-xs font-bold text-on-surface-variant/40 uppercase tracking-widest">Chờ ít nhất 1 người bỏ phiếu để có thể chốt</p>
+              )}
+            </motion.div>
+          )}
+        </div>
       </div>
-    </div>
+    </Layout>
   );
 }

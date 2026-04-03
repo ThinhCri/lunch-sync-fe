@@ -1,14 +1,17 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuthStore } from '@/store/authStore';
 import { api } from '@/api';
 import Layout from '@/components/layout/Layout';
 import registerTestimonial from '@/assets/images/register-testimonial.jpg';
 import loginAvatar3 from '@/assets/images/login-avatar-3.jpg';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { 
+  faStopwatch, faExclamationCircle, faUser, 
+  faEnvelope, faLock, faUserCheck, faSpinner, faArrowRight 
+} from '@fortawesome/free-solid-svg-icons';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
-  const { login } = useAuthStore();
 
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -44,7 +47,7 @@ export default function RegisterPage() {
       if (!/[0-9]/.test(password)) {
         passwordErrors.push('ít nhất 1 chữ số');
       }
-      if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+      if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)) {
         passwordErrors.push('ít nhất 1 ký tự đặc biệt');
       }
       if (passwordErrors.length > 0) {
@@ -95,7 +98,7 @@ export default function RegisterPage() {
         {/* ── Left: Value Proposition ── */}
         <div className="space-y-8">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#ffc247] text-[#715000] rounded-full text-sm font-semibold">
-            <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>timer</span>
+            <FontAwesomeIcon icon={faStopwatch} className="text-sm" />
             <span>Quyết định bữa trưa chỉ trong 3 phút</span>
           </div>
 
@@ -146,7 +149,7 @@ export default function RegisterPage() {
 
             {generalError && (
               <div className="mb-6 px-4 py-3 bg-[#ffdad6] text-[#93000a] rounded-lg flex items-center gap-2 text-sm font-medium">
-                <span className="material-symbols-outlined text-sm">error</span>
+                <FontAwesomeIcon icon={faExclamationCircle} className="text-sm" />
                 {generalError}
               </div>
             )}
@@ -158,7 +161,7 @@ export default function RegisterPage() {
                   Họ và tên
                 </label>
                 <div className="relative">
-                  <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#897269]">person</span>
+                  <FontAwesomeIcon icon={faUser} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#897269]" />
                   <input
                     id="fullName"
                     type="text"
@@ -179,7 +182,7 @@ export default function RegisterPage() {
                   Email công ty
                 </label>
                 <div className="relative">
-                  <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#897269]">mail</span>
+                  <FontAwesomeIcon icon={faEnvelope} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#897269]" />
                   <input
                     id="email"
                     type="email"
@@ -201,7 +204,7 @@ export default function RegisterPage() {
                     Mật khẩu
                   </label>
                   <div className="relative">
-                    <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#897269]">lock</span>
+                    <FontAwesomeIcon icon={faLock} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#897269]" />
                     <input
                       id="password"
                       type="password"
@@ -221,7 +224,7 @@ export default function RegisterPage() {
                     Xác nhận mật khẩu
                   </label>
                   <div className="relative">
-                    <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#897269]">verified_user</span>
+                    <FontAwesomeIcon icon={faUserCheck} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#897269]" />
                     <input
                       id="confirmPassword"
                       type="password"
@@ -260,11 +263,11 @@ export default function RegisterPage() {
                 disabled={loading}
               >
                 {loading ? (
-                  <span className="material-symbols-outlined animate-spin">progress_activity</span>
+                  <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
                 ) : (
                   <>
                     Tạo tài khoản
-                    <span className="material-symbols-outlined transition-transform duration-300 group-hover:translate-x-1">arrow_forward</span>
+                    <FontAwesomeIcon icon={faArrowRight} className="transition-transform duration-300 group-hover:translate-x-1" />
                   </>
                 )}
               </button>

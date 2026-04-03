@@ -1,8 +1,7 @@
 import { create } from 'zustand';
-import { storage } from '@/utils/storage';
 
 export const useSessionStore = create(
-  (set, get) => ({
+  (set) => ({
     pin: null,
     sessionId: null,
     participantId: null,
@@ -11,6 +10,7 @@ export const useSessionStore = create(
     collectionId: null,
     collectionName: null,
     priceTier: null,
+    priceDisplay: null,
     participants: [],
     results: null,
     votingStartedAt: null,
@@ -18,14 +18,10 @@ export const useSessionStore = create(
     totalParticipants: 0,
 
     // Thiết lập session (host hoặc participant)
-    setSession: ({ pin, sessionId, participantId, isHost }) => {
-      set({ pin, sessionId, participantId, isHost, status: 'waiting' });
-    },
+    setSession: (data) => set({ ...data, status: 'waiting' }),
 
     // Restore từ localStorage
-    restore: ({ pin, participantId, isHost }) => {
-      set({ pin, participantId, isHost });
-    },
+    restore: () => {},
 
     // Cập nhật trạng thái
     setStatus: (status) => set({ status }),
@@ -53,6 +49,7 @@ export const useSessionStore = create(
         collectionId: null,
         collectionName: null,
         priceTier: null,
+        priceDisplay: null,
         participants: [],
         results: null,
         votingStartedAt: null,

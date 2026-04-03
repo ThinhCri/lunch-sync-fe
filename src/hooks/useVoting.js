@@ -11,15 +11,22 @@ export function useVoting({ choices, onSubmit, autoAdvanceDelay = 300 }) {
   const transitioningRef = useRef(false);
   const currentIndexRef = useRef(0);
   const onSubmitRef = useRef(onSubmit);
-  onSubmitRef.current = onSubmit;
 
-  // Sync from store after mount (avoid setState during render)
   useEffect(() => {
-    const state = useVotingStore.getState();
-    currentIndexRef.current = state.currentIndex;
-    setCurrentIndex(state.currentIndex);
-    setAnswers(state.answers);
-    setSkipped(state.skipped);
+    onSubmitRef.current = onSubmit;
+  }, [onSubmit]);
+
+  // Sync from store after mount
+  useEffect(() => {
+    const sync = () => {
+      const state = useVotingStore.getState();
+      currentIndexRef.current = state.currentIndex;
+      setCurrentIndex(state.currentIndex);
+      setAnswers(state.answers);
+      setSkipped(state.skipped);
+    };
+    
+    sync();
 
     const unsub = useVotingStore.subscribe((s) => {
       setCurrentIndex(s.currentIndex);
@@ -48,8 +55,9 @@ export function useVoting({ choices, onSubmit, autoAdvanceDelay = 300 }) {
 
       if (nextIndex > 7) {
         useVotingStore.getState().submit();
-        const choicesStr = useVotingStore.getState().getChoicesString();
-        onSubmitRef.current?.(choicesStr);
+        useVotingStore.getState().submit();
+        const answersArr = useVotingStore.getState().getAnswers();
+        onSubmitRef.current?.(answersArr);
       } else {
         useVotingStore.getState().nextQuestion();
         currentIndexRef.current = nextIndex;
@@ -76,8 +84,9 @@ export function useVoting({ choices, onSubmit, autoAdvanceDelay = 300 }) {
 
       if (nextIndex > 7) {
         useVotingStore.getState().submit();
-        const choicesStr = useVotingStore.getState().getChoicesString();
-        onSubmitRef.current?.(choicesStr);
+        useVotingStore.getState().submit();
+        const answersArr = useVotingStore.getState().getAnswers();
+        onSubmitRef.current?.(answersArr);
       } else {
         useVotingStore.getState().nextQuestion();
         currentIndexRef.current = nextIndex;
@@ -94,13 +103,8 @@ export function useVoting({ choices, onSubmit, autoAdvanceDelay = 300 }) {
       if (transitioningRef.current) return;
       setTimeLeft((prev) => {
         if (prev <= 1) {
-          // Hết giờ: skip nếu còn quota, không thì auto-chọn A
-          const skipRemaining = useVotingStore.getState().getSkipRemaining();
-          if (skipRemaining > 0) {
-            handleSkip();
-          } else {
-            selectOption('A');
-          }
+          // Hết giờ: Tự động chọn (Auto-select)
+          selectOption('A');
           return TIMER_DURATION;
         }
         return prev - 1;

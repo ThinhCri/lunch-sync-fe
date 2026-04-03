@@ -3,6 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { message } from 'antd';
 import { api } from '@/api';
 import { useSessionStore } from '@/store/sessionStore';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { 
+  faKey, faXmark, faExclamationCircle, faArrowRight, 
+  faDoorOpen, faUser, faSpinner, faRightToBracket 
+} from '@fortawesome/free-solid-svg-icons';
 
 const PIN_LENGTH = 6;
 
@@ -109,7 +114,7 @@ export default function JoinModal({ open, defaultPin = '', onClose }) {
         <div className="flex items-center justify-between px-8 pt-8 pb-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-[#9a410f]/10 flex items-center justify-center">
-              <span className="material-symbols-outlined text-[#9a410f]" style={{ fontVariationSettings: "'FILL' 1" }}>key</span>
+              <FontAwesomeIcon icon={faKey} className="text-[#9a410f]" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-[#1c1c19]">
@@ -124,7 +129,7 @@ export default function JoinModal({ open, defaultPin = '', onClose }) {
             onClick={handleClose}
             className="w-8 h-8 rounded-full bg-[#ebe8e3] flex items-center justify-center text-[#56423a] hover:bg-[#e6e2dd] transition-colors"
           >
-            <span className="material-symbols-outlined text-lg">close</span>
+            <FontAwesomeIcon icon={faXmark} className="text-lg" />
           </button>
         </div>
 
@@ -170,7 +175,7 @@ export default function JoinModal({ open, defaultPin = '', onClose }) {
                 />
                 {error && (
                   <p className="text-xs text-[#ba1a1a] text-center mt-2 flex items-center justify-center gap-1">
-                    <span className="material-symbols-outlined text-xs">error</span>
+                    <FontAwesomeIcon icon={faExclamationCircle} className="text-xs" />
                     {error}
                   </p>
                 )}
@@ -190,7 +195,7 @@ export default function JoinModal({ open, defaultPin = '', onClose }) {
               >
                 Tiếp tục
                 {pin.length === PIN_LENGTH && (
-                  <span className="material-symbols-outlined">arrow_forward</span>
+                  <FontAwesomeIcon icon={faArrowRight} />
                 )}
               </button>
             </div>
@@ -199,7 +204,7 @@ export default function JoinModal({ open, defaultPin = '', onClose }) {
               {/* PIN badge */}
               <div className="flex items-center justify-center gap-3 bg-[#fff5f0] rounded-xl py-3 px-4">
                 <div className="w-8 h-8 rounded-full bg-[#9a410f]/10 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-[#9a410f] text-base" style={{ fontVariationSettings: "'FILL' 1" }}>meeting_room</span>
+                  <FontAwesomeIcon icon={faDoorOpen} className="text-[#9a410f] text-base" />
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-[#897269]">Phòng</span>
@@ -219,7 +224,7 @@ export default function JoinModal({ open, defaultPin = '', onClose }) {
                   Nickname của bạn
                 </label>
                 <div className="relative">
-                  <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#897269]">person</span>
+                  <FontAwesomeIcon icon={faUser} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#897269]" />
                   <input
                     type="text"
                     className="w-full pl-12 pr-4 py-4 bg-[#f7f3ee] rounded-xl border-2 border-transparent focus:border-[#9a410f] focus:bg-white transition-all duration-200 outline-none text-[#1c1c19] placeholder:text-[#c4b8b1]"
@@ -254,12 +259,12 @@ export default function JoinModal({ open, defaultPin = '', onClose }) {
               >
                 {loading ? (
                   <>
-                    <span className="material-symbols-outlined animate-spin">progress_activity</span>
+                    <FontAwesomeIcon icon={faSpinner} spin />
                     Đang tham gia...
                   </>
                 ) : (
                   <>
-                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>login</span>
+                    <FontAwesomeIcon icon={faRightToBracket} />
                     Vào bàn
                   </>
                 )}

@@ -58,10 +58,9 @@ export const useVotingStore = create(
       set({ answers: [], skipped: [], currentIndex: 0, submitted: false, submittedAt: null });
     },
 
-    // Get choices string (8 ký tự 'A'/'B'/'S' cho skip)
-    getChoicesString: () => {
-      const { answers } = get();
-      return answers.map(a => a ?? 'S').join('');
+    // Get answers array (8 elements: 'A', 'B', or null for skipped)
+    getAnswers: () => {
+      return get().answers;
     },
   })
 );

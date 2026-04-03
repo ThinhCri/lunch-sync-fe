@@ -624,7 +624,7 @@ export const mockHandlers = {
     const total = mockSession.participants.length;
     const currentVoted = mockSession.votedCount;
 
-    if (currentVoted >= total) {
+    if (currentVoted >= 1) {
       mockSession.status = 'results';
       mockSession.results = buildResults();
     }
@@ -669,6 +669,7 @@ export const mockHandlers = {
       remaining,
       finalRestaurant,
       status: mockSession.status,
+      boomedAt: mockSession.boomed_at || null,
     });
   },
 
@@ -685,6 +686,7 @@ export const mockHandlers = {
     const elim = restaurants.slice(3, 5).map(r => ({ id: r.id, name: r.name, rank: r.rank }));
     const rem = restaurants.slice(0, 3).map(r => ({ ...r }));
     mockSession.boom_eliminated_ids = elim.map(e => e.id);
+    mockSession.boomed_at = new Date().toISOString();
     return delay({
       eliminated: elim,
       remaining: rem,

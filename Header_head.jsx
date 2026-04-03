@@ -1,8 +1,6 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUserCircle, faChevronDown } from '@fortawesome/free-solid-svg-icons';
 
 export default function Header() {
   const navigate = useNavigate();
@@ -23,7 +21,7 @@ export default function Header() {
             onClick={() => navigate('/suggest')}
             className="px-6 py-2 border-2 border-[#897269] text-[#56423a] rounded-full font-bold hover:bg-[#ebe8e3] transition-all active:scale-95 duration-300"
           >
-            Đề xuất quán mới
+            ─Éß╗ü xuß║Ñt qu├ín mß╗¢i
           </button>
           {isAuthenticated() ? (
             <div className="relative">
@@ -31,9 +29,9 @@ export default function Header() {
                 onClick={() => setShowUserMenu(!showUserMenu)}
                 className="flex items-center gap-2 px-4 py-2 bg-[#f7f3ee] rounded-full hover:bg-[#ebe8e3] transition-all"
               >
-                <FontAwesomeIcon icon={faUserCircle} className="text-[#9a410f] text-xl" />
+                <span className="material-symbols-outlined text-[#9a410f]" style={{ fontVariationSettings: "'FILL' 1" }}>account_circle</span>
                 <span className="font-medium text-[#56423a]">{user?.fullName}</span>
-                <FontAwesomeIcon icon={faChevronDown} className="text-[#56423a] text-sm" />
+                <span className="material-symbols-outlined text-[#56423a] text-sm">expand_more</span>
               </button>
               {showUserMenu && (
                 <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-50">
@@ -44,7 +42,7 @@ export default function Header() {
                     }}
                     className="w-full px-4 py-2 text-left text-[#56423a] hover:bg-[#f7f3ee] transition-all"
                   >
-                    Đăng xuất
+                    ─É─âng xuß║Ñt
                   </button>
                 </div>
               )}
@@ -55,14 +53,14 @@ export default function Header() {
                 onClick={() => navigate('/login')}
                 className="px-6 py-2 text-[#56423a] font-medium hover:bg-[#f7f3ee]/50 transition-all active:scale-95"
               >
-                Đăng nhập
+                ─É─âng nhß║¡p
               </button>
               <button
                 onClick={() => navigate('/register')}
                 className="px-6 py-2 bg-[#9a410f] text-white rounded-full font-bold hover:bg-[#ba5826] transition-all active:scale-95"
                 style={{ boxShadow: '0 20px 40px rgba(28, 28, 25, 0.06)' }}
               >
-                Đăng ký
+                ─É─âng k├╜
               </button>
             </>
           )}

@@ -1,25 +1,17 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { message } from 'antd';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
 import { api } from '@/api';
 import { useSessionStore } from '@/store/sessionStore';
-import { PRICE_TIERS, MIN_PARTICIPANTS, MAX_PARTICIPANTS } from '@/utils/constants';
+import { useAuthStore } from '@/store/authStore';
+import { PRICE_TIERS } from '@/utils/constants';
+import JoinModal from '@/components/modals/JoinModal';
 
-const PRICE_ICONS = {
-  duoi_40k: 'savings',
-  '40_70k': 'ramen_dining',
-  '70_120k': 'lunch_dining',
-  tren_120k: 'celebration',
-};
-
-const PRICE_LABELS = {
-  duoi_40k: 'Tiết kiệm',
-  '40_70k': 'Bình thường',
-  '70_120k': 'Sang xịn',
-  tren_120k: 'Xa xỉ',
-};
+const COLLECTION_STYLES = [
+  { icon: 'restaurant', colorClass: 'text-secondary', bgClass: 'bg-secondary-container/30' },
+  { icon: 'lunch_dining', colorClass: 'text-primary', bgClass: 'bg-primary-container/20' },
+  { icon: 'diamond', colorClass: 'text-tertiary', bgClass: 'bg-tertiary-container/30' },
+];
 
 export default function CreateSessionPage() {
   const navigate = useNavigate();
@@ -29,39 +21,29 @@ export default function CreateSessionPage() {
   const [collections, setCollections] = useState([]);
   const [loadingCollections, setLoadingCollections] = useState(true);
   const [selectedCollection, setSelectedCollection] = useState(null);
-  const [showCollectionSearch, setShowCollectionSearch] = useState(false);
-  const [collectionSearch, setCollectionSearch] = useState('');
-  const debounceRef = useRef(null);
 
   // Form
-  const [nickname, setNickname] = useState('');
+  const { user } = useAuthStore();
+  const [nickname, setNickname] = useState(user?.fullName || '');
   const [selectedTier, setSelectedTier] = useState(null);
   const [creating, setCreating] = useState(false);
-  const [createdSession, setCreatedSession] = useState(null);
+
+  // Join Modal
+  const [showJoinModal, setShowJoinModal] = useState(false);
 
   // Load default collections
   useEffect(() => {
     api.collections.list().then((res) => {
       const data = Array.isArray(res.data) ? res.data : res.data?.collections || [];
-      setCollections(data);
+      const top3 = data.slice(0, 3);
+      setCollections(top3);
+      if (top3.length > 0) setSelectedCollection(top3[0]);
       setLoadingCollections(false);
     });
   }, []);
 
-  const filteredCollections = collectionSearch.trim()
-    ? collections.filter((c) =>
-        c.name.toLowerCase().includes(collectionSearch.toLowerCase()) ||
-        c.description?.toLowerCase().includes(collectionSearch.toLowerCase())
-      )
-    : collections;
-
-  const handleCollectionSelect = (col) => {
-    setSelectedCollection(col);
-    setShowCollectionSearch(false);
-    setCollectionSearch('');
-  };
-
-  const handleCreate = async () => {
+  const handleCreate = async (e) => {
+    e.preventDefault();
     if (!nickname.trim()) {
       message.error('Vui lòng nhập nickname');
       return;
@@ -88,7 +70,6 @@ export default function CreateSessionPage() {
         return;
       }
 
-      setCreatedSession(data);
       setSession({
         pin: data.pin,
         sessionId: data.sessionId,
@@ -99,11 +80,11 @@ export default function CreateSessionPage() {
         priceTier: selectedTier.key,
         priceDisplay: selectedTier.priceDisplay,
       });
-      // Lưu lịch sử
       localStorage.setItem('lunchsync-create-history', JSON.stringify({
         collectionId: selectedCollection?.id,
         priceTier: selectedTier.key,
       }));
+      navigate(`/lobby/${data.pin}`);
     } catch {
       message.error('Tạo phiên thất bại. Vui lòng thử lại.');
     } finally {
@@ -111,314 +92,174 @@ export default function CreateSessionPage() {
     }
   };
 
-  const handleCopyLink = () => {
-    if (!createdSession) return;
-    const link = `${window.location.origin}/join/${createdSession.pin}`;
-    navigator.clipboard.writeText(link).then(() => {
-      message.success('Đã copy link mời bạn bè!');
-    });
-  };
-
-  // ── Done: show PIN + enter lobby ──────────────────────────────────────────────
-  if (createdSession) {
-    return (
-      <div className="min-h-screen bg-surface flex flex-col">
-        <Header />
-        <main className="flex-grow pt-28 flex flex-col items-center justify-center px-6 py-16">
-          {/* Decorative blobs */}
-          <div className="absolute top-40 right-0 w-72 h-72 bg-secondary/5 rounded-full blur-[80px] -z-10 pointer-events-none" />
-          <div className="absolute bottom-20 left-0 w-80 h-80 bg-primary/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
-
-          <div className="w-full max-w-md text-center px-2 sm:px-0">
-            {/* Success icon */}
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-accent-green/10 flex items-center justify-center mx-auto mb-6 sm:mb-8">
-              <span className="material-symbols-outlined text-accent-green text-4xl sm:text-5xl">check_circle</span>
-            </div>
-
-            <h1 className="text-2xl sm:text-3xl font-headline font-extrabold text-on-surface mb-2 tracking-tight">
-              Bữa trưa đã sẵn sàng!
-            </h1>
-            <p className="text-on-surface-variant mb-6 sm:mb-8 text-sm sm:text-base px-2">
-              Chia sẻ mã PIN bên dưới để mời đồng nghiệp tham gia
-            </p>
-
-            {/* PIN display */}
-            <div className="bg-white border border-outline rounded-2xl p-4 sm:p-6 md:p-8 mb-4 sm:mb-6 shadow-sm">
-              <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-3 sm:mb-4">Mã PIN của bạn</p>
-              <div className="flex justify-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-                {createdSession.pin.split('').map((digit, i) => (
-                  <div
-                    key={i}
-                    className="w-9 h-11 sm:w-11 sm:h-14 md:w-12 md:h-14 bg-primary text-white rounded-lg sm:rounded-xl flex items-center justify-center text-xl sm:text-2xl font-black font-headline shadow-lg shadow-primary/25"
-                  >
-                    {digit}
-                  </div>
-                ))}
-              </div>
-
-              {/* Info pills */}
-              <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 mb-4 sm:mb-6 px-1">
-                <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 bg-surface-container rounded-full text-[11px] sm:text-xs font-semibold text-on-surface">
-                  <span className="material-symbols-outlined text-xs sm:text-sm text-primary">location_on</span>
-                  <span className="truncate max-w-[120px]">{createdSession.collectionName || selectedCollection?.name || 'Tự chọn'}</span>
-                </span>
-                <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 bg-surface-container rounded-full text-[11px] sm:text-xs font-semibold text-on-surface">
-                  <span className="material-symbols-outlined text-xs sm:text-sm text-primary">payments</span>
-                  {selectedTier?.priceDisplay}
-                </span>
-                <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 bg-surface-container rounded-full text-[11px] sm:text-xs font-semibold text-on-surface">
-                  <span className="material-symbols-outlined text-xs sm:text-sm text-primary">person</span>
-                  {nickname} · Host
-                </span>
-              </div>
-
-              {/* Copy link */}
-              <button
-                onClick={handleCopyLink}
-                className="w-full py-3 sm:py-3.5 bg-primary text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-primary-dark transition-colors shadow-lg shadow-primary/20"
-              >
-                <span className="material-symbols-outlined text-base sm:text-lg">content_copy</span>
-                Copy link mời bạn bè
-              </button>
-            </div>
-
-            {/* Enter lobby */}
-            <button
-              onClick={() => navigate(`/lobby/${createdSession.pin}`)}
-              className="w-full py-4 sm:py-5 bg-secondary text-white rounded-full font-headline font-extrabold text-sm sm:text-base flex items-center justify-center gap-2 sm:gap-3 hover:bg-secondary/90 active:scale-[0.99] transition-all shadow-2xl shadow-secondary/25 mb-2 sm:mb-3"
-            >
-              <span className="material-symbols-outlined text-lg sm:text-xl">meeting_room</span>
-              VÀO PHÒNG CHỜ NGAY
-            </button>
-
-            <button
-              onClick={() => { setCreatedSession(null); setNickname(''); setSelectedTier(null); setSelectedCollection(null); }}
-              className="w-full py-2.5 sm:py-3 border-2 border-dashed border-outline/60 rounded-xl text-xs sm:text-sm font-semibold text-on-surface-variant hover:border-primary hover:text-primary transition-colors"
-            >
-              + Tạo phiên mới
-            </button>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
-  // ── Form ─────────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-surface flex flex-col">
-      <Header />
-      <main className="flex-grow pt-24 sm:pt-28 container mx-auto px-4 sm:px-6 py-8 sm:py-12 max-w-2xl">
+    <div className="bg-surface font-body text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container min-h-screen">
+      {/* TopAppBar */}
+      <header className="fixed top-0 w-full z-50 bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl shadow-[0_8px_24px_rgba(44,47,48,0.06)]">
+        <div className="flex items-center justify-between px-6 h-16 w-full max-w-lg mx-auto">
+          <button 
+            onClick={() => navigate(-1)}
+            type="button"
+            className="text-orange-700 dark:text-orange-500 scale-95 active:scale-90 transition-transform"
+          >
+            <span className="material-symbols-outlined">arrow_back</span>
+          </button>
+          <h1 className="font-headline font-bold tracking-tight text-xl text-orange-700 dark:text-orange-500">LunchSync</h1>
+          <div className="w-6"></div> {/* Spacer for center alignment */}
+        </div>
+      </header>
 
-        {/* Decorative blobs */}
-        <div className="absolute top-40 right-0 w-72 h-72 bg-secondary/5 rounded-full blur-[80px] -z-10 pointer-events-none" />
-
-        {/* Header */}
-        <div className="mb-10">
-          <span className="inline-block px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full bg-secondary/10 text-secondary font-bold text-[10px] tracking-[0.2em] uppercase border border-secondary/20 mb-3 sm:mb-4">
-            Đặt lịch ăn trưa
-          </span>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-headline font-extrabold text-on-surface tracking-tighter mb-1 sm:mb-2 leading-[1.1]">
-            Tạo bữa <span className="text-primary italic">trưa</span> mới
-          </h1>
-          <p className="text-on-surface-variant">Nhập thông tin cơ bản và chia sẻ mã PIN để mời đồng nghiệp.</p>
+      <main className="pt-24 pb-32 px-6 max-w-lg mx-auto">
+        {/* Hero Editorial Section */}
+        <div className="mb-10 flex justify-between items-start">
+          <div>
+            <span className="text-primary font-bold tracking-widest text-[10px] uppercase block mb-2">Social Dining</span>
+            <h2 className="font-headline font-extrabold text-4xl leading-tight tracking-tight text-on-surface">Tạo nhóm</h2>
+            <p className="text-on-surface-variant mt-2 text-sm">Kết nối đồng nghiệp, khám phá ẩm thực cùng nhau.</p>
+          </div>
+          {/* Join Button (Secondary Action) */}
+          <button 
+            onClick={() => setShowJoinModal(true)}
+            type="button"
+            className="mt-2 bg-primary/10 hover:bg-primary/20 text-primary px-5 py-2.5 rounded-full text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap"
+          >
+            <span className="material-symbols-outlined text-[18px]">login</span>
+            Tham gia
+          </button>
         </div>
 
-        <div className="space-y-8">
-
-          {/* ── Nickname ── */}
-          <div>
-            <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3 ml-1">
-              Nickname của bạn *
-            </label>
+        <form className="space-y-10" onSubmit={handleCreate}>
+          {/* Nickname Section */}
+          <section className="space-y-4">
+            <div className="flex justify-between items-end">
+              <h3 className="font-headline font-bold text-lg text-on-surface">Tên hiển thị</h3>
+              <span className="text-[10px] text-outline font-bold">BẮT BUỘC</span>
+            </div>
             <div className="relative group">
-              <span className="material-symbols-outlined absolute left-5 top-1/2 -translate-y-1/2 text-on-surface-variant/50 group-focus-within:text-primary transition-colors pointer-events-none">
-                badge
-              </span>
-              <input
+              <input 
+                className="w-full h-14 bg-surface-container-lowest rounded-lg px-5 outline-none border-none focus:ring-2 focus:ring-primary/20 transition-all text-on-surface placeholder:text-outline/60 shadow-sm font-medium" 
+                placeholder="Nhập nickname của bạn..." 
                 type="text"
-                className="w-full pl-14 pr-5 py-4 bg-surface-container/50 border border-outline/50 rounded-xl focus:bg-white focus:border-primary transition-all text-on-surface placeholder:text-on-surface-variant/40 outline-none text-base"
-                placeholder="VD: Minh, Lan, Boss..."
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
-                maxLength={20}
-                autoFocus
               />
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 text-primary-container opacity-40 group-focus-within:opacity-100 transition-opacity">
+                <span className="material-symbols-outlined">person</span>
+              </div>
             </div>
-          </div>
+          </section>
 
-          {/* ── Collection ── */}
-          <div>
-            <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3 ml-1">
-              Khu vực ăn trưa
-            </label>
-
-            {/* Selected chip */}
-            {selectedCollection && !showCollectionSearch && (
-              <div className="flex items-center gap-3 p-4 bg-white border border-outline rounded-xl shadow-sm">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                  <span className="material-symbols-outlined text-primary">location_on</span>
-                </div>
-                <div className="flex-grow min-w-0">
-                  <p className="font-bold text-on-surface text-sm truncate">{selectedCollection.name}</p>
-                  <p className="text-xs text-on-surface-variant truncate">{selectedCollection.description}</p>
-                </div>
-                <button
-                  onClick={() => setSelectedCollection(null)}
-                  className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center hover:bg-outline/50 transition-colors shrink-0"
-                >
-                  <span className="material-symbols-outlined text-on-surface-variant text-base">close</span>
-                </button>
-              </div>
-            )}
-
-            {/* Search / pick new */}
-            {showCollectionSearch || !selectedCollection ? (
-              <div className="bg-white border border-outline/50 rounded-xl overflow-hidden shadow-sm">
-                {/* Search input */}
-                <div className="relative group">
-                  <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/50 group-focus-within:text-primary transition-colors pointer-events-none text-lg">
-                    search
-                  </span>
-                  <input
-                    type="text"
-                    className="w-full pl-12 pr-4 py-3 text-sm text-on-surface placeholder:text-on-surface-variant/40 outline-none bg-transparent"
-                    placeholder="Tìm khu vực..."
-                    value={collectionSearch}
-                    onChange={(e) => setCollectionSearch(e.target.value)}
-                    autoFocus
-                  />
-                </div>
-
-                {/* Collection list */}
-                <div className="max-h-48 sm:max-h-60 overflow-y-auto border-t border-outline/30">
-                  {loadingCollections ? (
-                    <div className="p-6 text-center text-sm text-on-surface-variant">
-                      <span className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin inline-block mr-2" />
-                      Đang tải khu vực...
-                    </div>
-                  ) : filteredCollections.length === 0 ? (
-                    <div className="p-6 text-center text-sm text-on-surface-variant">
-                      Không tìm thấy khu vực phù hợp
-                    </div>
-                  ) : (
-                    filteredCollections.map((col) => (
-                      <button
-                        key={col.id}
-                        onClick={() => handleCollectionSelect(col)}
-                        className="w-full px-4 py-3 flex items-center gap-3 hover:bg-surface-container/50 transition-colors text-left border-b border-outline/10 last:border-0"
-                      >
-                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                          <span className="material-symbols-outlined text-primary text-base">location_on</span>
-                        </div>
-                        <div className="flex-grow min-w-0">
-                          <p className="font-semibold text-on-surface text-sm truncate">{col.name}</p>
-                          {col.description && (
-                            <p className="text-xs text-on-surface-variant truncate">{col.description}</p>
-                          )}
-                        </div>
-                        {col.restaurantCount && (
-                          <span className="text-[11px] font-bold text-on-surface-variant shrink-0">{col.restaurantCount} quán</span>
-                        )}
-                      </button>
-                    ))
-                  )}
-                </div>
-
-                {selectedCollection && (
-                  <div className="p-3 border-t border-outline/30 bg-surface-container/30">
-                    <button
-                      onClick={() => { setShowCollectionSearch(false); setCollectionSearch(''); }}
-                      className="w-full text-sm text-on-surface-variant hover:text-primary transition-colors"
-                    >
-                      Đóng
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <button
-                onClick={() => setShowCollectionSearch(true)}
-                className="mt-3 w-full py-3 border-2 border-dashed border-outline/60 rounded-xl text-sm font-semibold text-on-surface-variant hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2"
-              >
-                <span className="material-symbols-outlined text-lg">add</span>
-                Chọn khu vực khác
-              </button>
-            )}
-          </div>
-
-          {/* ── Price Tier ── */}
-          <div>
-            <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-4 ml-1">
-              Mức giá dự kiến / người
-            </label>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {PRICE_TIERS.map((tier) => {
-                const isSelected = selectedTier?.key === tier.key;
+          {/* Lunch Area Section */}
+          <section className="space-y-4">
+            <h3 className="font-headline font-bold text-lg text-on-surface">Khu vực</h3>
+            <div className="grid grid-cols-1 gap-4">
+              {loadingCollections ? (
+                <div className="flex justify-center p-4"><span className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></span></div>
+              ) : collections.map((col, idx) => {
+                const style = COLLECTION_STYLES[idx % COLLECTION_STYLES.length];
+                const isSelected = selectedCollection?.id === col.id;
                 return (
-                  <button
-                    key={tier.key}
-                    onClick={() => setSelectedTier(tier)}
-                    className={`relative flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all ${
-                      isSelected
-                        ? 'border-primary bg-primary text-white shadow-lg shadow-primary/20'
-                        : 'border-outline/40 bg-white text-on-surface hover:border-primary/50 hover:shadow-sm'
-                    }`}
-                  >
-                    <span className="material-symbols-outlined text-3xl">
-                      {isSelected ? PRICE_ICONS[tier.key] : PRICE_ICONS[tier.key]}
-                    </span>
-                    <div className="text-center">
-                      <p className={`font-bold text-xs ${isSelected ? '' : 'text-on-surface'}`}>
-                        {PRICE_LABELS[tier.key]}
-                      </p>
-                      <p className={`text-[10px] mt-0.5 ${isSelected ? 'text-white/70' : 'text-on-surface-variant'}`}>
-                        {tier.priceDisplay}
-                      </p>
-                    </div>
-                    {isSelected && (
-                      <div className="absolute -top-2 -right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center shadow">
-                        <span className="material-symbols-outlined text-white text-base">check</span>
+                  <label key={col.id} className="relative block cursor-pointer group">
+                    <input 
+                      checked={isSelected} 
+                      onChange={() => setSelectedCollection(col)}
+                      className="peer sr-only" 
+                      name="area" 
+                      type="radio"
+                    />
+                    <div className={`rounded-lg p-5 transition-all duration-300 shadow-sm overflow-hidden border border-transparent ${isSelected ? 'bg-surface-container-lowest ring-2 ring-primary' : 'bg-surface-container-low group-hover:bg-surface-container-high'}`}>
+                      <div className="flex items-center justify-between relative z-10">
+                        <div className="space-y-1">
+                          <h4 className="font-headline font-bold text-on-surface">{col.name}</h4>
+                          <p className="text-xs text-on-surface-variant truncate max-w-[220px]">{col.description}</p>
+                          <div className={`flex items-center gap-2 mt-2 w-fit px-3 py-1 rounded-full ${style.bgClass}`}>
+                            <span className={`material-symbols-outlined text-[14px] ${style.colorClass}`}>{style.icon}</span>
+                            <span className={`text-[10px] font-bold ${style.colorClass}`}>
+                              {col.restaurantCount ? `${col.restaurantCount} quán` : 'Nhiều lựa chọn'}
+                            </span>
+                          </div>
+                        </div>
+                        <span className={`material-symbols-outlined text-primary transition-opacity ${isSelected ? 'opacity-100' : 'opacity-0'}`}>check_circle</span>
                       </div>
-                    )}
-                  </button>
+                    </div>
+                  </label>
                 );
               })}
             </div>
-          </div>
+          </section>
 
-          {/* ── Submit ── */}
-          <div className="pt-2">
-            <button
-              onClick={handleCreate}
-              disabled={creating || !nickname.trim() || !selectedTier || !selectedCollection}
-              className={`w-full py-5 rounded-full font-headline font-extrabold text-base flex items-center justify-center gap-3 transition-all shadow-2xl ${
-                creating || !nickname.trim() || !selectedTier || !selectedCollection
-                  ? 'bg-outline/40 text-white/50 cursor-not-allowed'
-                  : 'bg-primary text-white hover:bg-primary-dark active:scale-[0.99] shadow-primary/30'
-              }`}
+          {/* Price Range Section */}
+          <section className="space-y-4">
+            <h3 className="font-headline font-bold text-lg text-on-surface">Mức giá</h3>
+            <div className="flex flex-wrap gap-3">
+              {PRICE_TIERS.map((tier) => {
+                const isSelected = selectedTier?.key === tier.key;
+                return (
+                  <label key={tier.key} className="cursor-pointer group">
+                    <input 
+                      checked={isSelected} 
+                      onChange={() => setSelectedTier(tier)}
+                      className="peer sr-only" 
+                      name="price" 
+                      type="radio"
+                    />
+                    <span className={`px-6 py-2.5 rounded-full border text-sm font-medium transition-all block ${
+                      isSelected 
+                      ? 'bg-primary text-on-primary border-primary shadow-md' 
+                      : 'border-outline-variant text-on-surface-variant'
+                    }`}>
+                      {tier.key === 'duoi_40k' ? 'Dưới 40k' : tier.key === '40_70k' ? '40k - 70k' : tier.key === '70_120k' ? '70k - 120k' : 'Trên 120k'}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* Action Button */}
+          <div className="flex justify-center pt-8 pb-8">
+            <button 
+              type="submit"
+              disabled={creating || loadingCollections}
+              className={`w-full max-w-xs py-4 rounded-full text-on-primary font-headline font-bold text-lg shadow-xl shadow-primary/20 scale-100 active:scale-95 transition-all duration-200 flex items-center justify-center gap-3 ${creating ? 'bg-primary/50' : 'bg-gradient-to-br from-primary to-primary-container'}`}
             >
-              {creating ? (
-                <>
-                  <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Đang tạo phiên...
-                </>
-              ) : (
-                <>
-                  <span className="material-symbols-outlined text-xl">add_circle</span>
-                  TẠO BỮA TRƯA
-                </>
-              )}
+              {creating ? 'Đang tạo...' : 'Tạo nhóm'}
+              {!creating && <span className="material-symbols-outlined">group_add</span>}
             </button>
-
-            {/* Info note */}
-            <p className="text-center mt-3 sm:mt-4 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-on-surface-variant/50 px-2">
-              Tối thiểu {MIN_PARTICIPANTS} người • Tối đa {MAX_PARTICIPANTS} người để bắt đầu bình chọn
-            </p>
           </div>
-        </div>
+        </form>
       </main>
-      <Footer />
+
+      {/* BottomNavBar */}
+      <nav className="fixed bottom-0 left-0 w-full z-50 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-2xl rounded-t-[2rem] shadow-[0_-8px_24px_rgba(44,47,48,0.06)]">
+        <div className="max-w-lg mx-auto flex justify-around items-center px-4 pt-2 pb-6">
+          <button 
+            onClick={() => navigate('/')}
+            type="button"
+            className="flex flex-col items-center justify-center text-zinc-500 dark:text-zinc-400 px-8 py-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full scale-100 active:scale-95 transition-all duration-200">
+            <span className="material-symbols-outlined">explore</span>
+            <span className="font-label text-[11px] font-medium">Explore</span>
+          </button>
+          <button 
+            type="button"
+            className="flex flex-col items-center justify-center bg-orange-100 dark:bg-orange-950/30 text-orange-700 dark:text-orange-400 rounded-full px-8 py-1 scale-100 active:scale-95 transition-all duration-200">
+            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>groups</span>
+            <span className="font-label text-[11px] font-medium">LunchSync</span>
+          </button>
+          <button 
+            onClick={() => navigate('/profile')}
+            type="button"
+            className="flex flex-col items-center justify-center text-zinc-500 dark:text-zinc-400 px-8 py-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full scale-100 active:scale-95 transition-all duration-200">
+            <span className="material-symbols-outlined">person</span>
+            <span className="font-label text-[11px] font-medium">Profile</span>
+          </button>
+        </div>
+      </nav>
+
+      <JoinModal
+        open={showJoinModal}
+        onClose={() => setShowJoinModal(false)}
+      />
     </div>
   );
 }

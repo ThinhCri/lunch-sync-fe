@@ -6,7 +6,7 @@ import { useSessionStore } from '@/store/sessionStore';
 export default function JoinPage() {
   const navigate = useNavigate();
   const { pin } = useParams();
-  const { savedPin, savedParticipantId } = useSessionStore();
+  const { pin: savedPin, participantId: savedParticipantId } = useSessionStore();
 
   // Restore: nếu đã có participantId với cùng PIN → auto-redirect waiting
   useEffect(() => {

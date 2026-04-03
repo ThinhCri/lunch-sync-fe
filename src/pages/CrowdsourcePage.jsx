@@ -1,101 +1,30 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { message } from 'antd';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
 import { api } from '@/api';
 
 const TIER_OPTIONS = [
   { key: 'duoi_40k', label: 'Dưới 40k' },
-  { key: '40_70k', label: '40–70k' },
-  { key: '70_120k', label: '70–120k' },
+  { key: '40_70k', label: '40k - 70k' },
+  { key: '70_120k', label: '70k - 120k' },
   { key: 'tren_120k', label: 'Trên 120k' },
 ];
 
 export default function CrowdsourcePage() {
   const navigate = useNavigate();
-  const formRef = useRef(null);
-
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
-  const [searching, setSearching] = useState(false);
-  const [upvotingId, setUpvotingId] = useState(null);
-  const [upvotedIds, setUpvotedIds] = useState({});
-  const [done, setDone] = useState(false);
+  const fileInputRef = useRef(null);
 
   const [form, setForm] = useState({
     restaurantName: '',
     address: '',
     googleMapsUrl: '',
-    priceTier: TIER_OPTIONS[0].key,
+    priceTier: TIER_OPTIONS[1].key,
     notes: '',
+    photos: [],
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  const [showResults, setShowResults] = useState(false);
 
-  const debounceRef = useRef(null);
-
-  // ── Search ───────────────────────────────────────────────────────────────────
-  const handleSearch = useCallback(async (q) => {
-    if (!q || q.trim().length < 2) {
-      setSearchResults([]);
-      setShowResults(false);
-      return;
-    }
-    setSearching(true);
-    setShowResults(false);
-    try {
-      const res = await api.crowdsource.search(q);
-      setSearchResults(res.data || []);
-      setShowResults(true);
-    } catch {
-      setSearchResults([]);
-    } finally {
-      setSearching(false);
-    }
-  }, []);
-
-  const handleSearchChange = (e) => {
-    const val = e.target.value;
-    setSearchQuery(val);
-    clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => handleSearch(val), 400);
-  };
-
-  const handleCheck = () => {
-    if (searchQuery.trim().length >= 2) {
-      handleSearch(searchQuery);
-    }
-  };
-
-  const handleSearchKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleCheck();
-    }
-  };
-
-  const handleUpvote = async (restaurant) => {
-    setUpvotingId(restaurant.id);
-    try {
-      const res = await api.crowdsource.upvote(restaurant.id);
-      setUpvotedIds((prev) => ({ ...prev, [restaurant.id]: res.data.upvotes }));
-    } catch {
-      message.error('Không thể upvote. Vui lòng thử lại.');
-    } finally {
-      setUpvotingId(null);
-    }
-  };
-
-  const handleSuggestNew = (name) => {
-    setForm((prev) => ({ ...prev, restaurantName: name || searchQuery }));
-    setShowResults(false);
-    setSearchQuery('');
-    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-
-  // ── Form ─────────────────────────────────────────────────────────────────────
   const validate = () => {
     const errs = {};
     if (!form.restaurantName.trim()) errs.restaurantName = 'Vui lòng nhập tên quán';
@@ -106,6 +35,33 @@ export default function CrowdsourcePage() {
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
     setErrors((prev) => ({ ...prev, [field]: '' }));
+  };
+
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    // Limit to 5 files
+    const newPhotos = files.slice(0, 5 - form.photos.length).map((file) => ({
+      file,
+      preview: URL.createObjectURL(file),
+    }));
+
+    setForm((prev) => ({
+      ...prev,
+      photos: [...prev.photos, ...newPhotos],
+    }));
+  };
+
+  const removePhoto = (index) => {
+    setForm((prev) => {
+      const newPhotos = [...prev.photos];
+      URL.revokeObjectURL(newPhotos[index].preview);
+      newPhotos.splice(index, 1);
+      return { ...prev, photos: newPhotos };
+    });
+  };
+
+  const triggerUpload = () => {
+    fileInputRef.current?.click();
   };
 
   const handleSubmit = async (e) => {
@@ -132,7 +88,8 @@ export default function CrowdsourcePage() {
         message.error(data.error.message);
         return;
       }
-      setDone(true);
+      message.success('Đề xuất thành công!');
+      setTimeout(() => navigate('/'), 1000);
     } catch {
       message.error('Gửi đề xuất thất bại. Vui lòng thử lại.');
     } finally {
@@ -140,362 +97,202 @@ export default function CrowdsourcePage() {
     }
   };
 
-  // ── Done state ──────────────────────────────────────────────────────────────
-  if (done) {
-    return (
-      <div className="min-h-screen bg-surface flex flex-col">
-        <Header />
-        <main className="flex-grow pt-20 flex flex-col items-center justify-center px-6">
-          <div className="text-center max-w-md">
-            <div className="w-24 h-24 rounded-full bg-accent-green/10 flex items-center justify-center mx-auto mb-8">
-              <span className="material-symbols-outlined text-accent-green text-5xl">verified</span>
-            </div>
-            <h2 className="text-4xl font-headline font-extrabold text-on-surface mb-4 tracking-tighter">
-              Cảm ơn bạn!
-            </h2>
-            <p className="text-on-surface-variant text-lg leading-relaxed mb-8">
-              Đề xuất của bạn đã được gửi. Đội ngũ LunchSync sẽ xem xét trong thời gian sớm nhất.
-            </p>
-            <button
-              className="px-10 py-4 bg-primary text-white rounded-full font-bold hover:bg-primary-dark transition-all shadow-lg shadow-primary/20"
-              onClick={() => navigate('/')}
-            >
-              Quay về trang chủ
-            </button>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-surface flex flex-col">
-      <Header />
-      <main className="flex-grow pt-20 container mx-auto px-6 py-16 max-w-4xl">
+    <div className="bg-surface text-on-surface min-h-screen pb-40">
+      {/* TopAppBar */}
+      <header className="fixed top-0 w-full z-50 bg-white/60 backdrop-blur-xl shadow-[0_8px_24px_rgba(44,47,48,0.06)] flex items-center px-4 h-16 w-full">
+        <button 
+          onClick={() => navigate(-1)}
+          className="w-10 h-10 flex items-center justify-center rounded-full text-orange-700 hover:bg-zinc-100/50 transition-colors"
+        >
+          <span className="material-symbols-outlined">arrow_back</span>
+        </button>
+        <h1 className="ml-2 font-headline font-bold tracking-tight text-orange-700 text-xl">Suggest Restaurant</h1>
+      </header>
 
-        {/* ── Editorial Header ── */}
-        <header className="mb-12 text-center">
-          <span className="inline-block px-4 py-1.5 rounded-full bg-secondary/10 text-secondary font-bold text-[10px] tracking-[0.2em] uppercase mb-6 border border-secondary/20">
-            The Editorial Table
-          </span>
-          <h1 className="text-5xl md:text-7xl font-headline font-extrabold text-on-surface tracking-tighter mb-6 leading-[1.1]">
-            Gợi ý <span className="text-primary italic">hương vị</span> yêu thích
-          </h1>
-          <p className="text-on-surface-variant max-w-xl mx-auto text-lg leading-relaxed">
-            Giúp cộng đồng tìm thấy những góc bếp tâm đắc nhất. Mỗi đề xuất là một câu chuyện về hương vị mà bạn muốn sẻ chia.
-          </p>
-        </header>
-
-        {/* ── Form Card ── */}
-        <section className="relative" ref={formRef}>
-          {/* Decorative background blobs */}
-          <div className="absolute -top-16 -right-16 w-64 h-64 bg-secondary/5 rounded-full blur-[100px] -z-10" />
-          <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-primary/5 rounded-full blur-[120px] -z-10" />
-
-          <div className="bg-white border border-outline shadow-xl shadow-primary/5 p-8 md:p-14 rounded-2xl relative overflow-visible">
-
-            {/* ── Search / Check existing ── */}
-            <div className="mb-12 pb-12 border-b border-outline/30">
-              <p className="text-sm font-bold text-primary mb-4 text-center">
-                Bạn có thể kiểm tra quán đã có hay chưa trước khi đề xuất
-              </p>
-              <div className="relative max-w-2xl mx-auto">
-                <div className="flex gap-3">
-                  <div className="relative flex-grow group">
-                    <span className="material-symbols-outlined absolute left-5 top-1/2 -translate-y-1/2 text-on-surface-variant/50 group-focus-within:text-primary transition-colors pointer-events-none">
-                      search
-                    </span>
-                    <input
-                      type="text"
-                      className="w-full pl-14 pr-6 py-5 bg-surface-container/50 border border-outline/50 rounded-lg focus:bg-white focus:border-primary transition-all text-on-surface placeholder:text-on-surface-variant/40 outline-none"
-                      placeholder="Tìm tên quán..."
-                      value={searchQuery}
-                      onChange={handleSearchChange}
-                      onKeyDown={handleSearchKeyDown}
-                    />
-                  </div>
-                  <button
-                    className="px-8 py-5 bg-on-surface text-white rounded-lg font-bold hover:bg-on-surface-variant transition-all shrink-0"
-                    onClick={handleCheck}
-                    disabled={searching || searchQuery.trim().length < 2}
-                  >
-                    Kiểm tra
-                  </button>
-                </div>
-
-                {/* Loading dots */}
-                {searching && (
-                  <div className="flex items-center gap-2 pt-4">
-                    <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-                    <span className="w-2 h-2 bg-primary rounded-full animate-pulse delay-100" />
-                    <span className="w-2 h-2 bg-primary rounded-full animate-pulse delay-200" />
-                    <span className="ml-2 text-sm text-on-surface-variant">Đang tìm...</span>
-                  </div>
-                )}
-
-                {/* Search results dropdown */}
-                {showResults && searchResults.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-3 bg-white border border-outline rounded-lg shadow-xl z-20 overflow-hidden">
-                    {searchResults.map((rest) => {
-                      const upvotedCount = upvotedIds[rest.id];
-                      const isUpvoted = upvotedCount !== undefined;
-                      return (
-                        <div
-                          key={rest.id}
-                          className="p-4 hover:bg-surface-container/30 border-b border-outline/10 flex justify-between items-center cursor-pointer"
-                        >
-                          <div className="flex items-center gap-3">
-                            <span className="material-symbols-outlined text-on-surface-variant/40">restaurant</span>
-                            <div>
-                              <p className="font-bold text-on-surface">{rest.name}</p>
-                              <p className="text-xs text-on-surface-variant">{rest.address}</p>
-                              {rest.priceDisplay && (
-                                <span className="text-[10px] font-semibold text-on-surface-variant">{rest.priceDisplay}</span>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {isUpvoted && (
-                              <div className="flex items-center gap-1 text-red-500 font-bold text-sm">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                                </svg>
-                                <span>{upvotedCount}</span>
-                              </div>
-                            )}
-                            {isUpvoted ? (
-                              <button className="px-3 py-1.5 bg-red-50 text-red-500 text-[10px] font-black uppercase rounded-full border border-red-200 cursor-default" disabled>
-                                ✓ Đã Upvote
-                              </button>
-                            ) : (
-                              <button
-                                className="px-3 py-1.5 bg-accent-green/10 text-accent-green text-[10px] font-black uppercase rounded-full hover:bg-accent-green/20 transition-colors"
-                                onClick={() => handleUpvote(rest)}
-                                disabled={upvotingId === rest.id}
-                              >
-                                Upvote
-                              </button>
-                            )}
-                            <button
-                              className="px-3 py-1.5 bg-primary/10 text-primary text-[10px] font-black uppercase rounded-full hover:bg-primary/20 transition-colors"
-                              onClick={() => handleSuggestNew(rest.name)}
-                            >
-                              Đề xuất khác
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                    <div className="p-4 bg-surface-container/20 text-center">
-                      <button className="text-sm font-bold text-primary hover:text-primary-dark transition-colors" onClick={() => handleSuggestNew(searchQuery)}>
-                        Không phải — Đề xuất quán mới →
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {/* No results */}
-                {showResults && searchQuery.length >= 2 && searchResults.length === 0 && !searching && (
-                  <div className="mt-4 p-6 bg-surface-container/20 border border-dashed border-outline rounded-lg text-center">
-                    <span className="material-symbols-outlined text-on-surface-variant/40 text-3xl mb-2 block">search</span>
-                    <p className="text-sm text-on-surface-variant mb-4">Chưa có quán nào trong hệ thống</p>
-                    <button className="px-6 py-3 bg-primary text-white rounded-full font-bold text-sm hover:bg-primary-dark transition-colors" onClick={() => handleSuggestNew(searchQuery)}>
-                      Đề xuất quán mới
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* ── Suggestion Form ── */}
-            <form className="grid grid-cols-1 md:grid-cols-2 gap-10" onSubmit={handleSubmit} noValidate>
-
-              {/* Store Name */}
-              <div className="md:col-span-2 group">
-                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3 ml-1" htmlFor="store-name">
-                  Tên quán ăn *
-                </label>
-                <div className="relative">
-                  <span className="material-symbols-outlined absolute left-5 top-1/2 -translate-y-1/2 text-on-surface-variant/50 group-focus-within:text-primary transition-colors pointer-events-none">
-                    restaurant
-                  </span>
-                  <input
-                    id="store-name"
-                    type="text"
-                    className={`w-full pl-14 pr-8 py-5 bg-surface-container/50 border rounded-lg transition-all text-on-surface placeholder:text-on-surface-variant/40 outline-none ${
-                      errors.restaurantName
-                        ? 'border-red-400 bg-red-50/30'
-                        : 'border-outline/50 focus:bg-white focus:border-primary'
-                    }`}
-                    placeholder="Ví dụ: Bếp Củi Nhà Tôi"
-                    value={form.restaurantName}
-                    onChange={(e) => handleChange('restaurantName', e.target.value)}
-                    disabled={loading}
-                  />
-                </div>
-                {errors.restaurantName && <p className="text-red-500 text-xs mt-1 ml-1">{errors.restaurantName}</p>}
-              </div>
-
-              {/* Address */}
-              <div className="group">
-                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3 ml-1" htmlFor="address">
-                  Địa chỉ *
-                </label>
-                <div className="relative">
-                  <span className="material-symbols-outlined absolute left-5 top-1/2 -translate-y-1/2 text-on-surface-variant/50 group-focus-within:text-primary transition-colors pointer-events-none">
-                    location_on
-                  </span>
-                  <input
-                    id="address"
-                    type="text"
-                    className={`w-full pl-14 pr-8 py-5 bg-surface-container/50 border rounded-lg transition-all text-on-surface placeholder:text-on-surface-variant/40 outline-none ${
-                      errors.address
-                        ? 'border-red-400 bg-red-50/30'
-                        : 'border-outline/50 focus:bg-white focus:border-primary'
-                    }`}
-                    placeholder="Tên đường, phường, quận..."
-                    value={form.address}
-                    onChange={(e) => handleChange('address', e.target.value)}
-                    disabled={loading}
-                  />
-                </div>
-                {errors.address && <p className="text-red-500 text-xs mt-1 ml-1">{errors.address}</p>}
-              </div>
-
-              {/* Google Maps Link */}
-              <div className="group">
-                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3 ml-1" htmlFor="maps-link">
-                  Google Maps
-                </label>
-                <div className="relative">
-                  <span className="material-symbols-outlined absolute left-5 top-1/2 -translate-y-1/2 text-on-surface-variant/50 group-focus-within:text-primary transition-colors pointer-events-none">
-                    map
-                  </span>
-                  <input
-                    id="maps-link"
-                    type="url"
-                    className="w-full pl-14 pr-8 py-5 bg-surface-container/50 border border-outline/50 rounded-lg focus:bg-white focus:border-primary transition-all text-on-surface placeholder:text-on-surface-variant/40 outline-none"
-                    placeholder="Dán đường dẫn tại đây..."
-                    value={form.googleMapsUrl}
-                    onChange={(e) => handleChange('googleMapsUrl', e.target.value)}
-                    disabled={loading}
-                  />
-                </div>
-              </div>
-
-              {/* Price Range */}
-              <div className="md:col-span-2">
-                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-4 ml-1">
-                  Mức giá trung bình
-                </label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {TIER_OPTIONS.map((tier) => (
-                    <label
-                      key={tier.key}
-                      className={`relative flex items-center justify-center p-4 rounded-lg border cursor-pointer transition-all ${
-                        form.priceTier === tier.key
-                          ? 'bg-primary text-white border-primary'
-                          : 'bg-surface-container/30 border-outline/30 hover:border-primary/50'
-                      }`}
-                    >
-                      <input
-                        className="sr-only"
-                        name="price"
-                        type="radio"
-                        value={tier.key}
-                        checked={form.priceTier === tier.key}
-                        onChange={() => handleChange('priceTier', tier.key)}
-                        disabled={loading}
-                      />
-                      <span className="font-bold text-sm">{tier.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Notes */}
-              <div className="md:col-span-2 group">
-                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3 ml-1" htmlFor="notes">
-                  Ghi chú &amp; Đánh giá
-                </label>
-                <div className="relative">
-                  <span className="material-symbols-outlined absolute left-5 top-5 text-on-surface-variant/50 group-focus-within:text-primary transition-colors pointer-events-none">
-                    edit_note
-                  </span>
-                  <textarea
-                    id="notes"
-                    className="w-full pl-14 pr-8 py-5 bg-surface-container/50 border border-outline/50 rounded-lg focus:bg-white focus:border-primary transition-all text-on-surface placeholder:text-on-surface-variant/40 outline-none"
-                    placeholder="Điều gì làm nên sự khác biệt của quán này?"
-                    rows="4"
-                    value={form.notes}
-                    onChange={(e) => handleChange('notes', e.target.value)}
-                    disabled={loading}
-                  />
-                </div>
-              </div>
-
-              {/* Upload Area */}
-              <div className="md:col-span-2">
-                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3 ml-1">
-                  Hình ảnh quán/món ăn
-                </label>
-                <div className="border-2 border-dashed border-outline rounded-lg p-12 bg-surface-container/20 flex flex-col items-center justify-center group hover:border-primary/60 transition-all cursor-pointer">
-                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                    <span className="material-symbols-outlined text-primary text-3xl">photo_camera</span>
-                  </div>
-                  <p className="text-on-surface font-bold text-sm mb-1 uppercase tracking-wider">Tải lên hình ảnh</p>
-                  <p className="text-on-surface-variant/70 text-xs">JPG hoặc PNG • Tối đa 5MB</p>
-                  <input accept="image/*" className="hidden" multiple type="file" />
-                </div>
-              </div>
-
-              {/* Submit Button */}
-              <div className="md:col-span-2 pt-4">
-                <button
-                  className={`w-full py-6 bg-primary text-white rounded-full font-headline font-extrabold text-lg flex items-center justify-center gap-4 shadow-2xl shadow-primary/30 hover:bg-primary-dark transition-all active:scale-[0.99] ${
-                    loading ? 'opacity-70 cursor-not-allowed' : ''
-                  }`}
-                  type="submit"
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <span className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      <span className="material-symbols-outlined">send</span>
-                      GỬI ĐỀ XUẤT NGAY
-                    </>
-                  )}
-                </button>
-                <p className="text-center mt-6 text-on-surface-variant text-[11px] font-bold uppercase tracking-widest opacity-60">
-                  Thành viên Ban biên tập sẽ phê duyệt trong 24 giờ
-                </p>
-              </div>
-            </form>
+      <main className="pt-20 px-6 max-w-2xl mx-auto">
+        {/* Hero Section */}
+        <section className="mb-10 text-center">
+          <div className="inline-flex items-center justify-center p-3 mb-4 rounded-full bg-primary-container/20">
+            <span className="material-symbols-outlined text-primary text-3xl">celebration</span>
           </div>
+          <h2 className="text-2xl font-extrabold text-on-surface leading-tight tracking-tight mb-2 font-headline">
+            Chia sẻ địa điểm ăn uống yêu thích của bạn!
+          </h2>
+          <p className="text-on-surface-variant text-body-md font-medium">
+            Gợi ý cho cộng đồng LunchSync những quán ngon bí mật của bạn.
+          </p>
         </section>
 
-        {/* ── Aside cards ── */}
-        <aside className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="p-8 bg-gradient-to-br from-surface to-surface-container border border-outline/40 rounded-xl">
-            <span className="material-symbols-outlined text-accent-green mb-4 text-3xl block">verified</span>
-            <h3 className="font-extrabold text-on-surface mb-2 uppercase text-[10px] tracking-widest">Tính xác thực</h3>
-            <p className="text-sm text-on-surface-variant leading-relaxed">Giúp đồng nghiệp tin tưởng bằng thông tin chính xác nhất.</p>
-          </div>
-          <div className="p-8 bg-gradient-to-br from-surface to-surface-container border border-outline/40 rounded-xl">
-            <span className="material-symbols-outlined text-primary mb-4 text-3xl block">filter_vintage</span>
-            <h3 className="font-extrabold text-on-surface mb-2 uppercase text-[10px] tracking-widest">Góc nhìn riêng</h3>
-            <p className="text-sm text-on-surface-variant leading-relaxed">Những bức ảnh thật luôn có giá trị hơn ngàn lời quảng cáo.</p>
-          </div>
-          <div className="p-8 bg-gradient-to-br from-surface to-surface-container border border-outline/40 rounded-xl">
-            <span className="material-symbols-outlined text-secondary mb-4 text-3xl block">workspace_premium</span>
-            <h3 className="font-extrabold text-on-surface mb-2 uppercase text-[10px] tracking-widest">Vinh danh</h3>
-            <p className="text-sm text-on-surface-variant leading-relaxed">Mỗi đóng góp được tặng 50 Sync Points vào tài khoản.</p>
-          </div>
-        </aside>
+        {/* Form Container */}
+        <form className="space-y-8" onSubmit={handleSubmit} noValidate>
+          {/* Section 1: Basic Info */}
+          <section className="space-y-4">
+            <div className="group">
+              <label className="block text-sm font-semibold text-on-surface-variant mb-2 ml-1">Tên quán</label>
+              <input 
+                className={`w-full h-14 px-5 rounded-lg bg-surface-container-lowest border-none ring-1 transition-all text-on-surface placeholder:text-outline-variant outline-none focus:ring-2 focus:ring-primary ${errors.restaurantName ? 'ring-red-400 focus:ring-red-500 bg-red-50/50' : 'ring-outline-variant/30'}`}
+                placeholder="Ví dụ: Phở Thìn Lò Đúc" 
+                type="text" 
+                value={form.restaurantName}
+                onChange={(e) => handleChange('restaurantName', e.target.value)}
+              />
+              {errors.restaurantName && <p className="text-red-500 text-xs mt-1 ml-1">{errors.restaurantName}</p>}
+            </div>
+
+            <div className="group">
+              <label className="block text-sm font-semibold text-on-surface-variant mb-2 ml-1">Địa chỉ</label>
+              <div className="relative">
+                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">location_on</span>
+                <input 
+                  className={`w-full h-14 pl-12 pr-5 rounded-lg bg-surface-container-lowest border-none ring-1 transition-all text-on-surface placeholder:text-outline-variant outline-none focus:ring-2 focus:ring-primary ${errors.address ? 'ring-red-400 focus:ring-red-500 bg-red-50/50' : 'ring-outline-variant/30'}`}
+                  placeholder="Số nhà, tên đường, quận..." 
+                  type="text" 
+                  value={form.address}
+                  onChange={(e) => handleChange('address', e.target.value)}
+                />
+              </div>
+              {errors.address && <p className="text-red-500 text-xs mt-1 ml-1">{errors.address}</p>}
+            </div>
+
+            <div className="group">
+              <label className="block text-sm font-semibold text-on-surface-variant mb-2 ml-1">Đường dẫn Google Maps</label>
+              <div className="relative">
+                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">link</span>
+                <input 
+                  className="w-full h-14 pl-12 pr-5 rounded-lg bg-surface-container-lowest border-none ring-1 ring-outline-variant/30 focus:ring-2 focus:ring-primary transition-all text-on-surface placeholder:text-outline-variant outline-none" 
+                  placeholder="Ví dụ: https://maps.app.goo.gl/..." 
+                  type="url" 
+                  value={form.googleMapsUrl}
+                  onChange={(e) => handleChange('googleMapsUrl', e.target.value)}
+                />
+              </div>
+            </div>
+          </section>
+
+          {/* Section 2: Photo Upload */}
+          <section>
+            <label className="block text-sm font-semibold text-on-surface-variant mb-3 ml-1">Tải lên hình ảnh món ăn</label>
+            <div className="relative group cursor-pointer" onClick={triggerUpload}>
+              <div className="w-full aspect-[16/9] rounded-lg border-2 border-dashed border-outline-variant/50 bg-surface-container-low flex flex-col items-center justify-center overflow-hidden transition-all group-hover:bg-surface-container-high group-hover:border-primary/50">
+                {form.photos.length > 0 ? (
+                  <div className="relative w-full h-full">
+                    <img alt="Food preview" className="w-full h-full object-cover" src={form.photos[0].preview}/>
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span className="text-white font-bold">Thay đổi ảnh</span>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <img alt="Food preview" className="absolute inset-0 w-full h-full object-cover opacity-20 transition-opacity group-hover:opacity-30" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCAIMdkU3dqCZTN_GOc-YQZMc6TQ0iYyorkXQnYrbiWl-v5Pz3IvmsV10NmQh9OHhv55zWMnd87hGclsLnfPjitGOwOAnsD9PRGMWVqtKJrplcJC-wC1SDNIaRBnjhU0RxNblHLsnzEurlq1dolol_dXJkLsSdkT27x0zlA5kCbRP6lSlapIHccEcSDg2dvb2fwpy5kUh7vcmqTXxy2xsItbLcHguplnsZGpTelwf_2kV3mRPbDDP148rwpLirNrMNEPaIUX54gjvU"/>
+                    <div className="z-10 flex flex-col items-center">
+                      <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-lg mb-3 text-primary">
+                        <span className="material-symbols-outlined text-3xl">add_a_photo</span>
+                      </div>
+                      <span className="text-sm font-bold text-on-surface">Nhấn để chọn ảnh</span>
+                      <span className="text-xs text-on-surface-variant mt-1">Dung lượng tối đa 5MB</span>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+            <input 
+              ref={fileInputRef}
+              accept="image/*" 
+              className="hidden" 
+              multiple 
+              type="file" 
+              onChange={handleFileChange}
+            />
+            {form.photos.length > 1 && (
+              <div className="flex gap-2 mt-3 overflow-x-auto pb-2">
+                {form.photos.slice(1).map((photo, i) => (
+                  <div key={i} className="relative w-20 h-20 shrink-0 rounded-md overflow-hidden group/thumb">
+                    <img src={photo.preview} className="w-full h-full object-cover" alt="Preview thumb" />
+                    <button 
+                      type="button"
+                      className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs scale-0 group-hover/thumb:scale-100 transition-transform"
+                      onClick={(e) => { e.stopPropagation(); removePhoto(i+1); }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* Section 3: Price Tier Selection */}
+          <section>
+            <label className="block text-sm font-semibold text-on-surface-variant mb-4 ml-1">Mức giá trung bình</label>
+            <div className="grid grid-cols-2 gap-3">
+              {TIER_OPTIONS.map((tier) => (
+                <button
+                  key={tier.key}
+                  type="button"
+                  onClick={() => handleChange('priceTier', tier.key)}
+                  className={`h-12 px-4 rounded-lg transition-all text-sm flex items-center justify-center gap-2 ${
+                    form.priceTier === tier.key 
+                    ? 'bg-orange-100 ring-2 ring-primary text-primary font-bold' 
+                    : 'bg-surface-container-lowest border-none ring-1 ring-outline-variant/30 text-on-surface-variant font-semibold hover:bg-primary-container/10 hover:text-primary hover:ring-primary'
+                  }`}
+                >
+                  {tier.label}
+                  {form.priceTier === tier.key && (
+                    <span className="material-symbols-outlined text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </section>
+
+          {/* Section 4: Additional details */}
+          <section>
+            <label className="block text-sm font-semibold text-on-surface-variant mb-2 ml-1">Lời nhắn/Gợi ý món ngon (Tùy chọn)</label>
+            <textarea 
+              className="w-full p-5 rounded-lg bg-surface-container-lowest border-none ring-1 ring-outline-variant/30 focus:ring-2 focus:ring-primary transition-all text-on-surface placeholder:text-outline-variant outline-none resize-none" 
+              placeholder="Nên thử bún chả với nem cua bể ở đây..." 
+              rows="4"
+              value={form.notes}
+              onChange={(e) => handleChange('notes', e.target.value)}
+            />
+          </section>
+
+          {/* Footer Action */}
+          <section className="pt-4">
+            <button 
+              type="submit"
+              disabled={loading}
+              className={`w-full h-16 bg-gradient-to-br from-primary to-primary-container text-on-primary rounded-full font-bold text-lg shadow-lg shadow-primary/20 transition-transform ${loading ? 'opacity-70 cursor-not-allowed' : 'active:scale-[0.98]'}`}
+            >
+              {loading ? 'Đang gửi...' : 'Gửi đề xuất'}
+            </button>
+            <p className="text-center text-xs text-on-surface-variant mt-4 font-medium px-4">
+              Bằng cách nhấn gửi, bạn đồng ý chia sẻ thông tin này với cộng đồng LunchSync.
+            </p>
+          </section>
+        </form>
       </main>
-      <Footer />
+
+      {/* BottomNavBar */}
+      <nav className="fixed bottom-0 left-0 w-full flex justify-around items-center h-20 px-6 pb-2 bg-white/90 backdrop-blur-xl shadow-[0_-8px_24px_rgba(44,47,48,0.06)] rounded-t-[2rem] z-50">
+        <div 
+          onClick={() => navigate('/')}
+          className="flex flex-col items-center justify-center bg-orange-100 text-orange-800 rounded-full px-5 py-1 cursor-pointer">
+          <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>explore</span>
+          <span className="font-label text-[11px] font-medium mt-0.5">Explore</span>
+        </div>
+        <div 
+          className="flex flex-col items-center justify-center text-zinc-500 px-5 py-1 hover:opacity-80 transition-opacity cursor-pointer">
+          <span className="material-symbols-outlined">restaurant</span>
+          <span className="font-label text-[11px] font-medium mt-0.5">LunchSync</span>
+        </div>
+        <div 
+          className="flex flex-col items-center justify-center text-zinc-500 px-5 py-1 hover:opacity-80 transition-opacity cursor-pointer">
+          <span className="material-symbols-outlined">person</span>
+          <span className="font-label text-[11px] font-medium mt-0.5">Profile</span>
+        </div>
+      </nav>
     </div>
   );
 }

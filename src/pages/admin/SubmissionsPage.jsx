@@ -3,6 +3,11 @@ import { api } from '@/api';
 import { useAdminStore } from '@/store/adminStore';
 import AdminLayout from '@/components/admin/AdminLayout';
 import styles from './SubmissionsPage.module.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { 
+  faSpinner, faInbox, faLocationDot, faMoneyBill, 
+  faNoteSticky, faCheck, faXmark 
+} from '@fortawesome/free-solid-svg-icons';
 
 const STATUS_CONFIG = {
   pending: { label: 'Chờ duyệt', color: '#c47d00', bg: '#FFF3E0' },
@@ -33,7 +38,7 @@ export default function SubmissionsPage() {
       setPendingCount((data.submissions || []).filter(s => s.status === 'pending').length);
       setLoading(false);
     });
-  }, []);
+  }, [setPendingCount]);
 
   const filtered = submissions.filter(s => filter === 'all' || s.status === filter);
 
@@ -78,12 +83,12 @@ export default function SubmissionsPage() {
         <div className={styles.list}>
           {loading ? (
             <div className={styles.empty}>
-              <span className="material-symbols-outlined" style={{ fontSize: 48, color: 'var(--color-outline-variant)' }}>progress_activity</span>
+              <FontAwesomeIcon icon={faSpinner} spin style={{ fontSize: 48, color: 'var(--color-outline-variant)' }} />
               <p>Đang tải...</p>
             </div>
           ) : filtered.length === 0 ? (
             <div className={styles.empty}>
-              <span className="material-symbols-outlined" style={{ fontSize: 48, color: 'var(--color-outline-variant)' }}>inbox</span>
+              <FontAwesomeIcon icon={faInbox} style={{ fontSize: 48, color: 'var(--color-outline-variant)' }} />
               <p>Không có đề xuất nào</p>
             </div>
           ) : filtered.map(sub => {
@@ -98,10 +103,7 @@ export default function SubmissionsPage() {
                     <div>
                       <h3 className={styles.cardTitle}>{sub.restaurantName}</h3>
                       <p className={styles.cardAddress}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                          <circle cx="12" cy="10" r="3"/>
-                        </svg>
+                        <FontAwesomeIcon icon={faLocationDot} style={{ width: 12, marginRight: 4 }} />
                         {sub.address}
                       </p>
                     </div>
@@ -116,17 +118,13 @@ export default function SubmissionsPage() {
                   <div className={styles.cardMeta}>
                     {sub.priceDisplay && (
                       <span className={styles.metaChip}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-                        </svg>
+                        <FontAwesomeIcon icon={faMoneyBill} style={{ width: 12, marginRight: 4 }} />
                         {sub.priceDisplay}
                       </span>
                     )}
                     {sub.notes && (
                       <span className={styles.metaChip}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>
-                        </svg>
+                        <FontAwesomeIcon icon={faNoteSticky} style={{ width: 12, marginRight: 4 }} />
                         {sub.notes}
                       </span>
                     )}
@@ -140,9 +138,7 @@ export default function SubmissionsPage() {
                         onClick={() => handleReview(sub.id, 'approved')}
                         disabled={actioning === sub.id}
                       >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                          <polyline points="20 6 9 17 4 12"/>
-                        </svg>
+                        <FontAwesomeIcon icon={faCheck} style={{ width: 16, marginRight: 4, strokeWidth: 2 }} />
                         Duyệt
                       </button>
                       <button
@@ -150,9 +146,7 @@ export default function SubmissionsPage() {
                         onClick={() => handleReview(sub.id, 'rejected')}
                         disabled={actioning === sub.id}
                       >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                        </svg>
+                        <FontAwesomeIcon icon={faXmark} style={{ width: 16, marginRight: 4, strokeWidth: 2 }} />
                         Từ chối
                       </button>
                     </div>

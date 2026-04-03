@@ -8,8 +8,13 @@ import { useSession } from '@/hooks/useSession';
 import { useReconnect } from '@/hooks/useReconnect';
 import { MIN_PARTICIPANTS, MAX_PARTICIPANTS, PRICE_TIERS } from '@/utils/constants';
 import { MOCK_EXTRA_PARTICIPANTS } from '@/api/mock';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
+import Layout from '@/components/layout/Layout';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { 
+  faStar, faLocationDot, faMoneyBill, faStopwatch, 
+  faUserPlus, faCheckCircle, faCopy, faHourglassHalf, 
+  faInfoCircle, faCheckToSlot, faTrashAlt 
+} from '@fortawesome/free-solid-svg-icons';
 
 const AVATAR_COLORS = [
   'bg-rose-400', 'bg-orange-400', 'bg-amber-400', 'bg-emerald-400',
@@ -50,7 +55,7 @@ function ParticipantAvatar({ name, isHost, size = 'md' }) {
       </div>
       {isHost && (
         <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center shadow border-2 border-white">
-          <span className="material-symbols-outlined text-white" style={{ fontSize: 10 }}>star</span>
+          <FontAwesomeIcon icon={faStar} className="text-white text-[10px]" />
         </div>
       )}
     </div>
@@ -71,13 +76,15 @@ function ParticipantCard({ name, isHost, isYou }) {
       </p>
       {isHost && (
         <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary text-white text-[10px] font-black uppercase rounded-full">
-          <span className="material-symbols-outlined" style={{ fontSize: 10 }}>star</span>
+          <FontAwesomeIcon icon={faStar} className="text-[10px]" />
           Host
         </span>
       )}
     </div>
   );
 }
+
+const SESSION_DURATION_MS = 15 * 60 * 1000; // 15 phút
 
 export default function LobbyPage() {
   const { pin } = useParams();
@@ -90,8 +97,6 @@ export default function LobbyPage() {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [timeLeft, setTimeLeft] = useState(null);
   const [copied, setCopied] = useState(false);
-
-  const SESSION_DURATION_MS = 15 * 60 * 1000; // 15 phút
 
   // Tính countdown
   useEffect(() => {
@@ -219,9 +224,8 @@ export default function LobbyPage() {
   const hostName = safeParticipants.find((p) => p.isHost)?.nickname || 'Host';
 
   return (
-    <div className="min-h-screen bg-surface flex flex-col">
-      <Header />
-      <main className="flex-grow pt-28 container mx-auto px-6 py-10 max-w-3xl">
+    <Layout>
+      <div className="container mx-auto px-6 pt-24 pb-32 max-w-3xl relative">
 
         {/* Decorative blobs */}
         <div className="absolute top-20 right-0 w-80 h-80 bg-secondary/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
@@ -260,13 +264,13 @@ export default function LobbyPage() {
                 <div className="flex flex-wrap gap-2 justify-end">
                   {sessionInfo?.collectionName && (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-outline/50 rounded-full text-xs font-semibold text-on-surface shadow-sm">
-                      <span className="material-symbols-outlined text-primary text-sm">location_on</span>
+                      <FontAwesomeIcon icon={faLocationDot} className="text-primary text-sm" />
                       {sessionInfo.collectionName}
                     </span>
                   )}
                   {priceTier && (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-outline/50 rounded-full text-xs font-semibold text-on-surface shadow-sm">
-                      <span className="material-symbols-outlined text-primary text-sm">payments</span>
+                      <FontAwesomeIcon icon={faMoneyBill} className="text-primary text-sm" />
                       {priceTier.priceDisplay}
                     </span>
                   )}
@@ -278,7 +282,7 @@ export default function LobbyPage() {
                       ? 'bg-red-50 text-red-600 border border-red-200'
                       : 'bg-white text-on-surface-variant border border-outline/50'
                   }`}>
-                    <span className="material-symbols-outlined text-sm">timer</span>
+                    <FontAwesomeIcon icon={faStopwatch} className="text-sm" />
                     Hết hạn trong {formatTime(timeLeft)}
                   </div>
                 )}
@@ -290,7 +294,7 @@ export default function LobbyPage() {
               <div className="flex items-center justify-between gap-4 flex-wrap">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <span className="material-symbols-outlined text-primary text-xl">group_add</span>
+                    <FontAwesomeIcon icon={faUserPlus} className="text-primary text-lg" />
                   </div>
                   <div>
                     <p className="font-bold text-on-surface text-sm">Mời đồng nghiệp</p>
@@ -305,9 +309,7 @@ export default function LobbyPage() {
                       : 'bg-primary text-white hover:bg-primary-dark shadow-lg shadow-primary/20'
                   }`}
                 >
-                  <span className="material-symbols-outlined text-lg">
-                    {copied ? 'check_circle' : 'content_copy'}
-                  </span>
+                  <FontAwesomeIcon icon={copied ? faCheckCircle : faCopy} className="text-lg" />
                   {copied ? 'Đã copy!' : 'Copy link mời'}
                 </button>
               </div>
@@ -321,7 +323,7 @@ export default function LobbyPage() {
                   <h2 className="font-headline font-extrabold text-on-surface text-lg tracking-tight">Người tham gia</h2>
                   {/* Host label */}
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary text-[10px] font-black uppercase rounded-full">
-                    <span className="material-symbols-outlined" style={{ fontSize: 10 }}>star</span>
+                    <FontAwesomeIcon icon={faStar} className="text-[10px]" />
                     Host: {hostName}
                   </span>
                 </div>
@@ -331,7 +333,7 @@ export default function LobbyPage() {
                     ? 'bg-accent-green/10 text-accent-green border-accent-green/30'
                     : 'bg-amber-50 text-amber-700 border-amber-200'
                 }`}>
-                  <span className="material-symbols-outlined text-base">{enough ? 'check_circle' : 'hourglass_empty'}</span>
+                  <FontAwesomeIcon icon={enough ? faCheckCircle : faHourglassHalf} className="text-base" />
                   {safeParticipants.length}/{MAX_PARTICIPANTS}
                   {enough ? ' — Sẵn sàng!' : ` — Cần thêm ${MIN_PARTICIPANTS - safeParticipants.length} người`}
                 </div>
@@ -340,7 +342,7 @@ export default function LobbyPage() {
               {/* Grid */}
               {safeParticipants.length === 0 ? (
                 <div className="text-center py-16 bg-white border-2 border-dashed border-outline/60 rounded-2xl">
-                  <span className="material-symbols-outlined text-on-surface-variant/30 text-5xl mb-4 block">person_add</span>
+                  <FontAwesomeIcon icon={faUserPlus} className="text-on-surface-variant/30 text-5xl mb-4 block mx-auto" />
                   <p className="font-bold text-on-surface mb-1">Chưa có ai tham gia</p>
                   <p className="text-sm text-on-surface-variant">Chia sẻ mã PIN để mời đồng nghiệp nhé!</p>
                 </div>
@@ -361,7 +363,7 @@ export default function LobbyPage() {
                       className="flex flex-col items-center gap-2 p-4 rounded-2xl border-2 border-dashed border-outline/40 bg-surface-container/20 opacity-60"
                     >
                       <div className="w-12 h-12 rounded-full border-2 border-dashed border-outline bg-surface-container flex items-center justify-center">
-                        <span className="material-symbols-outlined text-on-surface-variant/40 text-lg">person_add</span>
+                        <FontAwesomeIcon icon={faUserPlus} className="text-on-surface-variant/40 text-lg" />
                       </div>
                       <p className="text-xs text-on-surface-variant font-semibold">Chờ...</p>
                     </div>
@@ -372,7 +374,7 @@ export default function LobbyPage() {
               {/* Min requirement warning */}
               {!enough && (
                 <div className="mt-4 flex items-center gap-2 p-4 bg-amber-50 border border-amber-200 rounded-xl">
-                  <span className="material-symbols-outlined text-amber-600">info</span>
+                  <FontAwesomeIcon icon={faInfoCircle} className="text-amber-600" />
                   <p className="text-sm font-semibold text-amber-800">
                     Cần tối thiểu <strong>{MIN_PARTICIPANTS} người</strong> để bắt đầu bình chọn ({safeParticipants.length}/{MIN_PARTICIPANTS})
                   </p>
@@ -398,7 +400,7 @@ export default function LobbyPage() {
                   </>
                 ) : (
                   <>
-                    <span className="material-symbols-outlined text-xl">how_to_vote</span>
+                    <FontAwesomeIcon icon={faCheckToSlot} className="text-xl" />
                     BẮT ĐẦU BÌNH CHỌN
                   </>
                 )}
@@ -406,14 +408,15 @@ export default function LobbyPage() {
 
               <button
                 onClick={() => setShowCancelModal(true)}
-                className="w-full py-3 text-center text-sm font-semibold text-on-surface-variant hover:text-red-500 transition-colors"
+                className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 text-sm font-black text-red-500/60 uppercase tracking-widest hover:text-red-600 hover:bg-red-50 border border-dashed border-outline/30 hover:border-red-200 transition-all active:scale-[0.99]"
               >
-                Hủy phiên này
+                <FontAwesomeIcon icon={faTrashAlt} className="text-xl" />
+                Hủy phiên bình chọn
               </button>
             </div>
           </div>
         )}
-      </main>
+      </div>
 
       {/* Cancel confirmation modal */}
       <Modal
@@ -427,8 +430,6 @@ export default function LobbyPage() {
       >
         <p>Phiên sẽ bị xóa và mọi người sẽ không thể tham gia.</p>
       </Modal>
-
-      <Footer />
-    </div>
+    </Layout>
   );
 }

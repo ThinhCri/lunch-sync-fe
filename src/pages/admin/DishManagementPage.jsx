@@ -2,6 +2,11 @@ import { useState, useEffect } from 'react';
 import { api } from '@/api';
 import AdminLayout from '@/components/admin/AdminLayout';
 import styles from './DishManagementPage.module.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { 
+  faSpinner, faCheck, faSync, faUpload, 
+  faDownload, faXmark 
+} from '@fortawesome/free-solid-svg-icons';
 
 const PROFILE_LABELS = {
   soupy: 'Nước/Soupy',
@@ -26,7 +31,6 @@ export default function DishManagementPage() {
   const [cacheLoading, setCacheLoading] = useState(false);
   const [cacheDone, setCacheDone] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
-  const [uploadFile, setUploadFile] = useState(null);
 
   useEffect(() => {
     api.admin.dishes.list().then(res => {
@@ -92,7 +96,7 @@ export default function DishManagementPage() {
     } catch {
       alert('File không hợp lệ. Vui lòng upload JSON.');
     }
-    setUploadFile(null);
+    e.target.value = ''; // Reset input to allow uploading the same file again
   };
 
   const handleReloadCache = async () => {
@@ -112,27 +116,18 @@ export default function DishManagementPage() {
           disabled={cacheLoading}
         >
           {cacheLoading ? (
-            <span className="material-symbols-outlined animate-spin">progress_activity</span>
+            <FontAwesomeIcon icon={faSpinner} spin className="text-sm" />
           ) : cacheDone ? (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
+            <FontAwesomeIcon icon={faCheck} className="text-sm" />
           ) : (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
-              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-            </svg>
+            <FontAwesomeIcon icon={faSync} className="text-sm" />
           )}
           {cacheDone ? 'Đã cập nhật!' : 'Reload Cache'}
         </button>
 
         <div className={styles.rightActions}>
           <label className={styles.uploadLabel}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="17 8 12 3 7 8"/>
-              <line x1="12" y1="3" x2="12" y2="15"/>
-            </svg>
+            <FontAwesomeIcon icon={faUpload} />
             Upload JSON
             <input
               type="file"
@@ -147,11 +142,7 @@ export default function DishManagementPage() {
             onClick={handleExport}
             disabled={exportLoading}
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="7 10 12 15 17 10"/>
-              <line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>
+            <FontAwesomeIcon icon={faDownload} />
             Export JSON
           </button>
         </div>
@@ -161,7 +152,7 @@ export default function DishManagementPage() {
       <div className={styles.tableWrap}>
         {loading ? (
           <div className={styles.loadingState}>
-            <span className="material-symbols-outlined animate-spin">progress_activity</span>
+            <FontAwesomeIcon icon={faSpinner} spin className="text-3xl mb-2" />
             <p>Đang tải...</p>
           </div>
         ) : (
@@ -238,9 +229,7 @@ export default function DishManagementPage() {
             <div className={styles.drawerHeader}>
               <h2 className={styles.drawerTitle}>{selectedDish.name}</h2>
               <button className={styles.drawerClose} onClick={closeDrawer}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                </svg>
+                <FontAwesomeIcon icon={faXmark} className="text-xl" />
               </button>
             </div>
 
