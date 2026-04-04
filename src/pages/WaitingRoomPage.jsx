@@ -61,7 +61,7 @@ export default function WaitingRoomPage() {
   };
 
   return (
-    <Layout>
+    <Layout title="LunchSync Lobby">
       <div className="flex-grow flex flex-col items-center justify-center px-6 pt-24 pb-32 max-w-2xl mx-auto w-full relative">
         
         {/* Decorative blobs */}

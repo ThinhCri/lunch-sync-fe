@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Header from '@/components/layout/Header';
 import { useAuthStore } from '@/store/authStore';
 import JoinModal from '@/components/modals/JoinModal';
 import BottomNav from '@/components/layout/BottomNav';
@@ -11,20 +12,7 @@ export default function HomePage() {
 
   return (
     <div className="bg-surface text-on-surface font-body selection:bg-primary-container selection:text-on-primary-container min-h-screen">
-      {/* TopAppBar */}
-      <header className="fixed top-0 w-full z-50 bg-surface/90 dark:bg-zinc-900/90 backdrop-blur-xl flex items-center justify-between px-6 py-4">
-        <div className="flex items-center gap-4">
-          <h1 className="font-headline text-orange-700 dark:text-orange-500 font-bold text-xl tracking-tighter">
-            LunchSync
-          </h1>
-        </div>
-        <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-primary/10">
-          <img
-            alt="User Profile"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmlrGzOnXPosN15N9kzpuqd_zb-cPVMV0f4mNmCJylYoZy87JTUrNuJukS1iv2sMiyL-dspF_FJIQPxg6F0co46L_ns5QWUiifLoXLk8jCUoCze5Q8-v3Ng2I5xjfvfjAzqidkKLfbxmzAfYJv70l6QWmnaDFGYW3eiqSnvXXOCOwiD5jUjlPFNsSkosS0DWrRxidzAG8Hwhd3FLNyJ8MIMC7_UYizcsbf-S1TNQGrwnJJufxXZA5kkI4beK49e6IHNj4Mg94E0R4"
-          />
-        </div>
-      </header>
+      <Header title="LunchSync Explore" />
 
       <main className="pt-24 pb-32 px-4 max-w-2xl mx-auto space-y-10">
         {/* Header & Search */}

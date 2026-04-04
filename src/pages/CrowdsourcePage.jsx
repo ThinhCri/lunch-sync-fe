@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { message } from 'antd';
 import { api } from '@/api';
+import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
 
 const TIER_OPTIONS = [
@@ -100,16 +101,7 @@ export default function CrowdsourcePage() {
 
   return (
     <div className="bg-surface text-on-surface min-h-screen pb-40">
-      {/* TopAppBar */}
-      <header className="fixed top-0 w-full z-50 bg-white/60 backdrop-blur-xl shadow-[0_8px_24px_rgba(44,47,48,0.06)] flex items-center px-4 h-16 w-full">
-        <button 
-          onClick={() => navigate(-1)}
-          className="w-10 h-10 flex items-center justify-center rounded-full text-orange-700 hover:bg-zinc-100/50 transition-colors"
-        >
-          <span className="material-symbols-outlined">arrow_back</span>
-        </button>
-        <h1 className="ml-2 font-headline font-bold tracking-tight text-orange-700 text-xl">Suggest Restaurant</h1>
-      </header>
+      <Header title="LunchSync Suggest" />
 
       <main className="pt-20 px-6 max-w-2xl mx-auto">
         {/* Hero Section */}

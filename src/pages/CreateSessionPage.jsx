@@ -5,6 +5,7 @@ import { api } from '@/api';
 import { useSessionStore } from '@/store/sessionStore';
 import { useAuthStore } from '@/store/authStore';
 import { PRICE_TIERS } from '@/utils/constants';
+import Header from '@/components/layout/Header';
 import JoinModal from '@/components/modals/JoinModal';
 import BottomNav from '@/components/layout/BottomNav';
 
@@ -101,20 +102,7 @@ export default function CreateSessionPage() {
 
   return (
     <div className="bg-surface font-body text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container min-h-screen">
-      {/* TopAppBar */}
-      <header className="fixed top-0 w-full z-50 bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl shadow-[0_8px_24px_rgba(44,47,48,0.06)]">
-        <div className="flex items-center justify-between px-6 h-16 w-full max-w-lg mx-auto">
-          <button 
-            onClick={() => navigate(-1)}
-            type="button"
-            className="text-orange-700 dark:text-orange-500 scale-95 active:scale-90 transition-transform"
-          >
-            <span className="material-symbols-outlined">arrow_back</span>
-          </button>
-          <h1 className="font-headline font-bold tracking-tight text-xl text-orange-700 dark:text-orange-500">LunchSync</h1>
-          <div className="w-6"></div> {/* Spacer for center alignment */}
-        </div>
-      </header>
+      <Header title="LunchSync Create" />
 
       <main className="pt-24 pb-32 px-6 max-w-lg mx-auto">
         {/* Hero Editorial Section */}

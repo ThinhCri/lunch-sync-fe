@@ -9,6 +9,7 @@ import { useVoting } from '@/hooks/useVoting';
 import { useSession } from '@/hooks/useSession';
 import { useReconnect } from '@/hooks/useReconnect';
 import { MAX_SKIP_COUNT } from '@/utils/constants';
+import Header from '@/components/layout/Header';
 
 const TOTAL_QUESTIONS = 8;
 
@@ -107,16 +108,15 @@ export default function VotingPage() {
 
   return (
     <div className="bg-surface font-body text-on-surface min-h-screen flex flex-col pt-20">
-      {/* TopAppBar */}
-      <header className="fixed top-0 w-full z-50 bg-white/60 dark:bg-zinc-950/60 backdrop-blur-xl shadow-[0_8px_24px_rgba(44,47,48,0.06)] flex items-center justify-between px-6 py-4">
-        <div className="flex items-center gap-4">
-          <h1 className="text-xl font-black text-zinc-900 dark:text-zinc-50 font-headline tracking-tight">LunchSync Vote</h1>
-        </div>
-        <div className={`flex items-center gap-2 px-4 py-2 rounded-full transition-colors ${timeLeft <= 5 ? 'bg-red-100/50 dark:bg-red-900/20' : 'bg-orange-100/50 dark:bg-orange-900/20'}`}>
-          <span className={`material-symbols-outlined text-sm ${timeLeft <= 5 ? 'text-red-700 dark:text-red-500' : 'text-orange-700 dark:text-orange-500'}`}>timer</span>
-          <span className={`font-bold font-headline ${timeLeft <= 5 ? 'text-red-700 dark:text-red-500 animate-pulse' : 'text-orange-700 dark:text-orange-500'}`}>{formatTime(timeLeft)}</span>
-        </div>
-      </header>
+      <Header 
+        title="LunchSync Vote" 
+        rightContent={
+          <div className={`flex items-center gap-2 px-4 py-2 rounded-full transition-colors ${timeLeft <= 5 ? 'bg-red-100/50 dark:bg-red-900/20' : 'bg-orange-100/50 dark:bg-orange-900/20'}`}>
+            <span className={`material-symbols-outlined text-sm ${timeLeft <= 5 ? 'text-red-700 dark:text-red-500' : 'text-orange-700 dark:text-orange-500'}`}>timer</span>
+            <span className={`font-bold font-headline ${timeLeft <= 5 ? 'text-red-700 dark:text-red-500 animate-pulse' : 'text-orange-700 dark:text-orange-500'}`}>{formatTime(timeLeft)}</span>
+          </div>
+        }
+      />
 
       {/* Main Content */}
       <main className="flex-grow pb-32 px-6 flex flex-col max-w-4xl mx-auto w-full">

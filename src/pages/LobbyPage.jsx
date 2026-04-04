@@ -8,6 +8,7 @@ import { useSession } from '@/hooks/useSession';
 import { useReconnect } from '@/hooks/useReconnect';
 import { MIN_PARTICIPANTS, MAX_PARTICIPANTS, PRICE_TIERS } from '@/utils/constants';
 import { MOCK_EXTRA_PARTICIPANTS } from '@/api/mock';
+import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
 
 const AVATAR_COLORS = [
@@ -185,15 +186,7 @@ export default function LobbyPage() {
 
   return (
     <div className="bg-surface text-on-surface min-h-screen pb-32 font-body selection:bg-primary-container selection:text-on-primary-container">
-      {/* TopAppBar */}
-      <header className="fixed top-0 w-full z-50 bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl shadow-[0_8px_24px_rgba(44,47,48,0.06)]">
-        <div className="flex items-center justify-between px-6 h-16 w-full max-w-xl mx-auto">
-          <h1 className="text-orange-700 dark:text-orange-500 font-headline font-bold tracking-tight text-lg">LunchSync Lobby</h1>
-          <button className="text-orange-700 dark:text-orange-500 hover:opacity-80 transition-opacity active:scale-95 transition-transform">
-            <span className="material-symbols-outlined">info</span>
-          </button>
-        </div>
-      </header>
+      <Header title="LunchSync Lobby" />
 
       <main className="max-w-xl mx-auto px-6 pt-24 space-y-8">
         

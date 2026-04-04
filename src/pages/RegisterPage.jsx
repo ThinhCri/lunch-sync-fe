@@ -92,7 +92,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <Layout>
+    <Layout title="LunchSync Register">
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center px-6 py-16">
 
         {/* ── Left: Value Proposition ── */}

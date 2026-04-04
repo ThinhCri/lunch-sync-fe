@@ -100,7 +100,7 @@ export default function VotingWaitPage() {
   // Redirect if haven't voted yet
   if (!submitted) {
     return (
-      <Layout>
+      <Layout title="LunchSync Waiting">
         <div className="flex-grow flex items-center justify-center px-6 pb-32">
           <div className="bg-white border-2 border-dashed border-outline/50 rounded-3xl p-10 max-w-md w-full text-center flex flex-col items-center gap-6 shadow-sm">
             <div className="w-20 h-20 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant/40">
@@ -131,7 +131,7 @@ export default function VotingWaitPage() {
   const timeDisplay = mins > 0 ? `${mins}:${String(secs).padStart(2, '0')}` : `${secs}s`;
 
   return (
-    <Layout>
+    <Layout title="LunchSync Waiting">
       <div className="flex-grow flex flex-col items-center justify-center px-6 pt-24 pb-32 max-w-2xl mx-auto w-full relative">
         
         {/* Decorative blobs */}

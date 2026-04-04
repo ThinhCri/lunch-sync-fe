@@ -163,7 +163,7 @@ export default function BoomPage() {
 
   if (!boomData) {
     return (
-      <Layout>
+      <Layout title="LunchSync Boom">
         <div className="flex-grow flex flex-col items-center justify-center gap-4 pt-24">
           <FontAwesomeIcon icon={faCircleNotch} className="text-primary text-4xl animate-spin" />
           <p className="font-bold text-on-surface-variant uppercase tracking-widest text-xs">Đang tải...</p>
@@ -180,7 +180,7 @@ export default function BoomPage() {
   const isUrgent = remaining <= 15;
 
   return (
-    <Layout>
+    <Layout title="LunchSync Boom">
       <div className="pt-24 flex-grow flex flex-col items-center justify-center px-6 pb-32 max-w-4xl mx-auto w-full overflow-hidden relative">
 
         {/* Background Effects */}

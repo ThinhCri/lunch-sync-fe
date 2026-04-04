@@ -4,6 +4,7 @@ import { message } from 'antd';
 import confetti from 'canvas-confetti';
 import { api } from '@/api';
 import { useSessionStore } from '@/store/sessionStore';
+import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
 
 const BRAND_COLORS = ['#9c3f00', '#ff7a2f', '#4953ac', '#176a21', '#FFD700', '#ff6b00'];
@@ -77,18 +78,7 @@ export default function DonePage() {
 
   return (
     <div className="bg-surface font-body text-on-surface min-h-screen">
-      {/* TopAppBar */}
-      <header className="bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl fixed top-0 w-full z-50">
-        <div className="flex items-center px-4 h-16 w-full">
-          <button 
-            onClick={() => navigate(`/results/${pin}`)}
-            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors scale-95 active:duration-150"
-          >
-            <span className="material-symbols-outlined text-orange-700 dark:text-orange-500">arrow_back</span>
-          </button>
-          <h1 className="ml-2 font-headline font-bold tracking-tight text-lg text-orange-700 dark:text-orange-500">Selection Confirmed</h1>
-        </div>
-      </header>
+      <Header title="LunchSync Confirmed" />
 
       <main className="pt-20 pb-32 px-4 max-w-2xl mx-auto">
         {/* Success Hero Section */}

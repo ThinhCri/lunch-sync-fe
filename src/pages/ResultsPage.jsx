@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { message } from 'antd';
 import { api } from '@/api';
 import { useSessionStore } from '@/store/sessionStore';
+import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
 
 export default function ResultsPage() {
@@ -123,15 +124,7 @@ export default function ResultsPage() {
 
   return (
     <div className="bg-background font-body text-on-surface antialiased min-h-screen">
-      {/* TopAppBar */}
-      <header className="fixed top-0 w-full z-50 bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl flex items-center justify-between px-6 h-16 border-b border-zinc-100 dark:border-zinc-800">
-        <div className="flex items-center gap-4">
-          <h1 className="font-headline font-bold tracking-tight text-xl text-zinc-900 dark:text-zinc-50">Kết quả LunchSync</h1>
-        </div>
-        <button className="active:scale-95 duration-200 hover:opacity-80 transition-opacity text-zinc-500 dark:text-zinc-400">
-          <span className="material-symbols-outlined">more_vert</span>
-        </button>
-      </header>
+      <Header title="LunchSync Results" />
 
       <main className="pt-24 pb-32 px-4 space-y-10 max-w-xl mx-auto">
         {/* Top 3 Featured Dishes */}

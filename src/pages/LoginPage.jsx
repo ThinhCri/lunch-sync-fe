@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { api } from '@/api';
+import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
 
 export default function LoginPage() {
@@ -67,13 +68,7 @@ export default function LoginPage() {
       <div className="fixed top-20 -right-20 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
       <div className="fixed bottom-10 -left-20 w-80 h-80 bg-secondary/5 rounded-full blur-3xl pointer-events-none"></div>
 
-      {/* TopAppBar Shell */}
-      <header className="fixed top-0 w-full flex justify-center items-center px-6 py-8 z-50">
-        <div className="flex items-center gap-2">
-          <span className="material-symbols-outlined text-primary text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>restaurant_menu</span>
-          <span className="font-headline font-black tracking-tighter text-2xl text-orange-700">LunchSync</span>
-        </div>
-      </header>
+      <Header title="LunchSync" />
 
       <main className="flex-grow flex items-center justify-center px-4 pt-20 pb-24 relative z-10 w-full">
         <div className="w-full max-w-md">

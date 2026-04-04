@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
+import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
 
 export default function ProfilePage() {
@@ -18,12 +19,7 @@ export default function ProfilePage() {
 
   return (
     <div className="bg-background min-h-screen pb-32 font-body text-on-surface antialiased">
-      {/* TopAppBar */}
-      <header className="fixed top-0 w-full z-50 bg-surface/90 backdrop-blur-xl flex items-center justify-between px-6 py-4">
-        <div className="flex items-center gap-4">
-          <h1 className="font-headline text-orange-700 dark:text-orange-500 font-bold text-xl tracking-tighter">LunchSync</h1>
-        </div>
-      </header>
+      <Header title="LunchSync Profile" />
 
       <main className="pt-24 px-6 max-w-2xl mx-auto">
         {/* Profile Header Section (Identity) */}
