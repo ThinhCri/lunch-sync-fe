@@ -13,17 +13,17 @@
 
 <br/>
 
-## 📖 Giới thiệu
+## Giới thiệu
 **LunchSync** là ứng dụng web ưu tiên thiết bị di động (Mobile-first) giúp các nhóm đồng nghiệp quyết định nhanh chóng địa điểm ăn trưa mà không còn phải đau đầu vì câu hỏi kinh điển: *"Trưa nay ăn gì?"*. 
 
 Thay vì cãi vã hay nhường nhau, LunchSync biến việc chọn món thành một trải nghiệm thú vị như "quẹt Tinder", với hệ thống tổng hợp thời gian thực thông minh.
 
-## ✨ Tính năng nổi bật
-- 🎯 **Trải nghiệm quẹt (Swipe) độc đáo:** Đưa ra các gợi ý món ăn/nhà hàng. Thích thì quẹt phải, không thích thì quẹt trái. Thuật toán sẽ tổng hợp điểm số và độ tương đồng để tìm ra quán ăn "đỉnh" nhất cho cả nhóm.
-- 🔥 **Chế độ BOOM (Loại trừ):** Trong trường hợp khó quyết định giữa top lựa chọn, Host có thể kích hoạt **BOOM** – màn thiết kế animation cực "chất" sẽ văng các quán có hạng thấp ra khỏi màn hình và đưa Top 3 lên để chốt!
-- 🎪 **Sảnh chờ (Lobby) Real-time:** Hiển thị tức thì số lượng đã tham gia phòng, ai đã ở trong phòng chờ và ai đã hoàn thành lượt bình chọn.
-- 💎 **Giao diện Modern & Premium:** Đi theo phong cách Glassmorphism mượt mà, màu ấm cúng (với màu chủ đạo là cam cháy và đỏ), hiệu ứng mượt mà từ Framer Motion, mang lại cảm giác cực "chill" và cao cấp.
-- 🗂️ **Quản lý danh sách (Crowdsourced):** Người dùng có thể Đề xuất thêm quán ăn mới vào database danh sách quán chung của công ty.
+##  Tính năng nổi bật
+- **Trải nghiệm quẹt (Swipe) độc đáo:** Đưa ra các gợi ý món ăn/nhà hàng. Thích thì quẹt phải, không thích thì quẹt trái. Thuật toán sẽ tổng hợp điểm số và độ tương đồng để tìm ra quán ăn "đỉnh" nhất cho cả nhóm.
+- **Chế độ BOOM (Loại trừ):** Trong trường hợp khó quyết định giữa top lựa chọn, Host có thể kích hoạt **BOOM** – màn thiết kế animation cực "chất" sẽ văng các quán có hạng thấp ra khỏi màn hình và đưa Top 3 lên để chốt!
+- **Sảnh chờ (Lobby) Real-time:** Hiển thị tức thì số lượng đã tham gia phòng, ai đã ở trong phòng chờ và ai đã hoàn thành lượt bình chọn.
+- **Giao diện Modern & Premium:** Đi theo phong cách Glassmorphism mượt mà, màu ấm cúng (với màu chủ đạo là cam cháy và đỏ), hiệu ứng mượt mà từ Framer Motion, mang lại cảm giác cực "chill" và cao cấp.
+- **Quản lý danh sách (Crowdsourced):** Người dùng có thể Đề xuất thêm quán ăn mới vào database danh sách quán chung của công ty.
 
 ## 🛠 Công nghệ sử dụng
 - **Core Framework:** React 18, React Router v6.
@@ -33,7 +33,7 @@ Thay vì cãi vã hay nhường nhau, LunchSync biến việc chọn món thành
 - **State Management:** Zustand (Store gọn nhẹ & hiệu năng cao cho Auth, Session).
 - **Icons & Components:** FontAwesome, Material Symbols, Ant Design.
 
-## 🚀 Cài đặt & Khởi chạy trực tiếp
+## Cài đặt & Khởi chạy trực tiếp
 
 ```bash
 # 1. Clone repository
@@ -51,7 +51,7 @@ npm run dev
 
 Server sẽ khởi chạy mặc định tại `http://localhost:5173`. Giao diện này nhắm đến đối tượng Mobile nên hãy **truy cập qua trình duyệt điện thoại**, hoặc ấn `F12` chọn Mobile View để có trải nghiệm thị giác đẹp và kích thước chuẩn xác nhất!
 
-## 🕹 Luồng sử dụng cơ bản
+## Luồng sử dụng cơ bản
 1. **Host** (Trưởng nhóm) gửi lời mời hoặc báo mã phòng (PIN).
 2. **Thành viên** nhập dãy `Mã phòng` hoặc vào thẳng link để join vào sảnh.
 3. Host bấm **Bắt đầu**, mọi người bước vào màn hình bình chọn và quẹt trái/phải các nhà hàng do hệ thống Random.
