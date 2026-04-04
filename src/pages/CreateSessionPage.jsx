@@ -6,6 +6,7 @@ import { useSessionStore } from '@/store/sessionStore';
 import { useAuthStore } from '@/store/authStore';
 import { PRICE_TIERS } from '@/utils/constants';
 import JoinModal from '@/components/modals/JoinModal';
+import BottomNav from '@/components/layout/BottomNav';
 
 const COLLECTION_STYLES = [
   { icon: 'restaurant', colorClass: 'text-secondary', bgClass: 'bg-secondary-container/30' },
@@ -23,7 +24,7 @@ export default function CreateSessionPage() {
   const [selectedCollection, setSelectedCollection] = useState(null);
 
   // Form
-  const { user } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
   const [nickname, setNickname] = useState(user?.fullName || '');
   const [selectedTier, setSelectedTier] = useState(null);
   const [creating, setCreating] = useState(false);
@@ -54,6 +55,12 @@ export default function CreateSessionPage() {
     }
     if (!selectedCollection) {
       message.error('Vui lòng chọn khu vực ăn trưa');
+      return;
+    }
+
+    if (!isAuthenticated()) {
+      message.warning('Vui lòng đăng nhập để tạo nhóm');
+      navigate('/login');
       return;
     }
 
@@ -117,15 +124,6 @@ export default function CreateSessionPage() {
             <h2 className="font-headline font-extrabold text-4xl leading-tight tracking-tight text-on-surface">Tạo nhóm</h2>
             <p className="text-on-surface-variant mt-2 text-sm">Kết nối đồng nghiệp, khám phá ẩm thực cùng nhau.</p>
           </div>
-          {/* Join Button (Secondary Action) */}
-          <button 
-            onClick={() => setShowJoinModal(true)}
-            type="button"
-            className="mt-2 bg-primary/10 hover:bg-primary/20 text-primary px-5 py-2.5 rounded-full text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap"
-          >
-            <span className="material-symbols-outlined text-[18px]">login</span>
-            Tham gia
-          </button>
         </div>
 
         <form className="space-y-10" onSubmit={handleCreate}>
@@ -220,8 +218,12 @@ export default function CreateSessionPage() {
           <div className="flex justify-center pt-8 pb-8">
             <button 
               type="submit"
-              disabled={creating || loadingCollections}
-              className={`w-full max-w-xs py-4 rounded-full text-on-primary font-headline font-bold text-lg shadow-xl shadow-primary/20 scale-100 active:scale-95 transition-all duration-200 flex items-center justify-center gap-3 ${creating ? 'bg-primary/50' : 'bg-gradient-to-br from-primary to-primary-container'}`}
+              disabled={creating || loadingCollections || !nickname.trim() || !selectedTier || !selectedCollection}
+              className={`w-full max-w-xs py-4 rounded-full font-headline font-bold text-lg transition-all duration-200 flex items-center justify-center gap-3 ${
+                (!nickname.trim() || !selectedTier || !selectedCollection || creating)
+                  ? 'bg-surface-variant text-on-surface-variant/50 cursor-not-allowed'
+                  : 'bg-gradient-to-br from-primary to-primary-container shadow-xl shadow-primary/20 text-on-primary scale-100 active:scale-95'
+              }`}
             >
               {creating ? 'Đang tạo...' : 'Tạo nhóm'}
               {!creating && <span className="material-symbols-outlined">group_add</span>}
@@ -230,31 +232,16 @@ export default function CreateSessionPage() {
         </form>
       </main>
 
+      {/* FAB: Tham gia */}
+      <button 
+        onClick={() => setShowJoinModal(true)}
+        className="fixed bottom-32 right-6 z-50 bg-gradient-to-br from-primary to-primary-container text-on-primary flex items-center gap-2 px-6 py-4 rounded-full shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all">
+        <span className="material-symbols-outlined">login</span>
+        <span className="font-label font-bold text-sm tracking-wide">Tham gia</span>
+      </button>
+
       {/* BottomNavBar */}
-      <nav className="fixed bottom-0 left-0 w-full z-50 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-2xl rounded-t-[2rem] shadow-[0_-8px_24px_rgba(44,47,48,0.06)]">
-        <div className="max-w-lg mx-auto flex justify-around items-center px-4 pt-2 pb-6">
-          <button 
-            onClick={() => navigate('/')}
-            type="button"
-            className="flex flex-col items-center justify-center text-zinc-500 dark:text-zinc-400 px-8 py-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full scale-100 active:scale-95 transition-all duration-200">
-            <span className="material-symbols-outlined">explore</span>
-            <span className="font-label text-[11px] font-medium">Explore</span>
-          </button>
-          <button 
-            type="button"
-            className="flex flex-col items-center justify-center bg-orange-100 dark:bg-orange-950/30 text-orange-700 dark:text-orange-400 rounded-full px-8 py-1 scale-100 active:scale-95 transition-all duration-200">
-            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>groups</span>
-            <span className="font-label text-[11px] font-medium">LunchSync</span>
-          </button>
-          <button 
-            onClick={() => navigate('/profile')}
-            type="button"
-            className="flex flex-col items-center justify-center text-zinc-500 dark:text-zinc-400 px-8 py-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full scale-100 active:scale-95 transition-all duration-200">
-            <span className="material-symbols-outlined">person</span>
-            <span className="font-label text-[11px] font-medium">Profile</span>
-          </button>
-        </div>
-      </nav>
+      <BottomNav />
 
       <JoinModal
         open={showJoinModal}

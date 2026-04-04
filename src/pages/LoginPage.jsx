@@ -2,16 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { api } from '@/api';
-import Layout from '@/components/layout/Layout';
-import loginHero from '@/assets/images/login-hero.jpg';
-import loginAvatar1 from '@/assets/images/login-avatar-1.jpg';
-import loginAvatar2 from '@/assets/images/login-avatar-2.jpg';
-import loginAvatar3 from '@/assets/images/login-avatar-3.jpg';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faStopwatch, faExclamationCircle, faEnvelope, 
-  faLock, faSpinner, faArrowRight 
-} from '@fortawesome/free-solid-svg-icons';
+import BottomNav from '@/components/layout/BottomNav';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -22,6 +13,7 @@ export default function LoginPage() {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [generalError, setGeneralError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const validate = () => {
     const errs = {};
@@ -70,145 +62,112 @@ export default function LoginPage() {
   };
 
   return (
-    <Layout>
-      <div className="flex-grow flex items-center justify-center px-6 py-16">
-        <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 bg-[#f7f3ee] rounded-lg overflow-hidden editorial-shadow border border-[#dcc1b6]/10">
+    <div className="bg-background text-on-background h-[100dvh] flex flex-col font-body selection:bg-primary-container selection:text-on-primary-container relative overflow-hidden">
+      {/* Decorative Elements */}
+      <div className="fixed top-20 -right-20 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="fixed bottom-10 -left-20 w-80 h-80 bg-secondary/5 rounded-full blur-3xl pointer-events-none"></div>
 
-          {/* Branding / Value Prop (Left Column) */}
-          <div className="relative hidden md:flex flex-col justify-center p-12 bg-[#e6e2dd]">
-            <div className="absolute inset-0 opacity-10 pointer-events-none">
-              <img
-                alt="Delicious office lunch"
-                className="w-full h-full object-cover"
-                src={loginHero}
+      {/* TopAppBar Shell */}
+      <header className="fixed top-0 w-full flex justify-center items-center px-6 py-8 z-50">
+        <div className="flex items-center gap-2">
+          <span className="material-symbols-outlined text-primary text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>restaurant_menu</span>
+          <span className="font-headline font-black tracking-tighter text-2xl text-orange-700">LunchSync</span>
+        </div>
+      </header>
+
+      <main className="flex-grow flex items-center justify-center px-4 pt-20 pb-24 relative z-10 w-full">
+        <div className="w-full max-w-md">
+          {/* Hero Aesthetic Section */}
+          <div className="text-center mb-10">
+            <div className="relative inline-block mb-6">
+              <div className="absolute -inset-4 bg-primary/10 rounded-full blur-2xl"></div>
+              <img 
+                alt="Appetizing healthy salad bowl" 
+                className="relative w-24 h-24 rounded-full object-cover border-4 border-surface-container-lowest shadow-[0_8px_24px_rgba(44,47,48,0.06)]" 
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5w4bIGcCVNEeYO2k_6bA_4h018IxYIhvl0YUGLxX_RZ0F4Td41tdLHY8AYkWY2mtgcRrp_o8mHKLTgxiO5ruGeSHu-t9GxF7ROJGtY6MwDeHsMeMzNcFEYRRAiuqwCg6iH9wVpxlRSJrJz7P9vUFPVT59bxT9aUmWO9ehV6aPv1uftYVErK76Tc6mf4ql3sI1EW-n4JkKGthHuukXtan6x-3-BBrbA_xG9hKS31sHElV40CAwi4J2Q0fUT2ZvuRN7-utBXlOIsoM" 
               />
             </div>
-            <div className="relative z-10">
-              <div className="inline-flex items-center gap-2 bg-[#ffc247] text-[#715000] px-4 py-1.5 rounded-full text-sm font-bold mb-6">
-                <FontAwesomeIcon icon={faStopwatch} className="text-sm" />
-                <span>Quyết định bữa trưa chỉ trong 3 phút</span>
-              </div>
-              <h1 className="text-4xl lg:text-5xl font-extrabold text-[#56423a] font-headline tracking-tight leading-tight mb-6">
-                Bữa trưa văn phòng<br />
-                <span className="text-[#9a410f] italic">không còn là gánh nặng.</span>
-              </h1>
-              <p className="text-lg text-[#56423a]/80 font-medium max-w-md leading-relaxed">
-                LunchSync đồng bộ sở thích của đồng nghiệp, đề xuất những quán ngon nhất gần bạn chỉ trong tích tắc.
-              </p>
-              <div className="mt-12 flex items-center gap-4">
-                <div className="flex -space-x-3">
-                  <img
-                    className="w-10 h-10 rounded-full border-2 border-[#fdf9f4]"
-                    alt="User avatar 1"
-                    src={loginAvatar1}
-                  />
-                  <img
-                    className="w-10 h-10 rounded-full border-2 border-[#fdf9f4]"
-                    alt="User avatar 2"
-                    src={loginAvatar2}
-                  />
-                  <img
-                    className="w-10 h-10 rounded-full border-2 border-[#fdf9f4]"
-                    alt="User avatar 3"
-                    src={loginAvatar3}
-                  />
-                </div>
-                <span className="text-sm font-semibold text-[#56423a]">+500 dân văn phòng tin dùng</span>
-              </div>
-            </div>
+            <h1 className="text-4xl font-extrabold tracking-tight text-on-surface mb-2 font-headline">Sẵn sàng cho bữa trưa?</h1>
+            <p className="text-on-surface-variant text-sm font-medium">Kết nối với đồng nghiệp và tìm những địa điểm ăn uống tốt nhất hôm nay.</p>
           </div>
 
-          {/* Form Section (Right Column) */}
-          <div className="p-8 md:p-16 bg-white flex flex-col justify-center">
-            <div className="mb-10 text-center md:text-left">
-              <h2 className="text-3xl font-bold text-[#1c1c19] font-headline mb-2">Đăng nhập</h2>
-              <p className="text-[#56423a]/70 font-medium">Chào mừng bạn quay trở lại với LunchSync.</p>
-            </div>
-
+          {/* Login Form */}
+          <div className="bg-surface-container-lowest p-8 rounded-2xl shadow-[0_4px_16px_rgba(44,47,48,0.03)] border border-outline-variant/10">
             {generalError && (
-              <div className="mb-6 px-4 py-3 bg-[#ffdad6] text-[#93000a] rounded-lg flex items-center gap-2 text-sm font-medium">
-                <FontAwesomeIcon icon={faExclamationCircle} className="text-sm" />
+              <div className="mb-6 px-4 py-3 bg-error-container/20 text-error rounded-lg flex items-center gap-2 text-sm font-medium">
+                <span className="material-symbols-outlined text-[20px]">error</span>
                 {generalError}
               </div>
             )}
-
+            
             <form className="space-y-6" onSubmit={handleSubmit} noValidate>
-              <div>
-                <label className="block text-sm font-bold text-[#56423a] mb-2 ml-1" htmlFor="email">
-                  Email
-                </label>
-                <div className="relative">
-                  <FontAwesomeIcon icon={faEnvelope} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#897269]" />
-                  <input
-                    id="email"
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-on-surface-variant ml-2" htmlFor="email">Địa chỉ Email</label>
+                <div className="relative group">
+                  <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">mail</span>
+                  <input 
+                    className={`w-full pl-12 pr-4 py-4 rounded-full bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 text-on-surface placeholder:text-outline/60 transition-all font-medium ${errors.email ? 'ring-2 ring-error' : ''}`}
+                    id="email" 
+                    placeholder="alex@company.com" 
                     type="email"
-                    className={`w-full pl-12 pr-4 py-4 rounded-lg bg-[#f7f3ee] border-none focus:ring-2 focus:ring-[#9a410f]/20 focus:bg-white transition-all placeholder:text-[#dcc1b6] outline-none ${errors.email ? 'ring-2 ring-[#ba1a1a]' : ''}`}
-                    placeholder="nguyenvana@gmail.com"
                     value={email}
-                    onChange={(e) => { setEmail(e.target.value); setErrors((p) => ({ ...p, email: '' })); }}
-                    autoComplete="email"
+                    onChange={(e) => { setEmail(e.target.value); setErrors(prev => ({...prev, email: ''})) }}
                     disabled={loading}
                   />
                 </div>
-                {errors.email && (
-                  <p className="text-xs text-[#ba1a1a] mt-1 ml-1">{errors.email}</p>
-                )}
+                {errors.email && <p className="text-xs text-error mt-1 ml-2 font-bold">{errors.email}</p>}
               </div>
 
-              <div>
-                <div className="flex justify-between items-center mb-2 ml-1">
-                  <label className="block text-sm font-bold text-[#56423a]" htmlFor="password">
-                    Mật khẩu
-                  </label>
-                  <button type="button" className="text-sm font-semibold text-[#9a410f] hover:underline transition-all">
-                    Quên mật khẩu?
+              <div className="space-y-2">
+                <div className="flex justify-between items-center ml-2">
+                  <label className="block text-sm font-semibold text-on-surface-variant" htmlFor="password">Mật khẩu</label>
+                </div>
+                <div className="relative group">
+                  <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">lock</span>
+                  <input 
+                    className={`w-full pl-12 pr-12 py-4 rounded-full bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 text-on-surface placeholder:text-outline/60 transition-all font-medium ${errors.password ? 'ring-2 ring-error' : ''}`}
+                    id="password" 
+                    placeholder="••••••••" 
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => { setPassword(e.target.value); setErrors(prev => ({...prev, password: ''})) }}
+                    disabled={loading}
+                  />
+                  <button 
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-primary transition-colors" 
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    <span className="material-symbols-outlined">{showPassword ? 'visibility_off' : 'visibility'}</span>
                   </button>
                 </div>
-                <div className="relative">
-                  <FontAwesomeIcon icon={faLock} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#897269]" />
-                  <input
-                    id="password"
-                    type="password"
-                    className={`w-full pl-12 pr-4 py-4 rounded-lg bg-[#f7f3ee] border-none focus:ring-2 focus:ring-[#9a410f]/20 focus:bg-white transition-all placeholder:text-[#dcc1b6] outline-none ${errors.password ? 'ring-2 ring-[#ba1a1a]' : ''}`}
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => { setPassword(e.target.value); setErrors((p) => ({ ...p, password: '' })); }}
-                    autoComplete="current-password"
-                    disabled={loading}
-                  />
+                <div className="flex justify-between items-start">
+                  <div className="flex-grow">
+                    {errors.password && <p className="text-xs text-error mt-1 ml-2 font-bold">{errors.password}</p>}
+                  </div>
+                  <a className="text-sm font-semibold text-primary hover:opacity-80 transition-opacity mt-1 whitespace-nowrap" href="#">Quên mật khẩu?</a>
                 </div>
-                {errors.password && (
-                  <p className="text-xs text-[#ba1a1a] mt-1 ml-1">{errors.password}</p>
-                )}
               </div>
 
-              <button
-                type="submit"
-                className="w-full bg-gradient-to-br from-[#9a410f] to-[#ba5826] text-white py-4 rounded-full font-bold text-lg shadow-lg hover:shadow-xl active:scale-95 transition-all duration-300 flex justify-center items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+              <button 
                 disabled={loading}
+                className="w-full py-4 mt-2 rounded-full bg-gradient-to-br from-primary to-primary-container text-on-primary font-bold text-lg shadow-lg shadow-primary/20 hover:scale-[0.99] active:scale-95 transition-all duration-200 flex justify-center items-center gap-2 opacity-100 disabled:opacity-70 disabled:cursor-not-allowed" 
+                type="submit"
               >
-                {loading ? (
-                  <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
-                ) : (
-                  <>
-                    <span>Đăng nhập ngay</span>
-                    <FontAwesomeIcon icon={faArrowRight} />
-                  </>
-                )}
+                {loading ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> : 'Đăng nhập'}
               </button>
             </form>
+          </div>
 
-            <div className="mt-8 pt-8 border-t border-[#dcc1b6]/20 text-center">
-              <p className="text-[#56423a] font-medium">
-                Chưa có tài khoản?
-                <Link className="text-[#9a410f] font-bold hover:underline ml-1" to="/register">
-                  Đăng ký ngay
-                </Link>
-              </p>
-            </div>
+          {/* Sign Up Link */}
+          <div className="text-center mt-10">
+            <p className="text-on-surface-variant font-medium">Chưa có tài khoản? <Link className="text-primary font-bold hover:underline ml-1" to="/register">Đăng ký</Link></p>
           </div>
         </div>
-      </div>
-    </Layout>
+      </main>
+
+      {/* Bottom Navigation */}
+      <BottomNav />
+    </div>
   );
 }

@@ -2,23 +2,12 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import JoinModal from '@/components/modals/JoinModal';
+import BottomNav from '@/components/layout/BottomNav';
 
 export default function HomePage() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
   const [showJoinModal, setShowJoinModal] = useState(false);
-
-  const handleCreateLunch = () => {
-    if (isAuthenticated()) {
-      navigate('/create');
-    } else {
-      navigate('/login');
-    }
-  };
-
-  const handleJoin = () => {
-    setShowJoinModal(true);
-  };
 
   return (
     <div className="bg-surface text-on-surface font-body selection:bg-primary-container selection:text-on-primary-container min-h-screen">
@@ -149,24 +138,7 @@ export default function HomePage() {
       </button>
 
       {/* BottomNavBar */}
-      <nav className="fixed bottom-0 w-full z-50 rounded-t-[2rem] bg-white/90 dark:bg-zinc-900/90 backdrop-blur-2xl shadow-[0_-8px_24px_rgba(44,47,48,0.06)] flex justify-around items-center px-4 pt-3 pb-8">
-        <div className="flex flex-col items-center justify-center bg-orange-100 dark:bg-orange-950/30 text-orange-700 dark:text-orange-400 rounded-full px-5 py-2 scale-98 transition-transform duration-200">
-          <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>explore</span>
-          <span className="font-be-vietnam text-label-sm font-medium">Explore</span>
-        </div>
-        <div 
-          onClick={handleCreateLunch}
-          className="flex flex-col items-center justify-center text-zinc-500 dark:text-zinc-400 px-5 py-2 hover:text-orange-600 dark:hover:text-orange-300 cursor-pointer">
-          <span className="material-symbols-outlined">group_work</span>
-          <span className="font-be-vietnam text-label-sm font-medium">LunchSync</span>
-        </div>
-        <div 
-          onClick={() => navigate('/profile')}
-          className="flex flex-col items-center justify-center text-zinc-500 dark:text-zinc-400 px-5 py-2 hover:text-orange-600 dark:hover:text-orange-300 cursor-pointer">
-          <span className="material-symbols-outlined">person</span>
-          <span className="font-be-vietnam text-label-sm font-medium">Profile</span>
-        </div>
-      </nav>
+      <BottomNav />
 
       <JoinModal
         open={showJoinModal}

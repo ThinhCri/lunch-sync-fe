@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { message } from 'antd';
 import { api } from '@/api';
+import BottomNav from '@/components/layout/BottomNav';
 
 const TIER_OPTIONS = [
   { key: 'duoi_40k', label: 'Dưới 40k' },
@@ -275,24 +276,7 @@ export default function CrowdsourcePage() {
       </main>
 
       {/* BottomNavBar */}
-      <nav className="fixed bottom-0 left-0 w-full flex justify-around items-center h-20 px-6 pb-2 bg-white/90 backdrop-blur-xl shadow-[0_-8px_24px_rgba(44,47,48,0.06)] rounded-t-[2rem] z-50">
-        <div 
-          onClick={() => navigate('/')}
-          className="flex flex-col items-center justify-center bg-orange-100 text-orange-800 rounded-full px-5 py-1 cursor-pointer">
-          <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>explore</span>
-          <span className="font-label text-[11px] font-medium mt-0.5">Explore</span>
-        </div>
-        <div 
-          className="flex flex-col items-center justify-center text-zinc-500 px-5 py-1 hover:opacity-80 transition-opacity cursor-pointer">
-          <span className="material-symbols-outlined">restaurant</span>
-          <span className="font-label text-[11px] font-medium mt-0.5">LunchSync</span>
-        </div>
-        <div 
-          className="flex flex-col items-center justify-center text-zinc-500 px-5 py-1 hover:opacity-80 transition-opacity cursor-pointer">
-          <span className="material-symbols-outlined">person</span>
-          <span className="font-label text-[11px] font-medium mt-0.5">Profile</span>
-        </div>
-      </nav>
+      <BottomNav />
     </div>
   );
 }

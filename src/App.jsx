@@ -1,4 +1,4 @@
-﻿import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ConfigProvider, theme } from 'antd';
 import { SessionProvider } from '@/contexts/SessionContext';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
@@ -17,6 +17,7 @@ import ResultsPage from '@/pages/ResultsPage';
 import BoomPage from '@/pages/BoomPage';
 import DonePage from '@/pages/DonePage';
 import CrowdsourcePage from '@/pages/CrowdsourcePage';
+import ProfilePage from '@/pages/ProfilePage';
 import SubmissionsPage from '@/pages/admin/SubmissionsPage';
 import DishManagementPage from '@/pages/admin/DishManagementPage';
 
@@ -66,7 +67,8 @@ function App() {
               <Route path="/join" element={<Navigate to="/" replace />} />
               <Route path="/join/:pin" element={<JoinPage />} />
               <Route path="/suggest" element={<CrowdsourcePage />} />
-              <Route path="/create" element={<RequireAuth><CreateSessionPage /></RequireAuth>} />
+              <Route path="/profile" element={<RequireAuth><ProfilePage /></RequireAuth>} />
+              <Route path="/create" element={<CreateSessionPage />} />
               <Route path="/lobby/:pin" element={<RequireAuth><LobbyPage /></RequireAuth>} />
               <Route path="/waiting/:pin" element={<WaitingRoomPage />} />
               <Route path="/vote/:pin" element={<VotingPage />} />
