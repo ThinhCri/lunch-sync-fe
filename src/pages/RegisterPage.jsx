@@ -1,24 +1,25 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { api } from '@/api';
-import Layout from '@/components/layout/Layout';
-import registerTestimonial from '@/assets/images/register-testimonial.jpg';
-import loginAvatar3 from '@/assets/images/login-avatar-3.jpg';
+import BottomNav from '@/components/layout/BottomNav';
+import Header from '@/components/layout/Header';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faStopwatch, faExclamationCircle, faUser, 
-  faEnvelope, faLock, faUserCheck, faSpinner, faArrowRight 
-} from '@fortawesome/free-solid-svg-icons';
+import { faExclamationCircle, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [generalError, setGeneralError] = useState('');
@@ -43,25 +44,19 @@ export default function RegisterPage() {
         passwordErrors.push('tối thiểu 8 ký tự');
       }
       if (!/[A-Z]/.test(password)) {
-        passwordErrors.push('ít nhất 1 chữ hoa');
+        passwordErrors.push('ít nhất 1 hoa');
       }
       if (!/[0-9]/.test(password)) {
-        passwordErrors.push('ít nhất 1 chữ số');
-      }
-      if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)) {
-        passwordErrors.push('ít nhất 1 ký tự đặc biệt');
+        passwordErrors.push('ít nhất 1 số');
       }
       if (passwordErrors.length > 0) {
-        errs.password = 'Mật khẩu cần có: ' + passwordErrors.join(', ');
+        errs.password = 'Mật khẩu: ' + passwordErrors.join(', ');
       }
     }
     if (!confirmPassword) {
       errs.confirmPassword = 'Vui lòng xác nhận mật khẩu';
     } else if (confirmPassword !== password) {
       errs.confirmPassword = 'Mật khẩu không khớp';
-    }
-    if (!termsAccepted) {
-      errs.terms = 'Bạn cần đồng ý với điều khoản';
     }
     return errs;
   };
@@ -93,199 +88,141 @@ export default function RegisterPage() {
   };
 
   return (
-    <Layout title="LunchSync Register">
-      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center px-6 py-16">
+    <div className="bg-surface text-on-surface h-[100dvh] w-full overflow-y-auto overflow-x-hidden flex flex-col font-body selection:bg-primary-container selection:text-on-primary-container relative">
+      
+      {/* Top Navigation Bar */}
+      <Header title="LunchSync Đăng ký" />
 
-        {/* ── Left: Value Proposition ── */}
-        <div className="space-y-8">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#ffc247] text-[#715000] rounded-full text-sm font-semibold">
-            <FontAwesomeIcon icon={faStopwatch} className="text-sm" />
-            <span>Quyết định bữa trưa chỉ trong 3 phút</span>
-          </div>
-
-          <h1 className="text-5xl md:text-6xl font-extrabold text-[#1c1c19] leading-tight tracking-tight">
-            Nâng tầm bữa trưa<br />
-            <span className="text-[#9a410f] italic">văn phòng của bạn.</span>
-          </h1>
-
-          <p className="text-xl text-[#56423a] max-w-md leading-relaxed">
-            Đừng lãng phí thời gian quý báu để suy nghĩ "Trưa nay ăn gì?". Hãy để LunchSync kết nối bạn với những quán ngon nhất quanh công ty.
-          </p>
-
-          {/* Testimonial image */}
-          <div className="relative overflow-hidden rounded-lg aspect-video bg-[#ebe8e3] group">
-            <img
-              alt="Colleagues having lunch"
-              className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105"
-              src={registerTestimonial}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#1c1c19]/40 to-transparent" />
-            <div className="absolute bottom-6 left-6 flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full border-2 border-white overflow-hidden">
-                <img
-                  alt="Minh Anh avatar"
-                  className="object-cover w-full h-full"
-                  src={loginAvatar3}
-                />
-              </div>
-              <div className="text-white">
-                <p className="text-sm font-bold">Minh Anh, Tech Hub</p>
-                <p className="text-xs opacity-80">"LunchSync giúp tôi tiết kiệm 20p mỗi ngày."</p>
-              </div>
-            </div>
-          </div>
+      <main className="flex-grow flex flex-col items-center px-6 pt-28 pb-32 w-full max-w-xl mx-auto">
+        {/* Header Content */}
+        <div className="w-full mb-10 text-center md:text-left">
+          <h2 className="font-headline font-extrabold text-4xl text-on-surface mb-3 tracking-tight">Tham gia cùng LunchSync</h2>
+          <p className="text-on-surface-variant text-lg leading-relaxed">Kết nối ẩm thực, chia sẻ trải nghiệm cùng cộng đồng sành ăn.</p>
         </div>
 
-        {/* ── Right: Registration Form ── */}
-        <div className="relative">
-          {/* Decorative blob */}
-          <div className="absolute -top-12 -right-12 w-64 h-64 bg-[#ffb599]/30 rounded-full blur-3xl -z-10" />
+        {generalError && (
+          <div className="w-full mb-6 px-4 py-3 bg-error-container/20 text-error rounded-lg flex items-center gap-2 text-sm font-medium">
+            <FontAwesomeIcon icon={faExclamationCircle} className="text-sm" />
+            {generalError}
+          </div>
+        )}
 
-          <div className="bg-white p-8 md:p-12 rounded-xl shadow-[0px_20px_40px_rgba(28,28,25,0.06)] border border-[#dcc1b6]/20">
-
-            <div className="mb-10 text-center">
-              <h2 className="text-3xl font-bold text-[#1c1c19] mb-2">Tham gia cộng đồng</h2>
-              <p className="text-[#56423a]">Quyết định bữa trưa chỉ trong 3 phút và tận hưởng bữa ăn chất lượng cùng đồng nghiệp.</p>
-            </div>
-
-            {generalError && (
-              <div className="mb-6 px-4 py-3 bg-[#ffdad6] text-[#93000a] rounded-lg flex items-center gap-2 text-sm font-medium">
-                <FontAwesomeIcon icon={faExclamationCircle} className="text-sm" />
-                {generalError}
+        {/* Registration Form */}
+        <form className="w-full space-y-5" onSubmit={handleSubmit} noValidate>
+          {/* Full Name */}
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-on-surface-variant ml-4">Họ và tên</label>
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <span className={`material-symbols-outlined transition-colors ${errors.fullName ? 'text-error' : 'text-outline group-focus-within:text-primary'}`}>person</span>
               </div>
-            )}
-
-            <form className="space-y-6" onSubmit={handleSubmit} noValidate>
-              {/* Họ và tên */}
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-[#56423a] ml-2" htmlFor="fullName">
-                  Họ và tên
-                </label>
-                <div className="relative">
-                  <FontAwesomeIcon icon={faUser} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#897269]" />
-                  <input
-                    id="fullName"
-                    type="text"
-                    className={`w-full pl-12 pr-4 py-4 bg-[#f7f3ee] border-none rounded-md focus:ring-2 focus:ring-[#ffb599] focus:bg-white transition-all duration-300 outline-none ${errors.fullName ? 'ring-2 ring-[#ba1a1a]' : ''}`}
-                    placeholder="Nguyễn Văn A"
-                    value={fullName}
-                    onChange={(e) => { setFullName(e.target.value); setErrors((p) => ({ ...p, fullName: '' })); }}
-                    autoComplete="name"
-                    disabled={loading}
-                  />
-                </div>
-                {errors.fullName && <p className="text-xs text-[#ba1a1a] ml-2">{errors.fullName}</p>}
-              </div>
-
-              {/* Email công ty */}
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-[#56423a] ml-2" htmlFor="email">
-                  Email công ty
-                </label>
-                <div className="relative">
-                  <FontAwesomeIcon icon={faEnvelope} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#897269]" />
-                  <input
-                    id="email"
-                    type="email"
-                    className={`w-full pl-12 pr-4 py-4 bg-[#f7f3ee] border-none rounded-md focus:ring-2 focus:ring-[#ffb599] focus:bg-white transition-all duration-300 outline-none ${errors.email ? 'ring-2 ring-[#ba1a1a]' : ''}`}
-                    placeholder="nguyenvana@gmail.com"
-                    value={email}
-                    onChange={(e) => { setEmail(e.target.value); setErrors((p) => ({ ...p, email: '' })); }}
-                    autoComplete="email"
-                    disabled={loading}
-                  />
-                </div>
-                {errors.email && <p className="text-xs text-[#ba1a1a] ml-2">{errors.email}</p>}
-              </div>
-
-              {/* Mật khẩu + Xác nhận — 2 cột */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-[#56423a] ml-2" htmlFor="password">
-                    Mật khẩu
-                  </label>
-                  <div className="relative">
-                    <FontAwesomeIcon icon={faLock} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#897269]" />
-                    <input
-                      id="password"
-                      type="password"
-                      className={`w-full pl-12 pr-4 py-4 bg-[#f7f3ee] border-none rounded-md focus:ring-2 focus:ring-[#ffb599] focus:bg-white transition-all duration-300 outline-none ${errors.password ? 'ring-2 ring-[#ba1a1a]' : ''}`}
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => { setPassword(e.target.value); setErrors((p) => ({ ...p, password: '' })); }}
-                      autoComplete="new-password"
-                      disabled={loading}
-                    />
-                  </div>
-                  {errors.password && <p className="text-xs text-[#ba1a1a] ml-2">{errors.password}</p>}
-                </div>
-
-                <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-[#56423a] ml-2" htmlFor="confirmPassword">
-                    Xác nhận mật khẩu
-                  </label>
-                  <div className="relative">
-                    <FontAwesomeIcon icon={faUserCheck} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#897269]" />
-                    <input
-                      id="confirmPassword"
-                      type="password"
-                      className={`w-full pl-12 pr-4 py-4 bg-[#f7f3ee] border-none rounded-md focus:ring-2 focus:ring-[#ffb599] focus:bg-white transition-all duration-300 outline-none ${errors.confirmPassword ? 'ring-2 ring-[#ba1a1a]' : ''}`}
-                      placeholder="••••••••"
-                      value={confirmPassword}
-                      onChange={(e) => { setConfirmPassword(e.target.value); setErrors((p) => ({ ...p, confirmPassword: '' })); }}
-                      autoComplete="new-password"
-                      disabled={loading}
-                    />
-                  </div>
-                  {errors.confirmPassword && <p className="text-xs text-[#ba1a1a] ml-2">{errors.confirmPassword}</p>}
-                </div>
-              </div>
-
-              {/* Terms checkbox */}
-              <div className="flex items-start gap-3 px-2 pt-2">
-                <input
-                  className="mt-1 w-5 h-5 rounded border-[#dcc1b6] text-[#9a410f] focus:ring-[#9a410f]/30 accent-[#9a410f]"
-                  id="terms"
-                  type="checkbox"
-                  checked={termsAccepted}
-                  onChange={(e) => { setTermsAccepted(e.target.checked); setErrors((p) => ({ ...p, terms: '' })); }}
-                  disabled={loading}
-                />
-                <label className="text-sm text-[#56423a] leading-snug" htmlFor="terms">
-                  Tôi đồng ý với <a className="text-[#9a410f] font-semibold hover:underline" href="#">Điều khoản sử dụng</a> và <a className="text-[#9a410f] font-semibold hover:underline" href="#">Chính sách bảo mật</a> của LunchSync.
-                </label>
-              </div>
-              {errors.terms && <p className="text-xs text-[#ba1a1a] ml-2">{errors.terms}</p>}
-
-              {/* Submit */}
-              <button
-                type="submit"
-                className="w-full py-4 px-8 bg-gradient-to-br from-[#9a410f] to-[#ba5826] text-white font-bold text-lg rounded-full shadow-lg hover:shadow-xl transition-all duration-300 active:scale-95 flex justify-center items-center gap-2 group disabled:opacity-60 disabled:cursor-not-allowed"
+              <input 
+                className={`w-full bg-surface-container-lowest border-none ring-1 ring-inset h-14 pl-12 pr-4 rounded-full text-on-surface placeholder:text-outline/60 transition-all ${errors.fullName ? 'ring-error focus:ring-2 focus:ring-error' : 'ring-surface-container-highest focus:ring-2 focus:ring-primary'}`}
+                placeholder="Nguyễn Văn A" 
+                type="text"
+                value={fullName}
+                onChange={(e) => { setFullName(e.target.value); setErrors(p => ({...p, fullName: ''})) }}
                 disabled={loading}
-              >
-                {loading ? (
-                  <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
-                ) : (
-                  <>
-                    Tạo tài khoản
-                    <FontAwesomeIcon icon={faArrowRight} className="transition-transform duration-300 group-hover:translate-x-1" />
-                  </>
-                )}
-              </button>
-            </form>
-
-            <div className="mt-8 pt-8 border-t border-[#dcc1b6]/10 text-center">
-              <p className="text-[#56423a]">
-                Đã có tài khoản?{' '}
-                <Link className="text-[#7c5800] font-bold hover:underline" to="/login" state={{ returnTo: location.state?.returnTo }}>
-                  Đăng nhập ngay
-                </Link>
-              </p>
+              />
             </div>
+            {errors.fullName && <p className="text-[11px] font-bold text-error ml-4 mt-1">{errors.fullName}</p>}
           </div>
-        </div>
 
-      </div>
-    </Layout>
+          {/* Email */}
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-on-surface-variant ml-4">Email</label>
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <span className={`material-symbols-outlined transition-colors ${errors.email ? 'text-error' : 'text-outline group-focus-within:text-primary'}`}>mail</span>
+              </div>
+              <input 
+                className={`w-full bg-surface-container-lowest border-none ring-1 ring-inset h-14 pl-12 pr-4 rounded-full text-on-surface placeholder:text-outline/60 transition-all ${errors.email ? 'ring-error focus:ring-2 focus:ring-error' : 'ring-surface-container-highest focus:ring-2 focus:ring-primary'}`}
+                placeholder="example@gmail.com" 
+                type="email"
+                value={email}
+                onChange={(e) => { setEmail(e.target.value); setErrors(p => ({...p, email: ''})) }}
+                disabled={loading}
+              />
+            </div>
+            {errors.email && <p className="text-[11px] font-bold text-error ml-4 mt-1">{errors.email}</p>}
+          </div>
+
+          {/* Password */}
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-on-surface-variant ml-4">Mật khẩu</label>
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <span className={`material-symbols-outlined transition-colors ${errors.password ? 'text-error' : 'text-outline group-focus-within:text-primary'}`}>lock</span>
+              </div>
+              <input 
+                className={`w-full bg-surface-container-lowest border-none ring-1 ring-inset h-14 pl-12 pr-12 rounded-full text-on-surface placeholder:text-outline/60 transition-all ${errors.password ? 'ring-error focus:ring-2 focus:ring-error' : 'ring-surface-container-highest focus:ring-2 focus:ring-primary'}`}
+                placeholder="••••••••" 
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => { setPassword(e.target.value); setErrors(p => ({...p, password: ''})) }}
+                disabled={loading}
+              />
+              <button 
+                className="absolute inset-y-0 right-0 pr-4 flex items-center text-outline hover:text-primary transition-colors" 
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex="-1"
+              >
+                <span className="material-symbols-outlined">{showPassword ? 'visibility_off' : 'visibility'}</span>
+              </button>
+            </div>
+            {errors.password && <p className="text-[11px] font-bold text-error ml-4 mt-1">{errors.password}</p>}
+          </div>
+
+          {/* Confirm Password */}
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-on-surface-variant ml-4">Xác nhận mật khẩu</label>
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <span className={`material-symbols-outlined transition-colors ${errors.confirmPassword ? 'text-error' : 'text-outline group-focus-within:text-primary'}`}>lock</span>
+              </div>
+              <input 
+                className={`w-full bg-surface-container-lowest border-none ring-1 ring-inset h-14 pl-12 pr-12 rounded-full text-on-surface placeholder:text-outline/60 transition-all ${errors.confirmPassword ? 'ring-error focus:ring-2 focus:ring-error' : 'ring-surface-container-highest focus:ring-2 focus:ring-primary'}`}
+                placeholder="••••••••" 
+                type={showConfirmPassword ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(e) => { setConfirmPassword(e.target.value); setErrors(p => ({...p, confirmPassword: ''})) }}
+                disabled={loading}
+              />
+              <button 
+                className="absolute inset-y-0 right-0 pr-4 flex items-center text-outline hover:text-primary transition-colors" 
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                tabIndex="-1"
+              >
+                <span className="material-symbols-outlined">{showConfirmPassword ? 'visibility_off' : 'visibility'}</span>
+              </button>
+            </div>
+            {errors.confirmPassword && <p className="text-[11px] font-bold text-error ml-4 mt-1">{errors.confirmPassword}</p>}
+          </div>
+
+          {/* Submit Button */}
+          <div className="pt-4">
+            <button 
+              className="w-full bg-gradient-to-br from-primary to-primary-container text-on-primary font-bold h-14 rounded-full shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all text-lg flex items-center justify-center gap-2 disabled:opacity-70 disabled:scale-100 disabled:cursor-not-allowed" 
+              type="submit"
+              disabled={loading}
+            >
+              {loading ? <FontAwesomeIcon icon={faSpinner} className="animate-spin" /> : 'Đăng ký ngay'}
+            </button>
+          </div>
+        </form>
+
+        {/* Footer Links */}
+        <div className="mt-8 text-center">
+          <p className="text-on-surface-variant font-medium">
+            Đã có tài khoản? 
+            <Link className="text-primary font-bold ml-1 hover:underline underline-offset-4" to="/login" state={{ returnTo: location.state?.returnTo }}>Đăng nhập</Link>
+          </p>
+        </div>
+      </main>
+
+      <BottomNav />
+    </div>
   );
 }
