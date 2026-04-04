@@ -23,4 +23,5 @@ dist-ssr
 *.sln
 *.sw?
 
-*.lunchsync_frontend_plan.md
+*api.md
+*lunchsync_frontend_plan_ed15ea09.plan.md

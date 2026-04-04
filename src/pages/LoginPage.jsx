@@ -75,8 +75,8 @@ export default function LoginPage() {
 
       <Header title="LunchSync" />
 
-      <main className="flex-grow flex items-center justify-center px-4 pt-20 pb-24 relative z-10 w-full">
-        <div className="w-full max-w-md">
+      <main className="flex-grow flex flex-col items-center px-4 pt-28 pb-32 relative z-10 w-full">
+        <div className="w-full max-w-md mt-6 flex flex-col shrink-0">
           {/* Hero Aesthetic Section */}
           <div className="text-center mb-10">
             <div className="relative inline-block mb-6">
