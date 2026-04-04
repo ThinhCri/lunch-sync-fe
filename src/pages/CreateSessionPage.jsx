@@ -61,7 +61,7 @@ export default function CreateSessionPage() {
 
     if (!isAuthenticated()) {
       message.warning('Vui lòng đăng nhập để tạo nhóm');
-      navigate('/login');
+      navigate('/login', { state: { returnTo: '/create' } });
       return;
     }
 

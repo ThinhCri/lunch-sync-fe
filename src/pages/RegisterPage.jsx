@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { api } from '@/api';
 import Layout from '@/components/layout/Layout';
 import registerTestimonial from '@/assets/images/register-testimonial.jpg';
@@ -12,6 +12,7 @@ import {
 
 export default function RegisterPage() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -83,7 +84,7 @@ export default function RegisterPage() {
         setGeneralError(data.error.message);
         return;
       }
-      navigate('/login', { replace: true });
+      navigate('/login', { replace: true, state: { returnTo: location.state?.returnTo } });
     } catch {
       setGeneralError('Đăng ký thất bại. Vui lòng thử lại.');
     } finally {
@@ -276,7 +277,7 @@ export default function RegisterPage() {
             <div className="mt-8 pt-8 border-t border-[#dcc1b6]/10 text-center">
               <p className="text-[#56423a]">
                 Đã có tài khoản?{' '}
-                <Link className="text-[#7c5800] font-bold hover:underline" to="/login">
+                <Link className="text-[#7c5800] font-bold hover:underline" to="/login" state={{ returnTo: location.state?.returnTo }}>
                   Đăng nhập ngay
                 </Link>
               </p>

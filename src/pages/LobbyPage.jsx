@@ -165,7 +165,7 @@ export default function LobbyPage() {
       // ignore API errors on cancel
     }
     reset();
-    navigate('/');
+    navigate('/create');
   };
 
   const handleCopyLink = () => {
