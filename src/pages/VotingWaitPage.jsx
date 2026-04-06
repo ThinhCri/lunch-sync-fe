@@ -1,9 +1,9 @@
 import { useCallback, useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { message } from 'antd';
-import Layout from '@/components/layout/Layout';
-// eslint-disable-next-line no-unused-vars
-import { motion } from 'framer-motion';
+import Header from '@/components/layout/Header';
+import BottomNav from '@/components/layout/BottomNav';
+import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '@/api';
 import { useSession } from '@/hooks/useSession';
 import { useReconnect } from '@/hooks/useReconnect';
@@ -100,8 +100,9 @@ export default function VotingWaitPage() {
   // Redirect if haven't voted yet
   if (!submitted) {
     return (
-      <Layout title="LunchSync Waiting">
-        <div className="flex-grow flex items-center justify-center px-6 pb-32">
+      <div className="bg-surface font-body text-on-surface min-h-screen flex flex-col">
+        <Header title="LunchSync Waiting" />
+        <main className="flex-grow flex items-center justify-center px-6 pt-24 pb-32">
           <div className="bg-white border-2 border-dashed border-outline/50 rounded-3xl p-10 max-w-md w-full text-center flex flex-col items-center gap-6 shadow-sm">
             <div className="w-20 h-20 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant/40">
               <FontAwesomeIcon icon={faArrowLeft} className="text-3xl" />
@@ -117,8 +118,9 @@ export default function VotingWaitPage() {
               Quay lại bình chọn
             </button>
           </div>
-        </div>
-      </Layout>
+        </main>
+        <BottomNav />
+      </div>
     );
   }
 
@@ -131,8 +133,9 @@ export default function VotingWaitPage() {
   const timeDisplay = mins > 0 ? `${mins}:${String(secs).padStart(2, '0')}` : `${secs}s`;
 
   return (
-    <Layout title="LunchSync Waiting">
-      <div className="flex-grow flex flex-col items-center justify-center px-6 pt-24 pb-32 max-w-2xl mx-auto w-full relative">
+    <div className="bg-surface font-body text-on-surface min-h-screen flex flex-col">
+      <Header title="LunchSync Waiting" />
+      <main className="flex-grow flex flex-col items-center justify-center px-6 pt-24 pb-32 max-w-2xl mx-auto w-full relative">
         
         {/* Decorative blobs */}
         <div className="absolute top-40 right-0 w-80 h-80 bg-primary/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
@@ -262,7 +265,8 @@ export default function VotingWaitPage() {
             </motion.div>
           )}
         </div>
-      </div>
-    </Layout>
+      </main>
+      <BottomNav />
+    </div>
   );
 }

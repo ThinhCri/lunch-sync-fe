@@ -103,7 +103,7 @@ export default function CrowdsourcePage() {
     <div className="bg-surface text-on-surface min-h-screen pb-40">
       <Header title="LunchSync Suggest" />
 
-      <main className="pt-20 px-6 max-w-2xl mx-auto">
+      <main className="pt-28 px-6 max-w-2xl mx-auto">
         {/* Hero Section */}
         <section className="mb-10 text-center">
           <div className="inline-flex items-center justify-center p-3 mb-4 rounded-full bg-primary-container/20">

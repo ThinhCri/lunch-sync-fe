@@ -5,7 +5,8 @@ import { api } from '@/api';
 import { useSessionStore } from '@/store/sessionStore';
 import { useSession } from '@/hooks/useSession';
 import { useReconnect } from '@/hooks/useReconnect';
-import Layout from '@/components/layout/Layout';
+import Header from '@/components/layout/Header';
+import BottomNav from '@/components/layout/BottomNav';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faUserGroup, faCircleNotch, 
@@ -61,8 +62,9 @@ export default function WaitingRoomPage() {
   };
 
   return (
-    <Layout title="LunchSync Lobby">
-      <div className="flex-grow flex flex-col items-center justify-center px-6 pt-24 pb-32 max-w-2xl mx-auto w-full relative">
+    <div className="bg-surface font-body text-on-surface min-h-screen flex flex-col">
+      <Header title="LunchSync Lobby" />
+      <main className="flex-grow flex flex-col items-center justify-center px-6 pt-24 pb-32 max-w-2xl mx-auto w-full relative">
         
         {/* Decorative blobs */}
         <div className="absolute top-40 right-0 w-80 h-80 bg-primary/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
@@ -144,7 +146,8 @@ export default function WaitingRoomPage() {
             </button>
           )}
         </div>
-      </div>
-    </Layout>
+      </main>
+      <BottomNav />
+    </div>
   );
 }

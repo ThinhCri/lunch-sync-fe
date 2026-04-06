@@ -17,7 +17,7 @@ export default function BottomNav() {
   };
 
   const isActive = (path) => {
-    if (path === '/') return location.pathname === '/' || location.pathname === '/explore' || location.pathname === '/crowdsource';
+    if (path === '/') return location.pathname === '/' || location.pathname === '/explore' || location.pathname === '/suggest';
     if (path === '/create') return location.pathname === '/create' || location.pathname.startsWith('/lobby');
     if (path === '/profile') return location.pathname === '/profile';
     return false;

@@ -115,7 +115,7 @@ export default function HomePage() {
       <button 
         onClick={() => {
           if (isAuthenticated()) {
-            navigate('/crowdsource');
+            navigate('/suggest');
           } else {
             navigate('/login');
           }
