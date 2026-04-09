@@ -65,10 +65,6 @@ export default function JoinModal({ open, defaultPin = '', onClose }) {
     try {
       const res = await api.sessions.join(pin, { nickname: nickname.trim() });
       const data = res.data;
-      if (data.error) {
-        message.error(data.error.message);
-        return;
-      }
 
       setSession({
         pin,
@@ -79,8 +75,8 @@ export default function JoinModal({ open, defaultPin = '', onClose }) {
 
       onClose();
       navigate(`/waiting/${pin}`);
-    } catch {
-      message.error('Không thể tham gia phiên. Vui lòng thử lại.');
+    } catch (err) {
+      message.error(err.message || 'Không thể tham gia phiên. Vui lòng thử lại.');
     } finally {
       setLoading(false);
     }

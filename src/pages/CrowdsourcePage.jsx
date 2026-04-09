@@ -75,7 +75,7 @@ export default function CrowdsourcePage() {
     }
     setLoading(true);
     try {
-      const res = await api.crowdsource.submit({
+      await api.crowdsource.submit({
         restaurantName: form.restaurantName.trim(),
         address: form.address.trim(),
         googleMapsUrl: form.googleMapsUrl?.trim() || null,
@@ -85,11 +85,6 @@ export default function CrowdsourcePage() {
         photoUrls: [],
         dishIds: [],
       });
-      const data = res.data;
-      if (data.error) {
-        message.error(data.error.message);
-        return;
-      }
       message.success('Đề xuất thành công!');
       setTimeout(() => navigate('/'), 1000);
     } catch {
@@ -226,7 +221,7 @@ export default function CrowdsourcePage() {
                   onClick={() => handleChange('priceTier', tier.key)}
                   className={`h-12 px-4 rounded-lg transition-all text-sm flex items-center justify-center gap-2 ${
                     form.priceTier === tier.key 
-                    ? 'bg-orange-100 ring-2 ring-primary text-primary font-bold' 
+                    ? 'bg-red-50 ring-2 ring-primary text-primary font-bold' 
                     : 'bg-surface-container-lowest border-none ring-1 ring-outline-variant/30 text-on-surface-variant font-semibold hover:bg-primary-container/10 hover:text-primary hover:ring-primary'
                   }`}
                 >

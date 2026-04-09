@@ -24,8 +24,8 @@ export default function BottomNav() {
   };
 
   const getTabClass = (path) => {
-    const activeClass = "bg-orange-100 dark:bg-orange-950/30 text-orange-700 dark:text-orange-400 scale-98";
-    const inactiveClass = "text-zinc-500 dark:text-zinc-400 hover:text-orange-600 dark:hover:text-orange-300";
+    const activeClass = "bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 scale-98";
+    const inactiveClass = "text-zinc-500 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400";
     return `flex flex-col items-center justify-center rounded-full px-5 py-2 transition-transform duration-200 cursor-pointer ${isActive(path) ? activeClass : inactiveClass}`;
   };
 

@@ -27,7 +27,6 @@ export default function VotingPage() {
     try {
       const res = await api.sessions.getStatus(pin);
       const data = res.data;
-      if (data.error) return;
       if (data.status === 'results') {
         navigate(`/results/${pin}`);
       } else if (data.status === 'waiting') {
@@ -111,9 +110,9 @@ export default function VotingPage() {
       <Header 
         title="LunchSync Vote" 
         rightContent={
-          <div className={`flex items-center gap-2 px-4 py-2 rounded-full transition-colors ${timeLeft <= 5 ? 'bg-red-100/50 dark:bg-red-900/20' : 'bg-orange-100/50 dark:bg-orange-900/20'}`}>
-            <span className={`material-symbols-outlined text-sm ${timeLeft <= 5 ? 'text-red-700 dark:text-red-500' : 'text-orange-700 dark:text-orange-500'}`}>timer</span>
-            <span className={`font-bold font-headline ${timeLeft <= 5 ? 'text-red-700 dark:text-red-500 animate-pulse' : 'text-orange-700 dark:text-orange-500'}`}>{formatTime(timeLeft)}</span>
+          <div className={`flex items-center gap-2 px-4 py-2 rounded-full transition-colors ${timeLeft <= 5 ? 'bg-red-100/50 dark:bg-red-900/20' : 'bg-red-50/50 dark:bg-red-900/10'}`}>
+            <span className={`material-symbols-outlined text-sm ${timeLeft <= 5 ? 'text-red-700 dark:text-red-500' : 'text-red-600 dark:text-red-400'}`}>timer</span>
+            <span className={`font-bold font-headline ${timeLeft <= 5 ? 'text-red-700 dark:text-red-500 animate-pulse' : 'text-red-600 dark:text-red-400'}`}>{formatTime(timeLeft)}</span>
           </div>
         }
       />

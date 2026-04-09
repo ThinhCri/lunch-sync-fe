@@ -63,6 +63,6 @@ const responseInterceptor = async (error) => {
 
 // Apply interceptors to default client
 defaultClient.interceptors.request.use(requestInterceptor, (error) => Promise.reject(error));
-defaultClient.interceptors.response.use(responseInterceptor);
+defaultClient.interceptors.response.use((response) => response, responseInterceptor);
 
 export default defaultClient;

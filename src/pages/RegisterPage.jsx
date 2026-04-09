@@ -73,15 +73,10 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const res = await api.auth.register({ email, password, fullName: fullName.trim() });
-      const data = res.data;
-      if (data.error) {
-        setGeneralError(data.error.message);
-        return;
-      }
+      await api.auth.register({ email, password, fullName: fullName.trim() });
       navigate('/login', { replace: true, state: { returnTo: location.state?.returnTo } });
-    } catch {
-      setGeneralError('Đăng ký thất bại. Vui lòng thử lại.');
+    } catch (err) {
+      setGeneralError(err.message || 'Đăng ký thất bại. Vui lòng thử lại.');
     } finally {
       setLoading(false);
     }

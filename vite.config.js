@@ -13,8 +13,9 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:3000',
+        target: 'https://localhost:7070',
         changeOrigin: true,
+        secure: false, // Thường backend local dùng self-signed cert
       },
     },
   },

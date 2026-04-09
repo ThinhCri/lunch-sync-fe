@@ -14,28 +14,7 @@ import {
   faTrophy, faMedal, faAward
 } from '@fortawesome/free-solid-svg-icons';
 
-const BOOM_DELAY_MS = 2500;  // thời gian animation boom
-const PICK_COUNTDOWN_SECONDS = 90; // countdown để auto-pick
 
-function usePickingCountdown(boomTriggeredAt) {
-  const [remaining, setRemaining] = useState(PICK_COUNTDOWN_SECONDS);
-
-  useEffect(() => {
-    if (!boomTriggeredAt) return;
-
-    const updateRemaining = () => {
-      const elapsed = Math.floor((Date.now() - new Date(boomTriggeredAt).getTime()) / 1000);
-      const rem = PICK_COUNTDOWN_SECONDS - elapsed;
-      setRemaining(Math.max(0, rem));
-    };
-
-    updateRemaining();
-    const interval = setInterval(updateRemaining, 1000);
-    return () => clearInterval(interval);
-  }, [boomTriggeredAt]);
-
-  return remaining;
-}
 
 export default function BoomPage() {
   const { pin } = useParams();
@@ -45,16 +24,11 @@ export default function BoomPage() {
   const [boomData, setBoomData] = useState(null);
   const [displayList, setDisplayList] = useState([]);
   const [pickingDone, setPickingDone] = useState(false);
-  const [boomTriggeredAt, setBoomTriggeredAt] = useState(null);
-
-  const remainingTime = usePickingCountdown(boomTriggeredAt);
-  const autoPickFired = useRef(false);
 
   const fetchBoomData = useCallback(async () => {
     try {
       const res = await api.sessions.getResults(pin);
       const data = res.data;
-      if (data.error) return;
 
       const remaining = data.remaining || [];
       const eliminated = data.eliminated || [];
@@ -63,12 +37,7 @@ export default function BoomPage() {
         eliminated,
         remaining,
         status: data.status,
-        boomedAt: data.boomedAt,
       });
-
-      if (data.boomedAt) {
-        setBoomTriggeredAt(data.boomedAt);
-      }
       if (data.status === 'done') {
         navigate(`/done/${pin}`);
         return;
@@ -94,20 +63,7 @@ export default function BoomPage() {
     return () => clearTimeout(timer);
   }, [fetchBoomData]);
 
-  // Auto-pick
-  useEffect(() => {
-    if (!isHost) return;
-    if (pickingDone) return;
-    if (!boomData?.remaining?.length) return;
-    if (remainingTime > 0) return;
-    if (autoPickFired.current) return;
 
-    autoPickFired.current = true;
-    const top = boomData.remaining.reduce((a, b) => (a.rank < b.rank ? a : b));
-    api.sessions.pick(pin, { restaurantId: top.id }).then(() => {
-      navigate(`/done/${pin}`);
-    });
-  }, [isHost, pickingDone, boomData, remainingTime, pin, navigate]);
 
   // Poll for done
   useEffect(() => {
@@ -150,10 +106,7 @@ export default function BoomPage() {
     );
   }
 
-  const mins = Math.floor(remainingTime / 60);
-  const secs = remainingTime % 60;
-  const timeDisplay = `${mins}:${String(secs).padStart(2, '0')}`;
-  const isUrgent = remainingTime <= 15;
+
 
   return (
     <div className="bg-surface font-body text-on-surface min-h-screen flex flex-col">
@@ -166,11 +119,9 @@ export default function BoomPage() {
             <h2 className="text-4xl font-headline font-black text-on-surface tracking-tight leading-none italic uppercase">
               Chốt quán thôi nào! 🏁
             </h2>
-            
-            <div className={`inline-flex items-center gap-2.5 px-5 py-3 rounded-full bg-white border border-outline/30 shadow-sm mx-auto ${isUrgent ? 'border-error ring-4 ring-error/5' : ''}`}>
-              <FontAwesomeIcon icon={faClock} className={`text-lg ${isUrgent ? 'text-error animate-pulse' : 'text-primary'}`} />
-              <span className={`text-sm font-black uppercase tracking-widest ${isUrgent ? 'text-error' : 'text-on-surface'}`}>
-                {remainingTime > 0 ? `Tự động chốt sau ${timeDisplay}` : 'Đang chốt...'}
+            <div className="inline-flex items-center gap-2.5 px-5 py-3 rounded-full bg-white border border-outline/30 shadow-sm mx-auto">
+              <span className="text-sm font-black uppercase tracking-widest text-on-surface">
+                Vui lòng chọn 1 trong 3 quán còn lại
               </span>
             </div>
           </div>

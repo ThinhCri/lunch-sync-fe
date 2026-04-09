@@ -17,7 +17,7 @@ export default function Header({ title = "LunchSync", rightContent = null }) {
               >
                 <path d="M11 9H9V2H7V9H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z"/>
               </svg>
-              <span className="font-headline font-black tracking-tighter text-xl text-orange-700 dark:text-orange-500 whitespace-nowrap">{title}</span>
+              <span className="font-headline font-black tracking-tighter text-xl text-red-700 dark:text-red-500 whitespace-nowrap">{title}</span>
             </div>
             <div className="flex justify-end w-1/3" onClick={(e) => e.stopPropagation()}>
               {rightContent}
@@ -33,7 +33,7 @@ export default function Header({ title = "LunchSync", rightContent = null }) {
               >
                 <path d="M11 9H9V2H7V9H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z"/>
               </svg>
-              <span className="font-headline font-black tracking-tighter text-xl text-orange-700 dark:text-orange-500 whitespace-nowrap">{title}</span>
+              <span className="font-headline font-black tracking-tighter text-xl text-red-700 dark:text-red-500 whitespace-nowrap">{title}</span>
             </div>
           </div>
         )}

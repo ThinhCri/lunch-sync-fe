@@ -73,10 +73,6 @@ export default function CreateSessionPage() {
         nickname: nickname.trim(),
       });
       const data = res.data;
-      if (data.error) {
-        message.error(data.error.message);
-        return;
-      }
 
       setSession({
         pin: data.pin,
@@ -93,8 +89,8 @@ export default function CreateSessionPage() {
         priceTier: selectedTier.key,
       }));
       navigate(`/lobby/${data.pin}`);
-    } catch {
-      message.error('Tạo phiên thất bại. Vui lòng thử lại.');
+    } catch (err) {
+      message.error(err.message || 'Tạo phiên thất bại. Vui lòng thử lại.');
     } finally {
       setCreating(false);
     }
@@ -104,7 +100,7 @@ export default function CreateSessionPage() {
     <div className="bg-surface font-body text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container min-h-screen">
       <Header title="LunchSync Create" />
 
-      <main className="pt-24 pb-32 px-6 max-w-lg mx-auto">
+      <main className="pt-24 pb-56 px-6 max-w-lg mx-auto">
         {/* Hero Editorial Section */}
         <div className="mb-10 flex justify-between items-start">
           <div>

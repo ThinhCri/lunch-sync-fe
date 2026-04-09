@@ -7,7 +7,6 @@ import { useSessionStore } from '@/store/sessionStore';
 import { useSession } from '@/hooks/useSession';
 import { useReconnect } from '@/hooks/useReconnect';
 import { MIN_PARTICIPANTS, MAX_PARTICIPANTS, PRICE_TIERS } from '@/utils/constants';
-import { MOCK_EXTRA_PARTICIPANTS } from '@/api/mock';
 import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
 
@@ -80,7 +79,6 @@ export default function LobbyPage() {
   const [sessionInfo, setSessionInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
-  const [showCancelModal, setShowCancelModal] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const fetchStatus = useCallback(async () => {
@@ -91,25 +89,10 @@ export default function LobbyPage() {
       ]);
       const infoData = infoRes.data;
       const statusData = statusRes.data;
-      if (infoData.error) {
-        message.error(infoData.error.message);
-        navigate('/');
-        return;
-      }
       setSessionInfo(infoData);
       const apiParticipants = infoData.participants || [];
-      const existingHost = apiParticipants.find((p) => p.isHost);
-      const existingOthers = apiParticipants.filter((p) => !p.isHost);
-      if (API_CONFIG.USE_MOCK) {
-        const merged = dedupeByNickname([
-          ...(existingHost ? [existingHost] : [{ id: 'mock-host', nickname: 'Bạn', isHost: true }]),
-          ...existingOthers,
-          ...MOCK_EXTRA_PARTICIPANTS,
-        ]);
-        setParticipants(merged.slice(0, MAX_PARTICIPANTS));
-      } else {
-        setParticipants(apiParticipants);
-      }
+      setParticipants(apiParticipants);
+
       if (statusData.status === 'voting') {
         navigate(`/vote/${pin}`);
       }
@@ -130,43 +113,16 @@ export default function LobbyPage() {
   const handleStart = async () => {
     setStarting(true);
     try {
-      if (API_CONFIG.USE_MOCK) {
-        const existingNames = new Set(
-          (sessionInfo?.participants || []).map((p) => (p.nickname || '').trim().toLowerCase())
-        );
-        for (const p of MOCK_EXTRA_PARTICIPANTS) {
-          const key = (p.nickname || '').trim().toLowerCase();
-          if (!existingNames.has(key)) {
-            await api.sessions.join(pin, { nickname: p.nickname });
-            existingNames.add(key);
-          }
-        }
-      }
-
-      const res = await api.sessions.start(pin);
-      const data = res.data;
-      if (data.error) {
-        message.error(data.error.message);
-        return;
-      }
+      await api.sessions.start(pin);
       navigate(`/vote/${pin}`);
-    } catch {
-      message.error('Không thể bắt đầu');
+    } catch (err) {
+      message.error(err.message || 'Không thể bắt đầu');
     } finally {
       setStarting(false);
     }
   };
 
-  const handleCancel = async () => {
-    setShowCancelModal(false);
-    try {
-      await api.sessions.cancel(pin);
-    } catch {
-      // ignore API errors on cancel
-    }
-    reset();
-    navigate('/create');
-  };
+
 
   const handleCopyLink = () => {
     const link = `${window.location.origin}/join/${pin}`;
@@ -241,7 +197,7 @@ export default function LobbyPage() {
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-bold font-headline">Thành viên ({safeParticipants.length})</h2>
                 <div className="flex -space-x-2">
-                  <span className="w-8 h-8 rounded-full border-2 border-surface bg-orange-100 flex items-center justify-center text-[10px] font-bold text-primary">SYNC</span>
+                  <span className="w-8 h-8 rounded-full border-2 border-surface bg-red-50 flex items-center justify-center text-[10px] font-bold text-primary">SYNC</span>
                 </div>
               </div>
               
@@ -264,29 +220,12 @@ export default function LobbyPage() {
               >
                 {starting ? 'Đang chuẩn bị...' : 'Bắt đầu bình chọn'}
               </button>
-              <button 
-                onClick={() => setShowCancelModal(true)}
-                className="w-full h-14 rounded-full bg-surface-container-high text-primary font-headline font-semibold active:scale-98 transition-all"
-              >
-                Hủy phiên
-              </button>
             </section>
           </>
         )}
       </main>
 
-      {/* Cancel confirmation modal */}
-      <Modal
-        open={showCancelModal}
-        title="Hủy phiên?"
-        okText="Hủy phiên"
-        cancelText="Ở lại"
-        okButtonProps={{ danger: true }}
-        onOk={handleCancel}
-        onCancel={() => setShowCancelModal(false)}
-      >
-        <p>Phiên sẽ bị xóa và mọi người sẽ không thể tham gia.</p>
-      </Modal>
+
 
       {/* Bottom Navigation Bar */}
       <BottomNav />

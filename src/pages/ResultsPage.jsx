@@ -18,10 +18,6 @@ export default function ResultsPage() {
     try {
       const res = await api.sessions.getResults(pin);
       const data = res.data;
-      if (data.error) {
-        message.error(data.error.message);
-        return;
-      }
       setResults(data);
 
       if (data.status === 'picking') {
@@ -46,7 +42,6 @@ export default function ResultsPage() {
       try {
         const res = await api.sessions.getStatus(pin);
         const data = res.data;
-        if (data.error) return;
         if (data.status === 'picking') {
           clearInterval(interval);
           navigate(`/boom/${pin}`);
@@ -65,16 +60,10 @@ export default function ResultsPage() {
     if (booming) return;
     setBooming(true);
     try {
-      const res = await api.sessions.boom(pin);
-      const data = res.data;
-      if (data.error) {
-        message.error(data.error.message);
-        setBooming(false);
-        return;
-      }
+      await api.sessions.boom(pin);
       navigate(`/boom/${pin}`);
-    } catch {
-      message.error('Không thể kích hoạt Boom.');
+    } catch (err) {
+      message.error(err.message || 'Không thể kích hoạt Boom.');
       setBooming(false);
     }
   };
@@ -137,7 +126,7 @@ export default function ResultsPage() {
           </div>
           <div className="grid grid-cols-1 gap-3 px-2">
             {topDishes.slice(0, 3).map((dish, idx) => {
-              const bgClass = idx === 0 ? 'bg-primary text-white' : idx === 1 ? 'bg-orange-400 text-white' : 'bg-orange-300 text-white';
+              const bgClass = idx === 0 ? 'bg-primary text-white' : idx === 1 ? 'bg-red-300 text-white' : 'bg-red-200 text-white';
               const matchText = idx === 0 ? 'text-primary bg-primary/10' : 'text-on-surface-variant bg-zinc-100';
               return (
                 <div key={dish.id} className="bg-surface-container-lowest rounded-lg p-4 flex items-center gap-4 shadow-sm border border-orange-100/50">
@@ -175,7 +164,7 @@ export default function ResultsPage() {
                   <div>
                     <div className="flex justify-between items-start">
                       <h3 className="font-headline font-bold text-base truncate pr-2">{r.name}</h3>
-                      <span className={`${idx === 0 ? 'bg-orange-100 text-orange-800' : 'bg-zinc-200 text-zinc-700'} text-[10px] font-bold px-2 py-0.5 rounded-full`}>
+                      <span className={`${idx === 0 ? 'bg-red-100 text-red-700' : 'bg-zinc-200 text-zinc-700'} text-[10px] font-bold px-2 py-0.5 rounded-full`}>
                         {Math.round((r.matchScore || (0.99 - idx * 0.05)) * 100)}%
                       </span>
                     </div>

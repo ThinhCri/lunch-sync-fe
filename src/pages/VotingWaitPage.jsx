@@ -48,15 +48,12 @@ export default function VotingWaitPage() {
     // Using setTimeout to avoid synchronous setState inside effect warning
     setTimeout(() => setClosing(true), 0);
 
-    api.sessions.closeVoting(pin).then((res) => {
-      const data = res.data;
-      if (!data.error) {
-        message.warning('Đã tự động chốt kết quả!');
-        navigate(`/results/${pin}`);
-      } else {
-        setClosing(false);
-        autoCloseFired.current = false;
-      }
+    api.sessions.closeVoting(pin).then(() => {
+      message.warning('Đã tự động chốt kết quả!');
+      navigate(`/results/${pin}`);
+    }).catch(() => {
+      setClosing(false);
+      autoCloseFired.current = false;
     });
   }, [remainingSeconds, isHost, votedCount, pin, navigate]);
 
@@ -64,7 +61,6 @@ export default function VotingWaitPage() {
     try {
       const res = await api.sessions.getStatus(pin);
       const data = res.data;
-      if (data.error) return;
 
       const voted = data.participantsVoted || 0;
       const total = data.participantsJoined || participants.length || 0;

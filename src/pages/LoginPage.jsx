@@ -48,20 +48,16 @@ export default function LoginPage() {
     try {
       const res = await api.auth.login({ email, password });
       const data = res.data;
-      if (data.error) {
-        setGeneralError(data.error.message);
-        return;
-      }
       login(data.accessToken, {
         id: data.userId,
         email: data.email,
         fullName: data.fullName,
         role: data.role,
       });
-      const destination = location.state?.returnTo || (data.role === 'admin' ? '/admin/submissions' : '/');
+      const destination = location.state?.returnTo || '/';
       navigate(destination, { replace: true });
-    } catch {
-      setGeneralError('Đăng nhập thất bại. Vui lòng thử lại.');
+    } catch (err) {
+      setGeneralError(err.message || 'Đăng nhập thất bại. Vui lòng thử lại.');
     } finally {
       setLoading(false);
     }

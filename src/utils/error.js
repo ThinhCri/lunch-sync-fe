@@ -16,10 +16,20 @@ export function parseApiError(error) {
   const code = error?.response?.data?.error?.code;
   const message = error?.response?.data?.error?.message;
   const details = error?.response?.data?.error?.details;
+  const status = error?.response?.status;
+
+  // Xử lý các lỗi hệ thống (Proxy, Gateway, Server Down)
+  if (status === 502 || status === 503 || status === 504) {
+    return {
+      code: 'SERVER_UNREACHABLE',
+      message: 'Server hiện không khả dụng (Bad Gateway). Vui lòng kiểm tra lại backend.',
+      details: error.message
+    };
+  }
 
   return {
     code: code || 'UNKNOWN',
-    message: message || ERROR_CODE_MAP[code] || 'Đã xảy ra lỗi. Vui lòng thử lại.',
-    details: details || null,
+    message: message || ERROR_CODE_MAP[code] || 'Đã xảy ra lỗi hệ thống. Vui lòng thử lại.',
+    details: details || error.message || null,
   };
 }

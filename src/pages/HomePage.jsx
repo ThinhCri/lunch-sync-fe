@@ -14,7 +14,7 @@ export default function HomePage() {
     <div className="bg-surface text-on-surface font-body selection:bg-primary-container selection:text-on-primary-container min-h-screen">
       <Header title="LunchSync Explore" />
 
-      <main className="pt-24 pb-32 px-4 max-w-2xl mx-auto space-y-10">
+      <main className="pt-24 pb-56 px-4 max-w-2xl mx-auto space-y-10">
         {/* Header & Search */}
         <section className="space-y-4">
           <h2 className="font-headline text-4xl tracking-tight font-extrabold text-on-surface">
@@ -46,7 +46,7 @@ export default function HomePage() {
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuDllzSyIfPYZUF8ZGjHa0snqJsrBH-enobY7QC6VfteK8JbANSWhtt7fgOlF7E_4xaL2Mf5qxsmc7xO6_1OTXjYp2uHTo3ej1ztYGITxTKSS2itobPy-cSsw3tWy4xmliG3bCPXDqeRrFomz1Qfln3HrjagFc3RldNUJvG99czpJ-66UjrUDXJMrAE42lFR4f6rU4o3zwKXEA26Z234_v03Rb0qLlDN0tAl52ps0zV463W3oIROICqQ9qMoz4WF-ReOxHRcqVKFsf4"
               />
               <div className="absolute top-4 right-4 bg-white/60 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-1 shadow-sm">
-                <svg className="w-4 h-4 text-orange-700" viewBox="0 0 24 24" fill="currentColor">
+                <svg className="w-4 h-4 text-red-600" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
                 </svg>
                 <span className="font-label text-label-sm font-bold text-on-surface">4.8</span>
@@ -76,7 +76,7 @@ export default function HomePage() {
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuBybUEy8PtuNXCAZL5mwono4kDd7D9lRIyLPzWyulP7wvchJ-E5XIv6f9-1EsZeJXdaBNRaHvxNudcYUZOg-rjrWvRCBdA_5yOhGCtiih6kKz2GwoKuxiuCLaTiIwm2MHRHE-Kt4lt84Ko2d9kjQ_bzrHBun7rj6y-pcMnrEJ1joNPBrf4eyN_FjovXi_55zZAGl0ZL-USeyuAQeq8az6OCT0Q53SCqK90OXlZEsBwD58kxeDaXgF-ZU2fUKqBJPzLrk_Lz5jza-Fc"
               />
               <div className="absolute top-4 right-4 bg-white/60 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-1 shadow-sm">
-                <svg className="w-4 h-4 text-orange-700" viewBox="0 0 24 24" fill="currentColor">
+                <svg className="w-4 h-4 text-red-600" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
                 </svg>
                 <span className="font-label text-label-sm font-bold text-on-surface">4.5</span>
@@ -106,7 +106,7 @@ export default function HomePage() {
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuB4l5zgg4C8bz3rkFF0JfolHVB8DuZ2JhBX71FpCW9LM9neOt_yClDyfVt5suQTZLK13rqXM8YqQX6vfR4H4KFSg6V7HkiJ1IfdWHD9lMrePi6Ev3G5SohVTDXoB9fnf1z2x8ewORxVRUtAxtQDMR8VC4XO90QGif76WhY4rRMJv623MKrYUsK8bWpyPNG-I0J2oyXbjGokF9qnJzJxlW7GRNL2SqzmhSkIJjWHeQvYVQFbT8Nb2oOA73yFyb8CCQB_Nh06EiomIYA"
               />
               <div className="absolute top-4 right-4 bg-white/60 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-1 shadow-sm">
-                <svg className="w-4 h-4 text-orange-700" viewBox="0 0 24 24" fill="currentColor">
+                <svg className="w-4 h-4 text-red-600" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
                 </svg>
                 <span className="font-label text-label-sm font-bold text-on-surface">4.9</span>

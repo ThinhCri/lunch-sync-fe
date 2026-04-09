@@ -23,11 +23,6 @@ export default function WaitingRoomPage() {
     try {
       const res = await api.sessions.getStatus(pin);
       const data = res.data;
-      if (data.error) {
-        message.error(data.error.message);
-        navigate('/');
-        return;
-      }
       if (data.status === 'voting') {
         navigate(`/vote/${pin}`);
       } else if (data.status === 'results') {
@@ -49,15 +44,10 @@ export default function WaitingRoomPage() {
 
   const handleStart = async () => {
     try {
-      const res = await api.sessions.start(pin);
-      const data = res.data;
-      if (data.error) {
-        message.error(data.error.message);
-        return;
-      }
+      await api.sessions.start(pin);
       navigate(`/vote/${pin}`);
-    } catch {
-      message.error('Không thể bắt đầu');
+    } catch (err) {
+      message.error(err.message || 'Không thể bắt đầu');
     }
   };
 
