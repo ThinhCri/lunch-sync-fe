@@ -13,9 +13,18 @@ const ERROR_CODE_MAP = {
 };
 
 export function parseApiError(error) {
-  const code = error?.response?.data?.error?.code;
-  const message = error?.response?.data?.error?.message;
-  const details = error?.response?.data?.error?.details;
+  const data = error?.response?.data;
+  const errorObj = data?.error;
+
+  // Lấy code: ưu tiên trong error object, sau đó là root data
+  const code = errorObj?.code || data?.code;
+  
+  // Lấy message: ưu tiên trong error object, sau đó là root data
+  const message = errorObj?.message || data?.message;
+  
+  // Lấy detail/details: ưu tiên trong error object, sau đó là root data
+  const details = errorObj?.details || errorObj?.detail || data?.details || data?.detail;
+  
   const status = error?.response?.status;
 
   // Xử lý các lỗi hệ thống (Proxy, Gateway, Server Down)
@@ -27,9 +36,12 @@ export function parseApiError(error) {
     };
   }
 
+  // Ưu tiên: details/detail từ BE -> message từ BE -> mapping theo code -> fallback mặc định
+  const finalMessage = details || message || ERROR_CODE_MAP[code] || 'Đã xảy ra lỗi hệ thống. Vui lòng thử lại.';
+
   return {
     code: code || 'UNKNOWN',
-    message: message || ERROR_CODE_MAP[code] || 'Đã xảy ra lỗi hệ thống. Vui lòng thử lại.',
+    message: finalMessage,
     details: details || error.message || null,
   };
 }

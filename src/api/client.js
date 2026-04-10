@@ -2,11 +2,12 @@ import axios from 'axios';
 import { message } from 'antd';
 import { parseApiError } from '@/utils/error';
 import { useAuthStore } from '@/store/authStore';
+import { API_CONFIG } from '@/config';
 
 // Default client with /api baseURL
 const defaultClient = axios.create({
   baseURL: '/api',
-  timeout: 10000,
+  timeout: API_CONFIG.TIMEOUT,
 });
 
 // Create a new client with custom base URL
@@ -16,7 +17,7 @@ export const createApiClient = (baseURL = '/api') => {
   }
   return axios.create({
     baseURL,
-    timeout: 10000,
+    timeout: API_CONFIG.TIMEOUT,
   });
 };
 

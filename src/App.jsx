@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ConfigProvider, theme } from 'antd';
-import { SessionProvider } from '@/contexts/SessionContext';
-import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
+import { SessionProvider } from '@/providers/SessionContext';
+import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { useAuthStore } from '@/store/authStore';
 
 import HomePage from '@/pages/HomePage';

@@ -44,10 +44,16 @@ export default function RegisterPage() {
         passwordErrors.push('tối thiểu 8 ký tự');
       }
       if (!/[A-Z]/.test(password)) {
-        passwordErrors.push('ít nhất 1 hoa');
+        passwordErrors.push('ít nhất 1 chữ hoa');
+      }
+      if (!/[a-z]/.test(password)) {
+        passwordErrors.push('ít nhất 1 chữ thường');
       }
       if (!/[0-9]/.test(password)) {
         passwordErrors.push('ít nhất 1 số');
+      }
+      if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+        passwordErrors.push('ít nhất 1 ký tự đặc biệt');
       }
       if (passwordErrors.length > 0) {
         errs.password = 'Mật khẩu: ' + passwordErrors.join(', ');
@@ -152,14 +158,8 @@ export default function RegisterPage() {
           <div className="space-y-2">
             <label className="block text-sm font-semibold text-on-surface-variant ml-4">Mật khẩu</label>
             <div className="relative group">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <svg className={`w-5 h-5 transition-colors ${errors.password ? 'text-error' : 'text-outline group-focus-within:text-primary'}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                </svg>
-              </div>
               <input 
-                className={`w-full bg-surface-container-lowest border-none ring-1 ring-inset h-14 pl-12 pr-12 rounded-full text-on-surface placeholder:text-outline/60 transition-all ${errors.password ? 'ring-error focus:ring-2 focus:ring-error' : 'ring-surface-container-highest focus:ring-2 focus:ring-primary'}`}
+                className={`w-full bg-surface-container-lowest border-none ring-1 ring-inset h-14 pl-6 pr-12 rounded-full text-on-surface placeholder:text-outline/60 transition-all ${errors.password ? 'ring-error focus:ring-2 focus:ring-error' : 'ring-surface-container-highest focus:ring-2 focus:ring-primary'}`}
                 placeholder="••••••••" 
                 type={showPassword ? "text" : "password"}
                 value={password}
@@ -192,14 +192,8 @@ export default function RegisterPage() {
           <div className="space-y-2">
             <label className="block text-sm font-semibold text-on-surface-variant ml-4">Xác nhận mật khẩu</label>
             <div className="relative group">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <svg className={`w-5 h-5 transition-colors ${errors.confirmPassword ? 'text-error' : 'text-outline group-focus-within:text-primary'}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                </svg>
-              </div>
               <input 
-                className={`w-full bg-surface-container-lowest border-none ring-1 ring-inset h-14 pl-12 pr-12 rounded-full text-on-surface placeholder:text-outline/60 transition-all ${errors.confirmPassword ? 'ring-error focus:ring-2 focus:ring-error' : 'ring-surface-container-highest focus:ring-2 focus:ring-primary'}`}
+                className={`w-full bg-surface-container-lowest border-none ring-1 ring-inset h-14 pl-6 pr-12 rounded-full text-on-surface placeholder:text-outline/60 transition-all ${errors.confirmPassword ? 'ring-error focus:ring-2 focus:ring-error' : 'ring-surface-container-highest focus:ring-2 focus:ring-primary'}`}
                 placeholder="••••••••" 
                 type={showConfirmPassword ? "text" : "password"}
                 value={confirmPassword}
