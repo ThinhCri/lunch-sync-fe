@@ -189,7 +189,7 @@ export default function ResultsPage() {
               <button 
                 onClick={handleBoom}
                 disabled={booming}
-                className="w-full bg-gradient-to-r from-primary to-orange-500 text-white rounded-2xl p-6 shadow-[0_12px_24px_rgba(166,51,0,0.25)] relative overflow-hidden active:scale-[0.97] transition-all group disabled:opacity-50"
+                className="w-full bg-primary text-white rounded-2xl p-6 shadow-[0_12px_24px_rgba(166,51,0,0.25)] relative overflow-hidden active:scale-[0.97] transition-all group disabled:opacity-50"
               >
                 <div className="absolute top-0 right-0 p-4 opacity-10 scale-150 rotate-12 group-active:scale-125 transition-transform duration-300">
                   <span className="material-symbols-outlined text-[80px]" style={{ fontVariationSettings: "'FILL' 1" }}>explosion</span>

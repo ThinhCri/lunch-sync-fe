@@ -127,7 +127,7 @@ export default function DonePage() {
               
               {/* Main CTA: Google Maps */}
               <a 
-                className="flex items-center justify-center gap-3 w-full bg-gradient-to-r from-primary to-primary-container text-on-primary py-5 rounded-full font-headline font-bold text-lg active:scale-[0.98] transition-transform shadow-lg shadow-primary/20" 
+                className="flex items-center justify-center gap-3 w-full bg-primary text-on-primary py-5 rounded-full font-headline font-bold text-lg active:scale-[0.98] transition-transform shadow-lg shadow-primary/20" 
                 href={getMapsUrl()}
                 target="_blank"
                 rel="noopener noreferrer"

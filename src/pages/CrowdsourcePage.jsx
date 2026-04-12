@@ -251,7 +251,7 @@ export default function CrowdsourcePage() {
             <button 
               type="submit"
               disabled={loading}
-              className={`w-full h-16 bg-gradient-to-br from-primary to-primary-container text-on-primary rounded-full font-bold text-lg shadow-lg shadow-primary/20 transition-transform ${loading ? 'opacity-70 cursor-not-allowed' : 'active:scale-[0.98]'}`}
+              className={`w-full h-16 bg-primary text-on-primary rounded-full font-bold text-lg shadow-lg shadow-primary/20 transition-transform ${loading ? 'opacity-70 cursor-not-allowed' : 'active:scale-[0.98]'}`}
             >
               {loading ? 'Đang gửi...' : 'Gửi đề xuất'}
             </button>

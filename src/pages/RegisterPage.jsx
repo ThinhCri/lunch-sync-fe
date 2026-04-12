@@ -225,7 +225,7 @@ export default function RegisterPage() {
           {/* Submit Button */}
           <div className="pt-4">
             <button 
-              className="w-full bg-gradient-to-br from-primary to-primary-container text-on-primary font-bold h-14 rounded-full shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all text-lg flex items-center justify-center gap-2 disabled:opacity-70 disabled:scale-100 disabled:cursor-not-allowed" 
+              className="w-full bg-primary text-on-primary font-bold h-14 rounded-full shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all text-lg flex items-center justify-center gap-2 disabled:opacity-70 disabled:scale-100 disabled:cursor-not-allowed" 
               type="submit"
               disabled={loading}
             >

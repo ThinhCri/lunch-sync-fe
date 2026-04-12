@@ -155,7 +155,7 @@ export default function VotingPage() {
                 >
                   <div className="aspect-[4/5] relative overflow-hidden">
                     <img alt="Option A" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" src={`https://picsum.photos/seed/${currentChoice.id}A/400/500`} />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                    <div className="absolute inset-0 bg-black/40"></div>
                     <div className="absolute top-4 left-4">
                       <span className="bg-white/20 backdrop-blur-md text-white px-4 py-1 rounded-full text-xs font-bold tracking-widest uppercase border border-white/20">Lựa chọn 1</span>
                     </div>
@@ -173,7 +173,7 @@ export default function VotingPage() {
                 >
                   <div className="aspect-[4/5] relative overflow-hidden">
                     <img alt="Option B" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" src={`https://picsum.photos/seed/${currentChoice.id}B/400/500`} />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                    <div className="absolute inset-0 bg-black/40"></div>
                     <div className="absolute top-4 left-4">
                       <span className="bg-white/20 backdrop-blur-md text-white px-4 py-1 rounded-full text-xs font-bold tracking-widest uppercase border border-white/20">Lựa chọn 2</span>
                     </div>

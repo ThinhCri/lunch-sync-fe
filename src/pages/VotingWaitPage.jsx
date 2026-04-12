@@ -194,7 +194,7 @@ export default function VotingWaitPage() {
 
             <div className="relative h-4 bg-surface-container rounded-full overflow-hidden border border-outline/5 shadow-inner">
               <motion.div
-                className="absolute top-0 left-0 h-full bg-gradient-to-r from-primary to-secondary rounded-full"
+                className="absolute top-0 left-0 h-full bg-primary rounded-full"
                 initial={{ width: 0 }}
                 animate={{ width: `${progressPct}%` }}
                 transition={{ duration: 1, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}

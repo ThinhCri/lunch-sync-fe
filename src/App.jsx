@@ -25,6 +25,11 @@ function RequireAuth({ children }) {
   return children;
 }
 
+function RootRoute() {
+  const isAuth = useAuthStore((s) => !!s.token);
+  return isAuth ? <Navigate to="/create" replace /> : <HomePage />;
+}
+
 
 
 function App() {
@@ -53,7 +58,8 @@ function App() {
         >
           <SessionProvider>
             <Routes>
-              <Route path="/" element={<HomePage />} />
+              <Route path="/" element={<RootRoute />} />
+              <Route path="/explore" element={<HomePage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/join" element={<Navigate to="/" replace />} />

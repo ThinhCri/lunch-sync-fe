@@ -114,7 +114,7 @@ export default function JoinModal({ open, defaultPin = '', onClose }) {
             </div>
             <div>
               <h2 className="text-xl font-bold text-[#1c1c19]">
-                {step === 'pin' ? 'Tham gia phòng' : 'Nhập nickname'}
+                {step === 'pin' ? 'LunchSync Join' : 'Nhập nickname'}
               </h2>
               <p className="text-sm text-[#56423a]">
                 {step === 'pin' ? 'Nhập mã PIN để tham gia voting bữa trưa' : 'Đặt nickname để mọi người nhận biết bạn'}
@@ -184,7 +184,7 @@ export default function JoinModal({ open, defaultPin = '', onClose }) {
                 className={`
                   w-full py-4 rounded-full text-lg font-bold transition-all duration-200 flex items-center justify-center gap-2
                   ${pin.length === PIN_LENGTH
-                    ? 'bg-gradient-to-br from-[#9a410f] to-[#ba5826] text-white shadow-lg hover:shadow-xl active:scale-95'
+                    ? 'bg-[#9a410f] text-white shadow-lg hover:shadow-xl active:scale-95'
                     : 'bg-[#ebe8e3] text-[#897269] cursor-not-allowed'
                   }
                 `}
@@ -249,7 +249,7 @@ export default function JoinModal({ open, defaultPin = '', onClose }) {
                   w-full py-4 rounded-full text-lg font-bold transition-all duration-200 flex items-center justify-center gap-2
                   ${loading || !nickname.trim() || nickname.length < 2
                     ? 'bg-[#ebe8e3] text-[#897269] cursor-not-allowed'
-                    : 'bg-gradient-to-br from-[#9a410f] to-[#ba5826] text-white shadow-lg hover:shadow-xl active:scale-95'
+                    : 'bg-[#9a410f] text-white shadow-lg hover:shadow-xl active:scale-95'
                   }
                 `}
               >

@@ -103,7 +103,7 @@ export default function LobbyPage() {
     }
   }, [pin, navigate, setParticipants]);
 
-  useSession({ pin, onStatus: fetchStatus, enabled: true });
+  useSession({ pin, onStatus: fetchStatus, interval: 2000, enabled: true });
   useReconnect({ onReconnect: fetchStatus, enabled: true });
 
   useEffect(() => {
@@ -216,7 +216,7 @@ export default function LobbyPage() {
               <button 
                 onClick={handleStart}
                 disabled={!enough || starting}
-                className={`w-full h-16 rounded-full font-headline font-bold text-lg transition-transform ${(!enough || starting) ? 'bg-primary/50 text-white/70 cursor-not-allowed' : 'bg-gradient-to-r from-primary to-primary-container text-on-primary shadow-xl shadow-primary/20 active:scale-95'}`}
+                className={`w-full h-16 rounded-full font-headline font-bold text-lg transition-transform ${(!enough || starting) ? 'bg-primary/50 text-white/70 cursor-not-allowed' : 'bg-primary text-on-primary shadow-xl shadow-primary/20 active:scale-95'}`}
               >
                 {starting ? 'Đang chuẩn bị...' : 'Bắt đầu bình chọn'}
               </button>

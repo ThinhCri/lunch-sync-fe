@@ -17,7 +17,7 @@ export default function BottomNav() {
   };
 
   const isActive = (path) => {
-    if (path === '/') return location.pathname === '/' || location.pathname === '/explore' || location.pathname === '/suggest';
+    if (path === '/explore') return location.pathname === '/' || location.pathname === '/explore' || location.pathname === '/suggest';
     if (path === '/create') return location.pathname === '/create' || location.pathname.startsWith('/lobby');
     if (path === '/profile') return location.pathname === '/profile';
     return false;
@@ -34,8 +34,8 @@ export default function BottomNav() {
   return (
     <nav className="fixed bottom-0 w-full z-50 rounded-t-[2rem] bg-white/90 dark:bg-zinc-900/90 backdrop-blur-2xl shadow-[0_-8px_24px_rgba(44,47,48,0.06)] flex justify-around items-center px-4 pt-3 pb-8">
       <div 
-        onClick={() => handleNavigation('/')}
-        className={getTabClass('/')}
+        onClick={() => handleNavigation('/explore')}
+        className={getTabClass('/explore')}
       >
         <svg 
           className="w-6 h-6 mb-0.5" 

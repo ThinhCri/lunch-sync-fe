@@ -111,7 +111,7 @@ export default function HomePage() {
             navigate('/login');
           }
         }}
-        className="fixed bottom-32 right-6 z-50 bg-gradient-to-br from-primary to-primary-container text-on-primary flex items-center gap-2 px-6 py-4 rounded-full shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all">
+        className="fixed bottom-32 right-6 z-50 bg-primary text-on-primary flex items-center gap-2 px-6 py-4 rounded-full shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all">
         <span className="material-symbols-outlined text-[20px]">add_circle</span>
         <span className="font-label font-bold text-sm tracking-wide">Đề xuất quán</span>
       </button>

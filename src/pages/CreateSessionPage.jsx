@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { message } from 'antd';
 import { api } from '@/api';
@@ -8,6 +8,217 @@ import { PRICE_TIERS } from '@/utils/constants';
 import Header from '@/components/layout/Header';
 import JoinModal from '@/components/modals/JoinModal';
 import BottomNav from '@/components/layout/BottomNav';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlus, faExclamationCircle, faArrowRight, faUser, faSpinner, faRightToBracket } from '@fortawesome/free-solid-svg-icons';
+
+const GuestJoinView = () => {
+  const navigate = useNavigate();
+  const { setSession } = useSessionStore();
+
+  const [step, setStep] = useState('pin');
+  const [pin, setPin] = useState('');
+  const [nickname, setNickname] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const inputRef = useRef(null);
+
+  const PIN_LENGTH = 6;
+
+  const handlePinChange = (e) => {
+    const val = e.target.value.replace(/\D/g, '').slice(0, PIN_LENGTH);
+    setPin(val);
+    setError('');
+  };
+
+  const handlePinKeyDown = (e) => {
+    if (e.key === 'Enter' && pin.length === PIN_LENGTH) {
+      handlePinSubmit();
+    }
+  };
+
+  const handlePinSubmit = () => {
+    if (pin.length !== PIN_LENGTH) return;
+    setStep('nickname');
+    setError('');
+  };
+
+  const handleNicknameSubmit = async () => {
+    if (!nickname.trim() || nickname.length < 2 || nickname.length > 12) {
+      message.error('Nickname từ 2–12 ký tự');
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await api.sessions.join(pin, { nickname: nickname.trim() });
+      const data = res.data;
+      setSession({
+        pin,
+        sessionId: data.sessionId,
+        participantId: data.participantId,
+        isHost: false,
+      });
+      navigate(`/waiting/${pin}`);
+    } catch (err) {
+      setError(err.message || 'Không thể tham gia phiên.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="bg-surface font-body text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container min-h-[100dvh] flex flex-col">
+      <Header title="LunchSync Join" />
+
+      <main className="flex-grow pt-24 pb-32 px-6 max-w-lg mx-auto w-full flex flex-col justify-center">
+        {/* Banner Create */}
+        <div 
+          onClick={() => navigate('/login', { state: { returnTo: '/create' } })}
+          className="mb-8 p-5 bg-primary-container text-on-primary-container rounded-3xl cursor-pointer hover:shadow-md transition-all active:scale-[0.98] border border-primary/10 flex items-center gap-4 shadow-sm"
+        >
+          <div className="w-14 h-14 rounded-full bg-white/60 flex items-center justify-center flex-shrink-0 shadow-inner">
+            <FontAwesomeIcon icon={faPlus} className="text-primary text-2xl" />
+          </div>
+          <div>
+            <h3 className="font-headline font-bold text-on-surface text-base">Bạn muốn tự tạo nhóm?</h3>
+            <p className="text-sm text-on-surface-variant mt-1 font-medium">Đăng nhập để tạo phiên bình chọn bữa trưa mới ngay.</p>
+          </div>
+        </div>
+
+        {/* Join block */}
+        <div className="bg-surface-container-lowest p-8 rounded-[2rem] shadow-sm border border-outline-variant/20 relative overflow-hidden">
+          {/* Decorative glow */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-2xl -mt-10 -mr-10"></div>
+          
+          <div className="text-center mb-8 relative z-10">
+            <h2 className="font-headline font-extrabold text-3xl text-on-surface mb-2">
+              {step === 'pin' ? 'LunchSync Join' : 'Bạn tên gì?'}
+            </h2>
+            <p className="text-sm text-on-surface-variant font-medium">
+              {step === 'pin' ? 'Nhập mã PIN 6 số để vào nhóm' : 'Đặt nickname để mọi người trong nhóm nhận ra'}
+            </p>
+          </div>
+
+          <div className="relative z-10">
+            {step === 'pin' ? (
+              <div className="flex flex-col items-center gap-6">
+                <div className="w-full">
+                  <div
+                    className="flex gap-2 justify-center cursor-text"
+                    onClick={() => inputRef.current?.focus()}
+                  >
+                    {Array.from({ length: PIN_LENGTH }).map((_, i) => (
+                      <div
+                        key={i}
+                        className={`
+                          w-12 h-16 rounded-xl border-2 flex items-center justify-center text-2xl font-bold transition-all duration-150
+                          ${pin[i]
+                            ? 'border-primary bg-primary/5 text-primary'
+                            : i === pin.length
+                            ? 'border-primary/40 bg-surface-container-lowest text-on-surface shadow-[0_0_8px_rgba(var(--primary-rgb),0.2)]'
+                            : 'border-outline-variant/30 bg-surface-container-lowest text-on-surface'
+                          }
+                          ${error ? 'border-error bg-error-container/20 text-error' : ''}
+                        `}
+                      >
+                        {pin[i] || ''}
+                      </div>
+                    ))}
+                  </div>
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    autoComplete="off"
+                    value={pin}
+                    onChange={handlePinChange}
+                    onKeyDown={handlePinKeyDown}
+                    className="sr-only"
+                    aria-label="PIN input"
+                  />
+                  {error && (
+                    <p className="text-xs text-error text-center mt-4 font-bold flex items-center justify-center gap-1 bg-error-container/20 py-2 rounded-lg">
+                      <FontAwesomeIcon icon={faExclamationCircle} /> {error}
+                    </p>
+                  )}
+                </div>
+
+                <button
+                  onClick={handlePinSubmit}
+                  disabled={pin.length !== PIN_LENGTH}
+                  className={`
+                    w-full py-4 mt-2 rounded-full text-lg font-bold transition-all duration-200 flex items-center justify-center gap-2
+                    ${pin.length === PIN_LENGTH
+                      ? 'bg-primary text-on-primary shadow-lg shadow-primary/20 active:scale-[0.98]'
+                      : 'bg-surface-variant/50 text-on-surface-variant/40 cursor-not-allowed'
+                    }
+                  `}
+                >
+                  Tiếp tục
+                  {pin.length === PIN_LENGTH && <FontAwesomeIcon icon={faArrowRight} />}
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-6">
+                <div className="flex items-center justify-center gap-3 bg-primary-container/20 rounded-2xl py-3 px-5 border border-primary/10">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-on-surface-variant">Phòng:</span>
+                    <span className="text-xl font-bold text-primary font-mono tracking-widest">{pin}</span>
+                  </div>
+                  <button
+                    onClick={() => { setStep('pin'); setNickname(''); }}
+                    className="ml-auto text-xs text-primary hover:opacity-80 font-bold px-3 py-1 bg-primary/10 rounded-full"
+                  >
+                    Đổi mã
+                  </button>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="relative group/input">
+                    <FontAwesomeIcon icon={faUser} className="absolute left-5 top-1/2 -translate-y-1/2 text-on-surface-variant group-focus-within/input:text-primary transition-colors" />
+                    <input
+                      type="text"
+                      className="w-full pl-12 pr-5 py-4 bg-surface-container-low rounded-2xl border-2 border-transparent focus:border-primary focus:bg-surface-container-lowest transition-all duration-200 outline-none text-on-surface placeholder:text-outline/60 font-medium text-lg shadow-sm"
+                      placeholder="VD: Tuấn, Minh..."
+                      maxLength={12}
+                      value={nickname}
+                      onChange={(e) => setNickname(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && nickname.trim().length >= 2) {
+                          handleNicknameSubmit();
+                        }
+                      }}
+                      autoFocus
+                    />
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleNicknameSubmit}
+                  disabled={loading || !nickname.trim() || nickname.length < 2}
+                  className={`
+                    w-full py-4 mt-2 rounded-full text-lg font-bold transition-all duration-200 flex items-center justify-center gap-2
+                    ${loading || !nickname.trim() || nickname.length < 2
+                      ? 'bg-surface-variant/50 text-on-surface-variant/40 cursor-not-allowed'
+                      : 'bg-primary text-on-primary shadow-lg shadow-primary/20 active:scale-[0.98]'
+                    }
+                  `}
+                >
+                  {loading ? (
+                    <><FontAwesomeIcon icon={faSpinner} spin /> Đang vào...</>
+                  ) : (
+                    <><FontAwesomeIcon icon={faRightToBracket} /> Vào bàn</>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </main>
+      <BottomNav />
+    </div>
+  );
+};
 
 const COLLECTION_STYLES = [
   { icon: 'restaurant', colorClass: 'text-secondary', bgClass: 'bg-secondary-container/30' },
@@ -35,6 +246,9 @@ export default function CreateSessionPage() {
 
   // Load default collections
   useEffect(() => {
+    // Only load collections if authenticated (since GuestJoinView doesn't need them)
+    if (!isAuthenticated()) return;
+    
     api.collections.list().then((res) => {
       const data = Array.isArray(res.data) ? res.data : res.data?.collections || [];
       const top3 = data.slice(0, 3);
@@ -95,6 +309,10 @@ export default function CreateSessionPage() {
       setCreating(false);
     }
   };
+
+  if (!isAuthenticated()) {
+    return <GuestJoinView />;
+  }
 
   return (
     <div className="bg-surface font-body text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container min-h-screen">
@@ -206,7 +424,7 @@ export default function CreateSessionPage() {
               className={`w-full max-w-xs py-4 rounded-full font-headline font-bold text-lg transition-all duration-200 flex items-center justify-center gap-3 ${
                 (!nickname.trim() || !selectedTier || !selectedCollection || creating)
                   ? 'bg-surface-variant text-on-surface-variant/50 cursor-not-allowed'
-                  : 'bg-gradient-to-br from-primary to-primary-container shadow-xl shadow-primary/20 text-on-primary scale-100 active:scale-95'
+                  : 'bg-primary shadow-xl shadow-primary/20 text-on-primary scale-100 active:scale-95'
               }`}
             >
               {creating ? 'Đang tạo...' : 'Tạo nhóm'}
@@ -216,21 +434,8 @@ export default function CreateSessionPage() {
         </form>
       </main>
 
-      {/* FAB: Tham gia */}
-      <button 
-        onClick={() => setShowJoinModal(true)}
-        className="fixed bottom-32 right-6 z-50 bg-gradient-to-br from-primary to-primary-container text-on-primary flex items-center gap-2 px-6 py-4 rounded-full shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all">
-        <span className="material-symbols-outlined">login</span>
-        <span className="font-label font-bold text-sm tracking-wide">Tham gia</span>
-      </button>
-
       {/* BottomNavBar */}
       <BottomNav />
-
-      <JoinModal
-        open={showJoinModal}
-        onClose={() => setShowJoinModal(false)}
-      />
     </div>
   );
 }
