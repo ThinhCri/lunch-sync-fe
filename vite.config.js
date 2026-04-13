@@ -8,6 +8,9 @@ export default defineConfig(({ mode }) => {
   const target = env.VITE_API_BASE_URL || 'https://localhost:7070';
 
   return {
+    define: {
+      global: 'globalThis',
+    },
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
