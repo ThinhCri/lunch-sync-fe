@@ -19,12 +19,10 @@
 Thay vì cãi vã hay nhường nhau, LunchSync biến việc chọn món thành một trải nghiệm thú vị như "quẹt Tinder", với hệ thống tổng hợp thời gian thực thông minh.
 
 ##  Tính năng nổi bật
-- **Trải nghiệm quẹt (Swipe) độc đáo:** Đưa ra các gợi ý món ăn/nhà hàng. Thích thì quẹt phải, không thích thì quẹt trái. Thuật toán sẽ tổng hợp điểm số và độ tương đồng để tìm ra quán ăn "đỉnh" nhất cho cả nhóm.
 - **Xác thực an toàn với AWS Cognito:** Đăng ký và đăng nhập được quản lý xác thực bằng OTP qua hệ thống Amazon Cognito được tích hợp thẳng vào Frontend qua SDK chuyên dụng. 
-- **Chế độ BOOM (Loại trừ):** Trong trường hợp khó quyết định giữa top lựa chọn, Host có thể kích hoạt **BOOM** – màn thiết kế animation cực "chất" sẽ văng các quán có hạng thấp ra khỏi màn hình và đưa Top 3 lên để chốt!
-- **Sảnh chờ (Lobby) Real-time:** Hiển thị tức thì số lượng đã tham gia phòng, ai đã ở trong phòng chờ và ai đã hoàn thành lượt bình chọn thông qua API Polling siêu tốc độ.
-- **Giao diện Modern & Premium:** Đi theo phong cách Flat Design mượt mà loại bỏ gradients sặc sỡ, duy trì màu sắc tương phản cao (với màu chủ đạo là cam cháy và đỏ), hiệu ứng mượt mà từ Framer Motion, mang lại cảm giác sang trọng.
-- **Quản lý danh sách (Crowdsourced):** Người dùng có thể Đề xuất thêm quán ăn mới vào database danh sách quán chung của công ty.
+- **Chế độ BOOM (Loại trừ):** Trong trường hợp khó quyết định giữa top lựa chọn, Host có thể kích hoạt **BOOM** – màn thiết kế animation sẽ văng các quán có hạng thấp ra khỏi màn hình và đưa Top 3 lên để chốt!
+- **Sảnh chờ (Lobby) Real-time:** Hiển thị tức thì số lượng đã tham gia phòng, ai đã ở trong phòng chờ và ai đã hoàn thành lượt bình chọn thông qua API Polling.
+
 
 ## 🛠 Công nghệ sử dụng
 - **Core Framework:** React 18, React Router v7.
@@ -68,7 +66,3 @@ Server sẽ khởi chạy mặc định tại cổng môi trường thiết lậ
 5. Khi tất cả hoàn thành, Host chốt sổ và kéo ra **Bảng xếp hạng (Kết quả)**.
 6. Nếu điểm số sít sao, Host thả nút **BOOM!** để loại đi các quán chót bảng, chỉ giữ lại vài sự quán có lượt Vote cao nhất để chốt kèo hẹn đồng nghiệp đi ăn!
 
----
-<div align="center">
-  <i>Được thiết kế và phát triển với ❤️ — Xóa sổ mọi cãi bã bữa ăn.</i>
-</div>
