@@ -80,7 +80,7 @@ export default function RegisterPage() {
 
     try {
       await api.auth.register({ email, password, fullName: fullName.trim() });
-      navigate('/login', { replace: true, state: { returnTo: location.state?.returnTo } });
+      navigate('/verify', { replace: true, state: { email, returnTo: location.state?.returnTo } });
     } catch (err) {
       setGeneralError(err.message || 'Đăng ký thất bại. Vui lòng thử lại.');
     } finally {

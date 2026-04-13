@@ -18,6 +18,7 @@ import BoomPage from '@/pages/BoomPage';
 import DonePage from '@/pages/DonePage';
 import CrowdsourcePage from '@/pages/CrowdsourcePage';
 import ProfilePage from '@/pages/ProfilePage';
+import VerifyPage from '@/pages/VerifyPage';
 
 function RequireAuth({ children }) {
   const isAuth = useAuthStore((s) => !!s.token);
@@ -62,6 +63,7 @@ function App() {
               <Route path="/explore" element={<HomePage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
+              <Route path="/verify" element={<VerifyPage />} />
               <Route path="/join" element={<Navigate to="/" replace />} />
               <Route path="/join/:pin" element={<JoinPage />} />
               <Route path="/suggest" element={<CrowdsourcePage />} />
