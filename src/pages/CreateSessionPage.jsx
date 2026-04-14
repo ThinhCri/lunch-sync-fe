@@ -436,6 +436,20 @@ export default function CreateSessionPage() {
 
       {/* BottomNavBar */}
       <BottomNav />
+
+      <JoinModal 
+        open={showJoinModal} 
+        onClose={() => setShowJoinModal(false)} 
+      />
+
+      {/* FAB: Tham gia bằng mã PIN */}
+      <button
+        onClick={() => setShowJoinModal(true)}
+        className="fixed bottom-32 right-6 z-50 bg-primary text-on-primary flex items-center gap-2 px-6 py-4 rounded-full shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all"
+      >
+        <span className="material-symbols-outlined text-[20px]">pin</span>
+        <span className="font-label font-bold text-sm tracking-wide">Tham gia</span>
+      </button>
     </div>
   );
 }

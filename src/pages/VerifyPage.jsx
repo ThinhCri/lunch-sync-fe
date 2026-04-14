@@ -55,7 +55,7 @@ export default function VerifyPage() {
     setLoading(true);
     setError('');
     try {
-      await authApi.verifyOTP({ email, code });
+      await authApi.verifyOTP({ email, otp: code });
       setSuccess(true);
       // Wait a moment for the success animation, then redirect to login
       setTimeout(() => {
@@ -106,23 +106,22 @@ export default function VerifyPage() {
       <div className="fixed top-20 -right-20 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
       <div className="fixed bottom-10 -left-20 w-80 h-80 bg-secondary/5 rounded-full blur-3xl pointer-events-none"></div>
 
-      <Header title="LunchSync Xác thực" />
+      <Header title="LunchSync Verification" />
 
       <main className="flex-grow flex flex-col items-center px-6 pt-28 pb-32 relative z-10 w-full">
         <div className="w-full max-w-md flex flex-col shrink-0">
-          
+
           {/* Icon + Heading */}
           <div className="text-center mb-10">
             <div className="relative inline-block mb-6">
               <div className="absolute -inset-4 bg-primary/10 rounded-full blur-2xl"></div>
-              <div className={`relative w-24 h-24 rounded-full flex items-center justify-center border-4 shadow-[0_8px_24px_rgba(44,47,48,0.06)] transition-all duration-500 ${
-                success 
-                  ? 'bg-green-50 border-green-200' 
-                  : 'bg-primary-container/20 border-surface-container-lowest'
-              }`}>
-                <FontAwesomeIcon 
-                  icon={success ? faCheck : faEnvelope} 
-                  className={`text-3xl transition-all duration-500 ${success ? 'text-green-600' : 'text-primary'}`} 
+              <div className={`relative w-24 h-24 rounded-full flex items-center justify-center border-4 shadow-[0_8px_24px_rgba(44,47,48,0.06)] transition-all duration-500 ${success
+                ? 'bg-green-50 border-green-200'
+                : 'bg-primary-container/20 border-surface-container-lowest'
+                }`}>
+                <FontAwesomeIcon
+                  icon={success ? faCheck : faEnvelope}
+                  className={`text-3xl transition-all duration-500 ${success ? 'text-green-600' : 'text-primary'}`}
                 />
               </div>
             </div>
@@ -130,8 +129,8 @@ export default function VerifyPage() {
               {success ? 'Xác thực thành công!' : 'Xác thực email'}
             </h1>
             <p className="text-on-surface-variant text-sm font-medium">
-              {success 
-                ? 'Đang chuyển hướng đến trang đăng nhập...' 
+              {success
+                ? 'Đang chuyển hướng đến trang đăng nhập...'
                 : <>Nhập mã 6 số đã gửi đến <span className="text-primary font-bold">{email}</span></>
               }
             </p>
@@ -141,7 +140,7 @@ export default function VerifyPage() {
             <>
               {/* Verification Card */}
               <div className="bg-surface-container-lowest p-8 rounded-2xl shadow-[0_4px_16px_rgba(44,47,48,0.03)] border border-outline-variant/10">
-                
+
                 {error && (
                   <div className="mb-6 px-4 py-3 bg-error-container/20 text-error rounded-lg flex items-center gap-2 text-sm font-medium">
                     <FontAwesomeIcon icon={faExclamationCircle} className="text-sm flex-shrink-0" />
@@ -163,8 +162,8 @@ export default function VerifyPage() {
                           ${code[i]
                             ? 'border-primary bg-primary/5 text-primary'
                             : i === code.length
-                            ? 'border-primary/40 bg-surface-container-lowest text-on-surface'
-                            : 'border-outline-variant/30 bg-surface-container-low text-on-surface'
+                              ? 'border-primary/40 bg-surface-container-lowest text-on-surface'
+                              : 'border-outline-variant/30 bg-surface-container-low text-on-surface'
                           }
                         `}
                       >
@@ -226,8 +225,8 @@ export default function VerifyPage() {
                   {resending
                     ? 'Đang gửi...'
                     : cooldown > 0
-                    ? `Gửi lại sau ${cooldown}s`
-                    : 'Gửi lại mã'
+                      ? `Gửi lại sau ${cooldown}s`
+                      : 'Gửi lại mã'
                   }
                 </button>
               </div>

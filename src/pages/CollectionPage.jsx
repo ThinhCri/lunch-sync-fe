@@ -38,8 +38,8 @@ export default function CollectionPage() {
 
   return (
     <div className="bg-surface text-on-surface font-body selection:bg-primary-container selection:text-on-primary-container min-h-screen">
-      <Header 
-        title="Danh sách quán" 
+      <Header
+        title="LunchSync Collections"
         leftElement={
           <button onClick={() => navigate(-1)} className="text-on-surface hover:text-primary transition-colors">
             <FontAwesomeIcon icon={faArrowLeft} className="text-xl" />
@@ -59,18 +59,18 @@ export default function CollectionPage() {
 
         {loading ? (
           <div className="space-y-6">
-             {[1, 2, 3].map((i) => (
-                <div key={i} className="animate-pulse bg-surface-container-low h-32 rounded-2xl w-full" />
-             ))}
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="animate-pulse bg-surface-container-low h-32 rounded-2xl w-full" />
+            ))}
           </div>
         ) : error ? (
-           <div className="text-center py-20 bg-error-container/20 border border-error/50 rounded-2xl">
-             <p className="text-error font-medium">{error}</p>
-           </div>
+          <div className="text-center py-20 bg-error-container/20 border border-error/50 rounded-2xl">
+            <p className="text-error font-medium">{error}</p>
+          </div>
         ) : restaurants.length === 0 ? (
-           <div className="text-center py-20 bg-surface-container-low rounded-2xl border border-dashed border-outline/20">
-             <p className="text-on-surface-variant font-medium">Khu vực này hiện chưa có quán nào.</p>
-           </div>
+          <div className="text-center py-20 bg-surface-container-low rounded-2xl border border-dashed border-outline/20">
+            <p className="text-on-surface-variant font-medium">Khu vực này hiện chưa có quán nào.</p>
+          </div>
         ) : (
           <div className="grid gap-6">
             {restaurants.map((res) => (
@@ -95,7 +95,7 @@ export default function CollectionPage() {
                       <span className="line-clamp-2">{res.address}</span>
                     </p>
                   </div>
-                  
+
                   <div className="mt-4">
                     <div className="inline-block bg-primary-container/20 text-primary px-3 py-1.5 rounded-full text-xs font-bold ring-1 ring-primary/20">
                       {res.price_display}

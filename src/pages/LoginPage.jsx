@@ -69,7 +69,7 @@ export default function LoginPage() {
       <div className="fixed top-20 -right-20 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
       <div className="fixed bottom-10 -left-20 w-80 h-80 bg-secondary/5 rounded-full blur-3xl pointer-events-none"></div>
 
-      <Header title="LunchSync" />
+      <Header title="LunchSync Login" />
 
       <main className="flex-grow flex flex-col items-center px-4 pt-28 pb-32 relative z-10 w-full">
         <div className="w-full max-w-md mt-6 flex flex-col shrink-0">
@@ -129,7 +129,7 @@ export default function LoginPage() {
                 </div>
                 <div className="relative group">
                   <input
-                    className={`w-full pl-6 pr-12 py-4 rounded-full bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 text-on-surface placeholder:text-outline/60 transition-all font-medium ${errors.password ? 'ring-2 ring-error' : ''}`}
+                    className={`w-full pl-6 pr-12 py-4 rounded-full bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 text-on-surface placeholder:text-outline/60 transition-all font-medium [&::-ms-reveal]:hidden [&::-webkit-credentials-auto-fill-button]:hidden ${errors.password ? 'ring-2 ring-error' : ''}`}
                     id="password"
                     placeholder="••••••••"
                     type={showPassword ? "text" : "password"}
@@ -138,9 +138,10 @@ export default function LoginPage() {
                     disabled={loading}
                   />
                   <button
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-primary transition-colors flex items-center justify-center"
+                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-outline hover:text-primary transition-colors focus:outline-none"
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
+                    tabIndex="-1"
                   >
                     {showPassword ? (
                       <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

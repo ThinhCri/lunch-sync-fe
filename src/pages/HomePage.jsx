@@ -12,7 +12,7 @@ export default function HomePage() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
   const [showJoinModal, setShowJoinModal] = useState(false);
-  
+
   // Collections state
   const [collections, setCollections] = useState([]);
   const [loadingCollections, setLoadingCollections] = useState(true);
@@ -84,12 +84,12 @@ export default function HomePage() {
           <h2 className="font-headline text-4xl tracking-tight font-extrabold text-on-surface">
             Explore
           </h2>
-          
+
           {loadingCollections ? (
             <div className="flex gap-3 overflow-hidden">
-               {[1, 2, 3].map(i => (
-                 <div key={i} className="h-10 w-24 bg-surface-container-low animate-pulse rounded-full shrink-0" />
-               ))}
+              {[1, 2, 3].map(i => (
+                <div key={i} className="h-10 w-24 bg-surface-container-low animate-pulse rounded-full shrink-0" />
+              ))}
             </div>
           ) : (
             <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none snap-x">
@@ -97,11 +97,10 @@ export default function HomePage() {
                 <button
                   key={col.id}
                   onClick={() => setSelectedCollectionId(col.id)}
-                  className={`snap-start shrink-0 px-5 py-2.5 rounded-full text-sm font-bold transition-all ${
-                    selectedCollectionId === col.id
+                  className={`snap-start shrink-0 px-5 py-2.5 rounded-full text-sm font-bold transition-all ${selectedCollectionId === col.id
                       ? 'bg-primary text-on-primary shadow-md ring-2 ring-primary/20'
                       : 'bg-surface-container-low text-on-surface hover:bg-surface-container-high'
-                  }`}
+                    }`}
                 >
                   {col.name}
                 </button>
@@ -119,14 +118,14 @@ export default function HomePage() {
               ))}
             </div>
           ) : errorRestaurants ? (
-             <div className="text-center py-10 bg-error-container/20 border border-error/50 rounded-2xl">
-               <p className="text-error font-medium">{errorRestaurants}</p>
-             </div>
+            <div className="text-center py-10 bg-error-container/20 border border-error/50 rounded-2xl">
+              <p className="text-error font-medium">{errorRestaurants}</p>
+            </div>
           ) : restaurants.length === 0 ? (
-             <div className="text-center py-20 bg-surface-container-lowest rounded-2xl border border-dashed border-outline/20">
-               <span className="material-symbols-outlined text-outline/30 text-5xl mb-4">search_off</span>
-               <p className="text-on-surface-variant font-medium">Khu vực này hiện chưa có quán nào.</p>
-             </div>
+            <div className="text-center py-20 bg-surface-container-lowest rounded-2xl border border-dashed border-outline/20">
+              <span className="material-symbols-outlined text-outline/30 text-5xl mb-4">search_off</span>
+              <p className="text-on-surface-variant font-medium">Khu vực này hiện chưa có quán nào.</p>
+            </div>
           ) : (
             <>
               <div className="grid gap-6">
@@ -152,7 +151,7 @@ export default function HomePage() {
                           <span className="line-clamp-2">{res.address}</span>
                         </p>
                       </div>
-                      
+
                       <div className="mt-4">
                         <div className="inline-block bg-primary-container/20 text-primary px-3 py-1.5 rounded-full text-xs font-bold ring-1 ring-primary/20">
                           {res.price_display}
@@ -162,7 +161,7 @@ export default function HomePage() {
                   </article>
                 ))}
               </div>
-              
+
               {/* Pagination Controls */}
               {totalPages > 1 && (
                 <div className="flex items-center justify-center pt-8 pb-4">
@@ -170,15 +169,14 @@ export default function HomePage() {
                     <button
                       onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
-                      className={`w-12 h-12 flex items-center justify-center rounded-full transition-all duration-300 ${
-                        currentPage === 1
+                      className={`w-12 h-12 flex items-center justify-center rounded-full transition-all duration-300 ${currentPage === 1
                           ? 'text-on-surface/20 cursor-not-allowed'
                           : 'text-on-surface hover:bg-surface-container-highest hover:text-primary active:scale-95'
-                      }`}
+                        }`}
                     >
                       <FontAwesomeIcon icon={faChevronLeft} className="text-base" />
                     </button>
-                    
+
                     <div className="px-5 font-headline font-semibold text-base text-on-surface flex items-center gap-1.5 select-none md:text-sm">
                       <span className="text-primary">{currentPage}</span>
                       <span className="text-on-surface-variant/40">/</span>
@@ -188,11 +186,10 @@ export default function HomePage() {
                     <button
                       onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                       disabled={currentPage === totalPages}
-                      className={`w-12 h-12 flex items-center justify-center rounded-full transition-all duration-300 ${
-                        currentPage === totalPages
+                      className={`w-12 h-12 flex items-center justify-center rounded-full transition-all duration-300 ${currentPage === totalPages
                           ? 'text-on-surface/20 cursor-not-allowed'
                           : 'text-on-surface hover:bg-surface-container-highest hover:text-primary active:scale-95'
-                      }`}
+                        }`}
                     >
                       <FontAwesomeIcon icon={faChevronRight} className="text-base" />
                     </button>
@@ -205,7 +202,7 @@ export default function HomePage() {
       </main>
 
       {/* FAB: Đề xuất quán */}
-      <button 
+      <button
         onClick={() => {
           if (isAuthenticated()) {
             navigate('/suggest');

@@ -78,7 +78,7 @@ export default function DonePage() {
 
   return (
     <div className="bg-surface font-body text-on-surface min-h-screen">
-      <Header title="LunchSync Confirmed" />
+      <Header title="LunchSync Done" />
 
       <main className="pt-20 pb-32 px-4 max-w-2xl mx-auto">
         {/* Success Hero Section */}

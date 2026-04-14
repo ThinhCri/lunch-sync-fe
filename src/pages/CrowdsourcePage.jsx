@@ -96,7 +96,7 @@ export default function CrowdsourcePage() {
 
   return (
     <div className="bg-surface text-on-surface min-h-screen pb-40">
-      <Header title="LunchSync Suggest" />
+      <Header title="LunchSync Contribute" />
 
       <main className="pt-28 px-6 max-w-2xl mx-auto">
         {/* Hero Section */}

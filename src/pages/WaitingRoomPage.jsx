@@ -53,7 +53,7 @@ export default function WaitingRoomPage() {
 
   return (
     <div className="bg-surface font-body text-on-surface min-h-screen flex flex-col">
-      <Header title="LunchSync Lobby" />
+      <Header title="LunchSync Waiting Room" />
       <main className="flex-grow flex flex-col items-center justify-center px-6 pt-24 pb-32 max-w-2xl mx-auto w-full relative">
         
         {/* Decorative blobs */}

@@ -90,14 +90,14 @@ export default function RegisterPage() {
 
   return (
     <div className="bg-surface text-on-surface h-[100dvh] w-full overflow-y-auto overflow-x-hidden flex flex-col font-body selection:bg-primary-container selection:text-on-primary-container relative">
-      
+
       {/* Top Navigation Bar */}
-      <Header title="LunchSync Đăng ký" />
+      <Header title="LunchSync Register" />
 
       <main className="flex-grow flex flex-col items-center px-6 pt-28 pb-32 w-full max-w-xl mx-auto">
         {/* Header Content */}
         <div className="w-full mb-10 text-center md:text-left">
-          <h2 className="font-headline font-extrabold text-4xl text-on-surface mb-3 tracking-tight">Tham gia cùng LunchSync</h2>
+          <h2 className="font-headline font-extrabold text-4xl text-on-surface mb-3 tracking-tight">Join LunchSync</h2>
           <p className="text-on-surface-variant text-lg leading-relaxed">Kết nối ẩm thực, chia sẻ trải nghiệm cùng cộng đồng sành ăn.</p>
         </div>
 
@@ -120,12 +120,12 @@ export default function RegisterPage() {
                   <circle cx="12" cy="7" r="4"></circle>
                 </svg>
               </div>
-              <input 
+              <input
                 className={`w-full bg-surface-container-lowest border-none ring-1 ring-inset h-14 pl-12 pr-4 rounded-full text-on-surface placeholder:text-outline/60 transition-all ${errors.fullName ? 'ring-error focus:ring-2 focus:ring-error' : 'ring-surface-container-highest focus:ring-2 focus:ring-primary'}`}
-                placeholder="Nguyễn Văn A" 
+                placeholder="Nguyễn Văn A"
                 type="text"
                 value={fullName}
-                onChange={(e) => { setFullName(e.target.value); setErrors(p => ({...p, fullName: ''})) }}
+                onChange={(e) => { setFullName(e.target.value); setErrors(p => ({ ...p, fullName: '' })) }}
                 disabled={loading}
               />
             </div>
@@ -142,12 +142,12 @@ export default function RegisterPage() {
                   <polyline points="22,6 12,13 2,6"></polyline>
                 </svg>
               </div>
-              <input 
+              <input
                 className={`w-full bg-surface-container-lowest border-none ring-1 ring-inset h-14 pl-12 pr-4 rounded-full text-on-surface placeholder:text-outline/60 transition-all ${errors.email ? 'ring-error focus:ring-2 focus:ring-error' : 'ring-surface-container-highest focus:ring-2 focus:ring-primary'}`}
-                placeholder="example@gmail.com" 
+                placeholder="example@gmail.com"
                 type="email"
                 value={email}
-                onChange={(e) => { setEmail(e.target.value); setErrors(p => ({...p, email: ''})) }}
+                onChange={(e) => { setEmail(e.target.value); setErrors(p => ({ ...p, email: '' })) }}
                 disabled={loading}
               />
             </div>
@@ -158,16 +158,16 @@ export default function RegisterPage() {
           <div className="space-y-2">
             <label className="block text-sm font-semibold text-on-surface-variant ml-4">Mật khẩu</label>
             <div className="relative group">
-              <input 
-                className={`w-full bg-surface-container-lowest border-none ring-1 ring-inset h-14 pl-6 pr-12 rounded-full text-on-surface placeholder:text-outline/60 transition-all ${errors.password ? 'ring-error focus:ring-2 focus:ring-error' : 'ring-surface-container-highest focus:ring-2 focus:ring-primary'}`}
-                placeholder="••••••••" 
+              <input
+                className={`w-full bg-surface-container-lowest border-none ring-1 ring-inset h-14 pl-6 pr-12 rounded-full text-on-surface placeholder:text-outline/60 transition-all [&::-ms-reveal]:hidden [&::-webkit-credentials-auto-fill-button]:hidden ${errors.password ? 'ring-error focus:ring-2 focus:ring-error' : 'ring-surface-container-highest focus:ring-2 focus:ring-primary'}`}
+                placeholder="••••••••"
                 type={showPassword ? "text" : "password"}
                 value={password}
-                onChange={(e) => { setPassword(e.target.value); setErrors(p => ({...p, password: ''})) }}
+                onChange={(e) => { setPassword(e.target.value); setErrors(p => ({ ...p, password: '' })) }}
                 disabled={loading}
               />
-              <button 
-                className="absolute inset-y-0 right-0 pr-4 flex items-center text-outline hover:text-primary transition-colors focus:outline-none" 
+              <button
+                className="absolute inset-y-0 right-0 pr-4 flex items-center text-outline hover:text-primary transition-colors focus:outline-none"
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 tabIndex="-1"
@@ -192,16 +192,16 @@ export default function RegisterPage() {
           <div className="space-y-2">
             <label className="block text-sm font-semibold text-on-surface-variant ml-4">Xác nhận mật khẩu</label>
             <div className="relative group">
-              <input 
-                className={`w-full bg-surface-container-lowest border-none ring-1 ring-inset h-14 pl-6 pr-12 rounded-full text-on-surface placeholder:text-outline/60 transition-all ${errors.confirmPassword ? 'ring-error focus:ring-2 focus:ring-error' : 'ring-surface-container-highest focus:ring-2 focus:ring-primary'}`}
-                placeholder="••••••••" 
+              <input
+                className={`w-full bg-surface-container-lowest border-none ring-1 ring-inset h-14 pl-6 pr-12 rounded-full text-on-surface placeholder:text-outline/60 transition-all [&::-ms-reveal]:hidden [&::-webkit-credentials-auto-fill-button]:hidden ${errors.confirmPassword ? 'ring-error focus:ring-2 focus:ring-error' : 'ring-surface-container-highest focus:ring-2 focus:ring-primary'}`}
+                placeholder="••••••••"
                 type={showConfirmPassword ? "text" : "password"}
                 value={confirmPassword}
-                onChange={(e) => { setConfirmPassword(e.target.value); setErrors(p => ({...p, confirmPassword: ''})) }}
+                onChange={(e) => { setConfirmPassword(e.target.value); setErrors(p => ({ ...p, confirmPassword: '' })) }}
                 disabled={loading}
               />
-              <button 
-                className="absolute inset-y-0 right-0 pr-4 flex items-center text-outline hover:text-primary transition-colors focus:outline-none" 
+              <button
+                className="absolute inset-y-0 right-0 pr-4 flex items-center text-outline hover:text-primary transition-colors focus:outline-none"
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 tabIndex="-1"
@@ -224,8 +224,8 @@ export default function RegisterPage() {
 
           {/* Submit Button */}
           <div className="pt-4">
-            <button 
-              className="w-full bg-primary text-on-primary font-bold h-14 rounded-full shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all text-lg flex items-center justify-center gap-2 disabled:opacity-70 disabled:scale-100 disabled:cursor-not-allowed" 
+            <button
+              className="w-full bg-primary text-on-primary font-bold h-14 rounded-full shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all text-lg flex items-center justify-center gap-2 disabled:opacity-70 disabled:scale-100 disabled:cursor-not-allowed"
               type="submit"
               disabled={loading}
             >
@@ -237,7 +237,7 @@ export default function RegisterPage() {
         {/* Footer Links */}
         <div className="mt-8 text-center">
           <p className="text-on-surface-variant font-medium">
-            Đã có tài khoản? 
+            Đã có tài khoản?
             <Link className="text-primary font-bold ml-1 hover:underline underline-offset-4" to="/login" state={{ returnTo: location.state?.returnTo }}>Đăng nhập</Link>
           </p>
         </div>
