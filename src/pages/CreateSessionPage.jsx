@@ -282,7 +282,7 @@ export default function CreateSessionPage() {
     setCreating(true);
     try {
       const res = await api.sessions.create({
-        collectionId: selectedCollection?.id || null,
+        collection_id: selectedCollection?.id || null,
         price_tier: selectedTier.value,
         nickname: nickname.trim(),
       });
@@ -290,11 +290,11 @@ export default function CreateSessionPage() {
 
       setSession({
         pin: data.pin,
-        sessionId: data.sessionId,
-        participantId: data.participantId,
+        sessionId: data.session_id,
+        participantId: data.participant_id,
         isHost: true,
         collectionId: selectedCollection?.id || null,
-        collectionName: selectedCollection?.name || data.collectionName || 'Khu vực tự chọn',
+        collectionName: selectedCollection?.name || data.collection_name || 'Khu vực tự chọn',
         priceTier: selectedTier.key,
         priceDisplay: selectedTier.priceDisplay,
       });

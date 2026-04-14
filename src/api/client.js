@@ -10,12 +10,17 @@ const defaultClient = axios.create({
   timeout: API_CONFIG.TIMEOUT,
 });
 
-// Request interceptor: gắn JWT từ authStore
+// Request interceptor: gắn JWT từ authStore + debug log
 const requestInterceptor = (config) => {
   const token = useAuthStore.getState().token;
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  console.log(`[API ▶] ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`, {
+    headers: config.headers,
+    data: config.data,
+    params: config.params,
+  });
   return config;
 };
 
@@ -25,12 +30,20 @@ let isRetrying = false;
 const responseInterceptor = async (error) => {
   const originalRequest = error.config;
 
+  console.error(`[API ✗] ${originalRequest?.method?.toUpperCase()} ${originalRequest?.url}`, {
+    status: error.response?.status,
+    data: error.response?.data,
+    message: error.message,
+  });
+
   // 401 Unauthorized → logout
-  if (error.response?.status === 401 && !originalRequest._retry) {
+  const isAuthEndpoint = originalRequest?.url?.includes('/auth/');
+  if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
     originalRequest._retry = true;
     useAuthStore.getState().logout();
-    message.error('Phiên đăng nhập hết hạn, vui lòng đăng nhập lại.');
-    window.location.href = '/login';
+    message.error(`Phiên hết hạn hoặc lỗi xác thực (401): ${JSON.stringify(error.response?.data) || error.message}`);
+    // Tạm thời tắt redirect để dev nhìn được log
+    // window.location.href = '/login';
     return Promise.reject(error);
   }
 
@@ -53,6 +66,15 @@ const responseInterceptor = async (error) => {
 
 // Apply interceptors to default client
 defaultClient.interceptors.request.use(requestInterceptor, (error) => Promise.reject(error));
-defaultClient.interceptors.response.use((response) => response, responseInterceptor);
+defaultClient.interceptors.response.use(
+  (response) => {
+    console.log(`[API ✔] ${response.config.method?.toUpperCase()} ${response.config.url}`, {
+      status: response.status,
+      data: response.data,
+    });
+    return response;
+  },
+  responseInterceptor
+);
 
 export default defaultClient;
