@@ -283,7 +283,7 @@ export default function CreateSessionPage() {
     try {
       const res = await api.sessions.create({
         collectionId: selectedCollection?.id || null,
-        priceTier: selectedTier.key,
+        price_tier: selectedTier.value,
         nickname: nickname.trim(),
       });
       const data = res.data;
