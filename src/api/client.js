@@ -4,22 +4,11 @@ import { parseApiError } from '@/utils/error';
 import { useAuthStore } from '@/store/authStore';
 import { API_CONFIG } from '@/config';
 
-// Default client with /api baseURL
+// Default client
 const defaultClient = axios.create({
-  baseURL: '/api',
+  baseURL: API_CONFIG.BASE_URL,
   timeout: API_CONFIG.TIMEOUT,
 });
-
-// Create a new client with custom base URL
-export const createApiClient = (baseURL = '/api') => {
-  if (baseURL === '/api') {
-    return defaultClient;
-  }
-  return axios.create({
-    baseURL,
-    timeout: API_CONFIG.TIMEOUT,
-  });
-};
 
 // Request interceptor: gắn JWT từ authStore
 const requestInterceptor = (config) => {

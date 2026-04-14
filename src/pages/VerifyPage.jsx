@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { confirmRegistration, resendConfirmationCode } from '@/services/cognito';
+import { authApi } from '@/api/auth';
 import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -55,7 +55,7 @@ export default function VerifyPage() {
     setLoading(true);
     setError('');
     try {
-      await confirmRegistration(email, code);
+      await authApi.verifyOTP({ email, code });
       setSuccess(true);
       // Wait a moment for the success animation, then redirect to login
       setTimeout(() => {
@@ -83,7 +83,7 @@ export default function VerifyPage() {
     setResending(true);
     setError('');
     try {
-      await resendConfirmationCode(email);
+      await authApi.resendOTP({ email });
       setCooldown(RESEND_COOLDOWN);
     } catch (err) {
       setError(err?.message || 'Không thể gửi lại mã. Vui lòng thử lại.');

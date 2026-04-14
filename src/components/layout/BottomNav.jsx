@@ -17,8 +17,8 @@ export default function BottomNav() {
   };
 
   const isActive = (path) => {
-    if (path === '/explore') return location.pathname === '/' || location.pathname === '/explore' || location.pathname === '/suggest';
-    if (path === '/create') return location.pathname === '/create' || location.pathname.startsWith('/lobby');
+    if (path === '/create') return location.pathname === '/' || location.pathname === '/create' || location.pathname.startsWith('/lobby');
+    if (path === '/explore') return location.pathname === '/explore' || location.pathname === '/suggest';
     if (path === '/profile') return location.pathname === '/profile';
     return false;
   };
@@ -34,19 +34,6 @@ export default function BottomNav() {
   return (
     <nav className="fixed bottom-0 w-full z-50 rounded-t-[2rem] bg-white/90 dark:bg-zinc-900/90 backdrop-blur-2xl shadow-[0_-8px_24px_rgba(44,47,48,0.06)] flex justify-around items-center px-4 pt-3 pb-8">
       <div 
-        onClick={() => handleNavigation('/explore')}
-        className={getTabClass('/explore')}
-      >
-        <svg 
-          className="w-6 h-6 mb-0.5" 
-          viewBox="0 0 24 24" 
-          fill="currentColor"
-        >
-          <path d="M12 10.9c-.61 0-1.1.49-1.1 1.1s.49 1.1 1.1 1.1c.61 0 1.1-.49 1.1-1.1s-.49-1.1-1.1-1.1zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm2.19 12.19L6 18l3.81-8.19L18 6l-3.81 8.19z"/>
-        </svg>
-        <span className="font-be-vietnam text-label-sm font-medium">Explore</span>
-      </div>
-      <div 
         onClick={() => handleNavigation('/create')}
         className={getTabClass('/create')}
       >
@@ -58,6 +45,19 @@ export default function BottomNav() {
           <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM8 17.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5zM9.5 8c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5-2.5-1.12-2.5-2.5zm6.5 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
         </svg>
         <span className="font-be-vietnam text-label-sm font-medium">LunchSync</span>
+      </div>
+      <div 
+        onClick={() => handleNavigation('/explore')}
+        className={getTabClass('/explore')}
+      >
+        <svg 
+          className="w-6 h-6 mb-0.5" 
+          viewBox="0 0 24 24" 
+          fill="currentColor"
+        >
+          <path d="M12 10.9c-.61 0-1.1.49-1.1 1.1s.49 1.1 1.1 1.1c.61 0 1.1-.49 1.1-1.1s-.49-1.1-1.1-1.1zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm2.19 12.19L6 18l3.81-8.19L18 6l-3.81 8.19z"/>
+        </svg>
+        <span className="font-be-vietnam text-label-sm font-medium">Explore</span>
       </div>
       <div 
         onClick={() => handleNavigation('/profile')}

@@ -375,7 +375,7 @@ export default function CreateSessionPage() {
                           <div className={`flex items-center gap-2 mt-2 w-fit px-3 py-1 rounded-full ${style.bgClass}`}>
                             <span className={`material-symbols-outlined text-[14px] ${style.colorClass}`}>{style.icon}</span>
                             <span className={`text-[10px] font-bold ${style.colorClass}`}>
-                              {col.restaurantCount ? `${col.restaurantCount} quán` : 'Nhiều lựa chọn'}
+                              {col.restaurant_count ? `${col.restaurant_count} quán` : 'Nhiều lựa chọn'}
                             </span>
                           </div>
                         </div>

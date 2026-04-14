@@ -12,8 +12,3 @@ export const API_CONFIG = {
   BASE_URL: getEnv('VITE_API_BASE_URL'),
   TIMEOUT: parseInt(getEnv('VITE_API_TIMEOUT', '10000'), 10),
 };
-
-export const COGNITO_CONFIG = {
-  USER_POOL_ID: getEnv('VITE_COGNITO_USER_POOL_ID'),
-  CLIENT_ID: getEnv('VITE_COGNITO_CLIENT_ID'),
-};

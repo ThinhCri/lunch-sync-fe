@@ -20,6 +20,9 @@ import CrowdsourcePage from '@/pages/CrowdsourcePage';
 import ProfilePage from '@/pages/ProfilePage';
 import VerifyPage from '@/pages/VerifyPage';
 
+import Header from '@/components/layout/Header'; // Although Header isn't used here, keep if existing
+import CollectionPage from '@/pages/CollectionPage';
+
 function RequireAuth({ children }) {
   const isAuth = useAuthStore((s) => !!s.token);
   if (!isAuth) return <Navigate to="/login" />;
@@ -27,8 +30,7 @@ function RequireAuth({ children }) {
 }
 
 function RootRoute() {
-  const isAuth = useAuthStore((s) => !!s.token);
-  return isAuth ? <Navigate to="/create" replace /> : <HomePage />;
+  return <CreateSessionPage />;
 }
 
 
@@ -61,6 +63,7 @@ function App() {
             <Routes>
               <Route path="/" element={<RootRoute />} />
               <Route path="/explore" element={<HomePage />} />
+              <Route path="/collection/:id" element={<CollectionPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/verify" element={<VerifyPage />} />
