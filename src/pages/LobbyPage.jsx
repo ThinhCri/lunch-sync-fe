@@ -74,7 +74,7 @@ const SESSION_DURATION_MS = 15 * 60 * 1000; // 15 phút
 export default function LobbyPage() {
   const { pin } = useParams();
   const navigate = useNavigate();
-  const { participants = [], setParticipants, reset } = useSessionStore();
+  const { participants = [], setParticipants, sessionId, shareLink, reset } = useSessionStore();
 
   const [sessionInfo, setSessionInfo] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -83,25 +83,31 @@ export default function LobbyPage() {
 
   const fetchStatus = useCallback(async () => {
     try {
-      const [infoRes, statusRes] = await Promise.all([
-        api.sessions.getInfo(pin),
-        api.sessions.getStatus(pin),
-      ]);
+      const infoRes = await api.sessions.getInfo(pin, sessionId);
       const infoData = infoRes.data;
-      const statusData = statusRes.data;
-      setSessionInfo(infoData);
-      const apiParticipants = infoData.participants || [];
+      
+      setSessionInfo({
+        ...infoData,
+        collectionName: infoData.collection_name,
+        priceDisplay: infoData.price_display,
+        participantCount: infoData.participant_count,
+      });
+      
+      const apiParticipants = (infoData.participants || []).map(p => ({
+        ...p,
+        isHost: p.is_host,
+      }));
       setParticipants(apiParticipants);
 
-      if (statusData.status === 'voting') {
+      if (infoData.status === 'voting') {
         navigate(`/vote/${pin}`);
       }
-    } catch {
-      // ignore
+    } catch (err) {
+      console.error('[Lobby] fetchStatus error:', err);
     } finally {
       setLoading(false);
     }
-  }, [pin, navigate, setParticipants]);
+  }, [pin, sessionId, navigate, setParticipants]);
 
   useSession({ pin, onStatus: fetchStatus, interval: 2000, enabled: true });
   useReconnect({ onReconnect: fetchStatus, enabled: true });
@@ -124,12 +130,18 @@ export default function LobbyPage() {
 
 
 
-  const handleCopyLink = () => {
-    const link = `${window.location.origin}/join/${pin}`;
-    navigator.clipboard.writeText(link).then(() => {
+  const handleCopyPin = () => {
+    navigator.clipboard.writeText(pin).then(() => {
       setCopied(true);
-      message.success('Đã copy link!');
+      message.success('Đã copy mã phòng!');
       setTimeout(() => setCopied(false), 2500);
+    });
+  };
+
+  const handleCopyShareLink = () => {
+    const link = shareLink || `${window.location.origin}/join/${pin}`;
+    navigator.clipboard.writeText(link).then(() => {
+      message.success('Đã copy link chia sẻ!');
     });
   };
 
@@ -159,13 +171,22 @@ export default function LobbyPage() {
               <div className="inline-flex items-center gap-4 bg-surface-container-lowest px-8 py-6 rounded-xl shadow-[0_4px_16px_rgba(44,47,48,0.04)] group">
                 <span className="text-4xl font-extrabold tracking-[0.2em] text-primary font-headline">{pin}</span>
                 <button 
-                  onClick={handleCopyLink}
+                  onClick={handleCopyPin}
                   className="bg-primary-container/20 p-2 rounded-full text-primary hover:bg-primary-container/40 transition-colors"
+                  title="Copy Mã PIN"
                 >
                   <span className="material-symbols-outlined">{copied ? 'check' : 'content_copy'}</span>
                 </button>
               </div>
-              <p className="text-on-surface-variant text-sm">Chia sẻ mã này để bạn bè cùng tham gia</p>
+              <div className="space-y-2 mt-2">
+                <p className="text-on-surface-variant text-sm">Chia sẻ mã này để bạn bè cùng tham gia</p>
+                <button 
+                  onClick={handleCopyShareLink}
+                  className="text-primary hover:opacity-80 underline text-sm font-semibold transition-opacity"
+                >
+                  Hoặc copy đường dẫn (Link)
+                </button>
+              </div>
             </section>
 
             {/* Session Details Card */}
@@ -187,7 +208,7 @@ export default function LobbyPage() {
                     <span className="material-symbols-outlined text-[18px]">payments</span>
                     <span className="text-xs font-semibold">Mức giá</span>
                   </div>
-                  <p className="font-bold text-on-surface">{priceTier?.priceDisplay || 'Tùy chọn'}</p>
+                  <p className="font-bold text-on-surface">{sessionInfo?.priceDisplay || priceTier?.priceDisplay || 'Tùy chọn'}</p>
                 </div>
               </div>
             </section>
@@ -195,7 +216,7 @@ export default function LobbyPage() {
             {/* Participants Section */}
             <section className="space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold font-headline">Thành viên ({safeParticipants.length})</h2>
+                <h2 className="text-lg font-bold font-headline">Thành viên ({sessionInfo?.participantCount || 0})</h2>
                 <div className="flex -space-x-2">
                   <span className="w-8 h-8 rounded-full border-2 border-surface bg-red-50 flex items-center justify-center text-[10px] font-bold text-primary">SYNC</span>
                 </div>

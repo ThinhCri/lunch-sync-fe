@@ -2,7 +2,7 @@ import client from './client';
 
 export const sessionsApi = {
   create: (data) => client.post('/sessions', data),
-  getInfo: (pin) => client.get(`/sessions/${pin}`),
+  getInfo: (pin, sessionId) => client.get(`/sessions/${pin}/${sessionId}/info`),
   join: (pin, data) => client.post(`/sessions/${pin}/join`, data),
   start: (pin) => client.post(`/sessions/${pin}/start`),
   getStatus: (pin) => client.get(`/sessions/${pin}/status`),

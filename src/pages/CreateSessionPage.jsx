@@ -292,11 +292,8 @@ export default function CreateSessionPage() {
         pin: data.pin,
         sessionId: data.session_id,
         participantId: data.participant_id,
+        shareLink: data.share_link,
         isHost: true,
-        collectionId: selectedCollection?.id || null,
-        collectionName: selectedCollection?.name || data.collection_name || 'Khu vực tự chọn',
-        priceTier: selectedTier.key,
-        priceDisplay: selectedTier.priceDisplay,
       });
       localStorage.setItem('lunchsync-create-history', JSON.stringify({
         collectionId: selectedCollection?.id,
