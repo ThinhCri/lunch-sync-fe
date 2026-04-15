@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { message, Modal } from 'antd';
 import { api } from '@/api';
 import { API_CONFIG } from '@/config';
 import { useSessionStore } from '@/store/sessionStore';
+import { useAuthStore } from '@/store/authStore';
 import { useSession } from '@/hooks/useSession';
 import { useReconnect } from '@/hooks/useReconnect';
 import { MIN_PARTICIPANTS, MAX_PARTICIPANTS, PRICE_TIERS } from '@/utils/constants';
@@ -71,28 +72,69 @@ export default function LobbyPage() {
   const { pin } = useParams();
   const navigate = useNavigate();
   const { participants = [], setParticipants, sessionId, participantId, nickname, isHost, shareLink, reset } = useSessionStore();
+  const { isAuthenticated } = useAuthStore();
 
   const [sessionInfo, setSessionInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
   const [copied, setCopied] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
-  const [sessionExpired, setSessionExpired] = useState(false);
-  const [expiredReason, setExpiredReason] = useState('');
+  const expiredShownRef = useRef(false); // prevent duplicate modal
+
+  const showExpiredModal = useCallback((reason) => {
+    if (expiredShownRef.current) return;
+    expiredShownRef.current = true;
+    const loggedIn = isAuthenticated();
+    Modal.warning({
+      title: 'Phiên đã kết thúc',
+      content: reason,
+      okText: loggedIn ? 'Tạo phiên mới' : 'Tham gia phòng khác',
+      centered: true,
+      onOk() {
+        reset();
+        navigate(loggedIn ? '/create' : '/', { replace: true });
+      },
+    });
+  }, [reset, navigate, isAuthenticated]);
 
   const fetchStatus = useCallback(async () => {
-    if (sessionExpired) return; // stop polling when already expired
+    if (expiredShownRef.current) return;
+    // Guard: sessionId is required for both getStatus and getInfo endpoints
+    if (!pin || !sessionId) {
+      console.warn('[Lobby] Missing pin or sessionId — skipping poll', { pin, sessionId });
+      setLoading(false);
+      return;
+    }
     try {
+      // Step 1: Check session status (no auth required)
+      const statusRes = await api.sessions.getStatus(pin, sessionId);
+      const currentStatus = statusRes.data?.status;
+
+      if (currentStatus === 'cancelled' || currentStatus === 'expired' || currentStatus === 'completed') {
+        const reasons = {
+          cancelled: 'Phiên này đã bị hủy bởi chủ phòng.',
+          expired: 'Phiên đã hết hạn do quá thời gian chờ.',
+          completed: 'Phiên này đã kết thúc.',
+        };
+        showExpiredModal(reasons[currentStatus] || 'Phiên không còn hoạt động.');
+        return;
+      }
+      if (currentStatus === 'voting') {
+        navigate(`/vote/${pin}`);
+        return;
+      }
+
+      // Step 2: Fetch full info for participants (no auth required)
       const infoRes = await api.sessions.getInfo(pin, sessionId);
       const infoData = infoRes.data;
-      
+
       setSessionInfo({
         ...infoData,
         collectionName: infoData.collection_name,
         priceDisplay: infoData.price_display,
         participantCount: infoData.participant_count,
       });
-      
+
       const apiParticipants = (infoData.participants || []).map(p => ({
         ...p,
         isHost: p.is_host,
@@ -102,47 +144,35 @@ export default function LobbyPage() {
         return 0;
       });
       setParticipants(apiParticipants);
-
-      if (infoData.status === 'voting') {
-        navigate(`/vote/${pin}`);
-      }
-
-      // Detect cancelled/expired session from status field
-      if (infoData.status === 'cancelled' || infoData.status === 'expired') {
-        setExpiredReason('Phên này đã bị hủy hoặc hết hạn. Vui lòng tạo phên mới để tiếp tục.');
-        setSessionExpired(true);
-        reset();
-      }
     } catch (err) {
-      // 404 → room deleted / never existed
-      // 410 → room explicitly gone/cancelled by backend
-      // SESSION_NOT_FOUND / SESSION_EXPIRED → error code from backend error body
-      const is404 = err.status === 404;
-      const is410 = err.status === 410;
-      const isExpiredCode = err.code === 'SESSION_NOT_FOUND' || err.code === 'SESSION_EXPIRED';
+      console.error('[Lobby] fetchStatus caught error:', err);
+      // Any error at all when polling = session is likely gone
+      // Show expired modal regardless of error shape
+      const httpStatus = err?.status ?? err?.response?.status;
+      const isExpiredCode = err?.code === 'SESSION_NOT_FOUND' || err?.code === 'SESSION_EXPIRED';
 
-      if (is404 || isExpiredCode) {
-        setExpiredReason('Mã phòng không còn tồn tại. Phên có thể đã bị hủy hoặc hết hạn sau 15 phút.');
-        setSessionExpired(true);
-        reset();
-      } else if (is410) {
-        setExpiredReason('Phên này đã bị đóng bởi chủ phòng hoặc hệ thống.');
-        setSessionExpired(true);
-        reset();
+      if (httpStatus || isExpiredCode) {
+        const msg = httpStatus === 404
+          ? 'Mã phòng không còn tồn tại. Phiên có thể đã bị hủy hoặc hết hạn.'
+          : httpStatus === 410
+          ? 'Phiên này đã bị đóng bởi chủ phòng hoặc hệ thống.'
+          : 'Phiên không còn hoạt động.';
+        showExpiredModal(msg);
       } else {
-        console.error('[Lobby] fetchStatus error:', err);
+        // Unknown error shape — still show expired as fallback
+        showExpiredModal('Không thể kết nối tới phiên. Phiên có thể đã kết thúc.');
       }
     } finally {
       setLoading(false);
     }
-  }, [pin, sessionId, sessionExpired, navigate, setParticipants, reset]);
+  }, [pin, sessionId, navigate, setParticipants, showExpiredModal]);
 
-  useSession({ pin, onStatus: fetchStatus, interval: 2000, enabled: !sessionExpired });
+  useSession({ pin, onStatus: fetchStatus, interval: 2000, enabled: !expiredShownRef.current });
   useReconnect({ onReconnect: fetchStatus, enabled: true });
 
-  // Security check: if not in session, push to join
+  // Security check: if not in session AND no expired flow active, redirect to join
   useEffect(() => {
-    if (!participantId && !sessionId) {
+    if (!participantId && !sessionId && !expiredShownRef.current) {
       navigate(`/join/${pin}`, { replace: true });
     }
   }, [pin, participantId, sessionId, navigate]);
@@ -175,8 +205,9 @@ export default function LobbyPage() {
         try {
           await api.sessions.cancel(pin);
           message.success('Đã hủy phòng thành công.');
+          expiredShownRef.current = true; // block security check redirect
           reset();
-          navigate('/', { replace: true });
+          navigate('/create', { replace: true });
         } catch (err) {
           message.error(err.message || 'Không thể hủy phòng.');
         }
@@ -214,35 +245,7 @@ export default function LobbyPage() {
     <div className="bg-surface text-on-surface min-h-screen pb-32 font-body selection:bg-primary-container selection:text-on-primary-container">
       <Header title="LunchSync Lobby" />
 
-      {/* Session Expired Screen */}
-      {sessionExpired && (
-        <main className="max-w-xl mx-auto px-6 pt-24 flex flex-col items-center justify-center min-h-[80vh] text-center space-y-6">
-          <div className="w-24 h-24 rounded-3xl bg-amber-100 flex items-center justify-center">
-            <span className="material-symbols-outlined text-5xl text-amber-500">hourglass_disabled</span>
-          </div>
-          <div className="space-y-2">
-            <h1 className="font-headline text-2xl font-bold text-on-surface">Phên đã kết thúc</h1>
-            <p className="text-sm text-on-surface-variant leading-relaxed max-w-xs mx-auto">{expiredReason}</p>
-          </div>
-          <div className="w-full space-y-3 pt-2">
-            <button
-              onClick={() => { reset(); navigate('/create', { replace: true }); }}
-              className="w-full h-14 rounded-full bg-primary text-on-primary font-headline font-bold text-base shadow-lg shadow-primary/20 active:scale-95 transition-transform flex items-center justify-center gap-2"
-            >
-              <span className="material-symbols-outlined text-xl">add_circle</span>
-              Tạo phên mới
-            </button>
-            <button
-              onClick={() => navigate('/explore', { replace: true })}
-              className="w-full h-12 rounded-full border border-outline-variant/40 text-on-surface-variant font-semibold text-sm active:scale-95 transition-transform"
-            >
-              Quay về Explore
-            </button>
-          </div>
-        </main>
-      )}
-
-      <main className={`max-w-xl mx-auto px-6 pt-24 space-y-8 ${sessionExpired ? 'hidden' : ''}`}>
+      <main className="max-w-xl mx-auto px-6 pt-24 space-y-8">
         
         {loading ? (
           <div className="flex flex-col items-center justify-center py-32 gap-4">

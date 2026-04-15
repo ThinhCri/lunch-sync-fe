@@ -19,7 +19,7 @@ import {
 export default function BoomPage() {
   const { pin } = useParams();
   const navigate = useNavigate();
-  const { isHost } = useSessionStore();
+  const { isHost, sessionId } = useSessionStore();
 
   const [boomData, setBoomData] = useState(null);
   const [displayList, setDisplayList] = useState([]);
@@ -69,7 +69,7 @@ export default function BoomPage() {
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
-        const res = await api.sessions.getStatus(pin);
+        const res = await api.sessions.getStatus(pin, sessionId);
         if (res.data.status === 'done') {
           clearInterval(interval);
           navigate(`/done/${pin}`);

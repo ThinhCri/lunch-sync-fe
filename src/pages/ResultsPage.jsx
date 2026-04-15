@@ -9,7 +9,7 @@ import BottomNav from '@/components/layout/BottomNav';
 export default function ResultsPage() {
   const { pin } = useParams();
   const navigate = useNavigate();
-  const { isHost } = useSessionStore();
+  const { isHost, sessionId } = useSessionStore();
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(true);
   const [booming, setBooming] = useState(false);
@@ -40,7 +40,7 @@ export default function ResultsPage() {
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
-        const res = await api.sessions.getStatus(pin);
+        const res = await api.sessions.getStatus(pin, sessionId);
         const data = res.data;
         if (data.status === 'picking') {
           clearInterval(interval);

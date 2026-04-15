@@ -16,7 +16,7 @@ import { faCheck, faClock, faCircleNotch, faArrowLeft } from '@fortawesome/free-
 export default function VotingWaitPage() {
   const { pin } = useParams();
   const navigate = useNavigate();
-  const { participants, isHost } = useSessionStore();
+  const { participants, isHost, sessionId } = useSessionStore();
   const { submitted } = useVotingStore();
   const { votingStartedAt } = useSessionStore();
   const [votedCount, setVotedCount] = useState(0);
@@ -59,7 +59,7 @@ export default function VotingWaitPage() {
 
   const fetchStatus = useCallback(async () => {
     try {
-      const res = await api.sessions.getStatus(pin);
+      const res = await api.sessions.getStatus(pin, sessionId);
       const data = res.data;
 
       const voted = data.participantsVoted || 0;

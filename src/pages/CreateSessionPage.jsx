@@ -51,6 +51,11 @@ const GuestJoinView = () => {
     try {
       const res = await api.sessions.join(pin, { nickname: nickname.trim() });
       const data = res.data;
+      const joinParticipants = (data.participants || []).map(p => ({
+        nickname: p.nickname,
+        isHost: p.is_host,
+        joined_at: p.joined_at,
+      }));
       setSession({
         pin,
         sessionId: data.session_id,
@@ -58,6 +63,7 @@ const GuestJoinView = () => {
         nickname: data.nickname || nickname.trim(),
         shareLink: data.share_link,
         isHost: false,
+        participants: joinParticipants,
       });
       navigate(`/lobby/${pin}`);
     } catch (err) {

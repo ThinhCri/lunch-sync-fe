@@ -16,7 +16,7 @@ const TOTAL_QUESTIONS = 8;
 export default function VotingPage() {
   const { pin } = useParams();
   const navigate = useNavigate();
-  const { participantId } = useSessionStore();
+  const { participantId, sessionId } = useSessionStore();
   const [choices, setChoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -25,7 +25,7 @@ export default function VotingPage() {
   // Reconnect: sync status when tab comes back
   const fetchStatus = useCallback(async () => {
     try {
-      const res = await api.sessions.getStatus(pin);
+      const res = await api.sessions.getStatus(pin, sessionId);
       const data = res.data;
       if (data.status === 'results') {
         navigate(`/results/${pin}`);
