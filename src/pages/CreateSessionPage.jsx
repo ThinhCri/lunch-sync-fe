@@ -10,6 +10,7 @@ import JoinModal from '@/components/modals/JoinModal';
 import BottomNav from '@/components/layout/BottomNav';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faExclamationCircle, faArrowRight, faUser, faSpinner, faRightToBracket } from '@fortawesome/free-solid-svg-icons';
+import { User, UtensilsCrossed, Gem, CheckCircle2, UserPlus, Pin } from 'lucide-react';
 
 const GuestJoinView = () => {
   const navigate = useNavigate();
@@ -183,7 +184,7 @@ const GuestJoinView = () => {
 
                 <div className="space-y-2">
                   <div className="relative group/input">
-                    <FontAwesomeIcon icon={faUser} className="absolute left-5 top-1/2 -translate-y-1/2 text-on-surface-variant group-focus-within/input:text-primary transition-colors" />
+                    <User className="absolute left-5 top-1/2 -translate-y-1/2 text-on-surface-variant group-focus-within/input:text-primary transition-colors" />
                     <input
                       type="text"
                       className="w-full pl-12 pr-5 py-4 bg-surface-container-low rounded-2xl border-2 border-transparent focus:border-primary focus:bg-surface-container-lowest transition-all duration-200 outline-none text-on-surface placeholder:text-outline/60 font-medium text-lg shadow-sm"
@@ -229,9 +230,9 @@ const GuestJoinView = () => {
 };
 
 const COLLECTION_STYLES = [
-  { icon: 'restaurant', colorClass: 'text-secondary', bgClass: 'bg-secondary-container/30' },
-  { icon: 'lunch_dining', colorClass: 'text-primary', bgClass: 'bg-primary-container/20' },
-  { icon: 'diamond', colorClass: 'text-tertiary', bgClass: 'bg-tertiary-container/30' },
+  { Icon: UtensilsCrossed, colorClass: 'text-secondary', bgClass: 'bg-secondary-container/30' },
+  { Icon: UtensilsCrossed, colorClass: 'text-primary', bgClass: 'bg-primary-container/20' },
+  { Icon: Gem, colorClass: 'text-tertiary', bgClass: 'bg-tertiary-container/30' },
 ];
 
 export default function CreateSessionPage() {
@@ -357,7 +358,7 @@ export default function CreateSessionPage() {
                 onChange={(e) => setNickname(e.target.value)}
               />
               <div className="absolute right-4 top-1/2 -translate-y-1/2 text-primary-container opacity-40 group-focus-within:opacity-100 transition-opacity">
-                <span className="material-symbols-outlined">person</span>
+                <User />
               </div>
             </div>
           </section>
@@ -386,13 +387,13 @@ export default function CreateSessionPage() {
                           <h4 className="font-headline font-bold text-on-surface">{col.name}</h4>
                           <p className="text-xs text-on-surface-variant truncate max-w-[220px]">{col.description}</p>
                           <div className={`flex items-center gap-2 mt-2 w-fit px-3 py-1 rounded-full ${style.bgClass}`}>
-                            <span className={`material-symbols-outlined text-[14px] ${style.colorClass}`}>{style.icon}</span>
+                            <style.Icon className={`${style.colorClass}`} size={14} />
                             <span className={`text-[10px] font-bold ${style.colorClass}`}>
                               {col.restaurant_count ? `${col.restaurant_count} quán` : 'Nhiều lựa chọn'}
                             </span>
                           </div>
                         </div>
-                        <span className={`material-symbols-outlined text-primary transition-opacity ${isSelected ? 'opacity-100' : 'opacity-0'}`}>check_circle</span>
+                        <CheckCircle2 className={`text-primary transition-opacity ${isSelected ? 'opacity-100' : 'opacity-0'}`} />
                       </div>
                     </div>
                   </label>
@@ -441,7 +442,7 @@ export default function CreateSessionPage() {
               }`}
             >
               {creating ? 'Đang tạo...' : 'Tạo nhóm'}
-              {!creating && <span className="material-symbols-outlined">group_add</span>}
+              {!creating && <UserPlus />}
             </button>
           </div>
         </form>
@@ -460,7 +461,7 @@ export default function CreateSessionPage() {
         onClick={() => setShowJoinModal(true)}
         className="fixed bottom-32 right-6 z-50 bg-primary text-on-primary flex items-center gap-2 px-6 py-4 rounded-full shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all"
       >
-        <span className="material-symbols-outlined text-[20px]">pin</span>
+        <Pin className="text-[20px]" />
         <span className="font-label font-bold text-sm tracking-wide">Tham gia</span>
       </button>
     </div>

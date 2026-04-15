@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
+import { Edit2, LogOut } from 'lucide-react';
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -29,23 +30,23 @@ export default function ProfilePage() {
               {getInitial(user?.fullName)}
             </div>
             <button className="absolute bottom-0 right-0 bg-primary text-on-primary w-10 h-10 rounded-full flex items-center justify-center shadow-[0_8px_24px_rgba(44,47,48,0.06)] border-2 border-white active:scale-95 transition-transform">
-              <span className="material-symbols-outlined text-[20px]">edit</span>
+              <Edit2 className="text-[20px]" />
             </button>
           </div>
-          
+
           <h2 className="font-headline text-3xl text-on-background font-bold tracking-tight mb-1 text-center">
             {user?.fullName || 'Người dùng'}
           </h2>
           <p className="font-body text-on-surface-variant mb-6">
             {user?.email || 'user@lunchsync.com'}
           </p>
-          
+
           <div className="mt-12 w-full max-w-xs mx-auto">
-            <button 
+            <button
               onClick={handleLogout}
               className="w-full flex items-center justify-center gap-3 p-4 bg-error-container/10 text-error rounded-xl font-bold hover:bg-error-container/20 transition-colors border border-error/20 active:scale-[0.98]"
             >
-              <span className="material-symbols-outlined text-lg">logout</span>
+              <LogOut className="text-lg" />
               Đăng xuất
             </button>
           </div>

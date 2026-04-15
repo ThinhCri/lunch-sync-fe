@@ -5,6 +5,7 @@ import { api } from '@/api';
 import { useSessionStore } from '@/store/sessionStore';
 import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
+import { BarChart3, Star, Sparkles, Dice5 } from 'lucide-react';
 
 export default function ResultsPage() {
   const { pin } = useParams();
@@ -93,7 +94,7 @@ export default function ResultsPage() {
     return (
       <div className="bg-background min-h-screen pt-20 pb-32 flex flex-col items-center justify-center p-6">
         <div className="bg-surface-container-lowest border border-outline/20 rounded-xl p-8 max-w-sm w-full text-center flex flex-col items-center gap-4 shadow-[0_4px_16px_rgba(44,47,48,0.04)]">
-          <span className="material-symbols-outlined text-5xl text-outline/30">monitoring</span>
+              <BarChart3 className="text-5xl text-outline/30" />
           <p className="text-on-surface-variant font-medium text-sm">Chưa có kết quả. Vui lòng chờ host chốt phiếu.</p>
           {isHost && (
             <button
@@ -173,7 +174,7 @@ export default function ResultsPage() {
                       <span className="text-primary font-bold">{r.priceDisplay || '---'}</span>
                       <span className="text-zinc-300">•</span>
                       <div className="flex items-center text-amber-500">
-                        <span className="material-symbols-outlined text-[14px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                        <Star className="text-[14px] text-amber-500 fill-amber-500" />
                         <span className="ml-0.5">{r.rating || '4.5'}</span>
                       </div>
                     </div>
@@ -192,11 +193,11 @@ export default function ResultsPage() {
                 className="w-full bg-primary text-white rounded-2xl p-6 shadow-[0_12px_24px_rgba(166,51,0,0.25)] relative overflow-hidden active:scale-[0.97] transition-all group disabled:opacity-50"
               >
                 <div className="absolute top-0 right-0 p-4 opacity-10 scale-150 rotate-12 group-active:scale-125 transition-transform duration-300">
-                  <span className="material-symbols-outlined text-[80px]" style={{ fontVariationSettings: "'FILL' 1" }}>explosion</span>
+                  <Sparkles className="text-[80px] text-white/20" />
                 </div>
                 <div className="relative z-10 flex flex-col items-center text-center">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="material-symbols-outlined font-black text-2xl animate-bounce">casino</span>
+                    <Dice5 className="font-black text-2xl animate-bounce" />
                     <span className="font-headline font-black text-3xl tracking-tighter uppercase italic">{booming ? 'Đang BOOM...' : 'BOOM!'}</span>
                   </div>
                   <p className="text-white/90 text-sm font-medium leading-tight">

@@ -10,6 +10,7 @@ import { useReconnect } from '@/hooks/useReconnect';
 import { MIN_PARTICIPANTS, MAX_PARTICIPANTS, PRICE_TIERS } from '@/utils/constants';
 import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
+import { Copy, Check, Link, Globe, MapPin, Banknote, X } from 'lucide-react';
 
 const AVATAR_COLORS = [
   'bg-rose-400', 'bg-orange-400', 'bg-amber-400', 'bg-emerald-400',
@@ -264,7 +265,7 @@ export default function LobbyPage() {
                   className="bg-primary-container/20 p-2 rounded-full text-primary hover:bg-primary-container/40 transition-colors"
                   title="Copy Mã PIN"
                 >
-                  <span className="material-symbols-outlined">{copied ? 'check' : 'content_copy'}</span>
+                  {copied ? <Check /> : <Copy />}
                 </button>
               </div>
               {/* Share Section */}
@@ -273,7 +274,7 @@ export default function LobbyPage() {
                   {/* Header */}
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                      <span className="material-symbols-outlined text-xl">link</span>
+                      <Link className="text-xl" />
                     </div>
                     <div className="text-left">
                       <p className="text-sm font-bold text-on-surface leading-tight">Mời bạn bè tham gia</p>
@@ -283,7 +284,7 @@ export default function LobbyPage() {
 
                   {/* URL display + copy button */}
                   <div className="flex items-center gap-2 bg-surface-container p-1 pl-4 rounded-xl border border-outline-variant/30">
-                    <span className="material-symbols-outlined text-base text-on-surface-variant shrink-0">public</span>
+                    <Globe className="text-base text-on-surface-variant shrink-0" />
                     <p className="flex-1 text-xs text-on-surface-variant truncate font-mono select-all">{shareUrl}</p>
                     <button
                       onClick={handleCopyShareLink}
@@ -293,7 +294,7 @@ export default function LobbyPage() {
                           : 'bg-primary text-on-primary hover:opacity-90'
                       }`}
                     >
-                      <span className="material-symbols-outlined text-sm">{linkCopied ? 'check' : 'content_copy'}</span>
+                      {linkCopied ? <Check /> : <Copy />}
                       <span className="whitespace-nowrap">{linkCopied ? 'Đã sao chép!' : 'Sao chép'}</span>
                     </button>
                   </div>
@@ -310,14 +311,14 @@ export default function LobbyPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-surface-container-lowest p-4 rounded-lg">
                   <div className="flex items-center gap-2 mb-1 text-on-surface-variant">
-                    <span className="material-symbols-outlined text-[18px]">location_on</span>
+                    <MapPin className="text-[18px]" />
                     <span className="text-xs font-semibold">Khu vực</span>
                   </div>
                   <p className="font-bold text-on-surface truncate">{sessionInfo?.collectionName || 'Không xác định'}</p>
                 </div>
                 <div className="bg-surface-container-lowest p-4 rounded-lg">
                   <div className="flex items-center gap-2 mb-1 text-on-surface-variant">
-                    <span className="material-symbols-outlined text-[18px]">payments</span>
+                    <Banknote className="text-[18px]" />
                     <span className="text-xs font-semibold">Mức giá</span>
                   </div>
                   <p className="font-bold text-on-surface">{sessionInfo?.priceDisplay || priceTier?.priceDisplay || 'Tùy chọn'}</p>
@@ -356,7 +357,7 @@ export default function LobbyPage() {
                     onClick={handleCancel}
                     className="w-full h-12 rounded-full font-headline font-semibold text-sm text-rose-500 border border-rose-300/50 bg-rose-50/50 hover:bg-rose-100/60 active:scale-95 transition-all flex items-center justify-center gap-2"
                   >
-                    <span className="material-symbols-outlined text-base">cancel</span>
+                    <X className="text-base" />
                     Hủy phòng chờ
                   </button>
                 </>

@@ -6,6 +6,7 @@ import { api } from '@/api';
 import { useSessionStore } from '@/store/sessionStore';
 import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
+import { CheckCircle2, Star, MapPin, Map, Home, Share2 } from 'lucide-react';
 
 const BRAND_COLORS = ['#9c3f00', '#ff7a2f', '#4953ac', '#176a21', '#FFD700', '#ff6b00'];
 
@@ -84,7 +85,7 @@ export default function DonePage() {
         {/* Success Hero Section */}
         <section className="text-center mb-10">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-primary-container/20 rounded-full mb-6">
-            <span className="material-symbols-outlined text-primary text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+            <CheckCircle2 className="text-primary text-4xl" />
           </div>
           <h2 className="font-headline text-4xl font-extrabold tracking-tight text-on-surface mb-2">Bữa trưa đã sẵn sàng!</h2>
           <p className="text-on-surface-variant font-medium">Chúc bạn ngon miệng tại điểm đến tuyệt vời này.</p>
@@ -103,7 +104,7 @@ export default function DonePage() {
               />
               {/* Overlapping Rating Chip */}
               <div className="absolute top-4 right-4 bg-white/60 backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-1">
-                <span className="material-symbols-outlined text-orange-500 text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                <Star className="text-orange-500 text-sm fill-orange-500" />
                 <span className="font-headline font-bold text-sm text-on-surface">{restaurant.rating || '4.9'}</span>
               </div>
             </div>
@@ -114,7 +115,7 @@ export default function DonePage() {
                 <div>
                   <h3 className="font-headline text-3xl font-bold tracking-tight text-on-surface mb-1">{restaurant.name}</h3>
                   <p className="text-on-surface-variant flex items-center gap-1 mb-4">
-                    <span className="material-symbols-outlined text-sm">location_on</span>
+                    <MapPin className="text-sm" />
                     {restaurant.address}
                   </p>
                 </div>
@@ -132,7 +133,7 @@ export default function DonePage() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <span className="material-symbols-outlined">map</span>
+                <Map />
                 Xem trên Google Maps
               </a>
             </div>
@@ -145,7 +146,7 @@ export default function DonePage() {
             className="bg-surface-container-high hover:bg-surface-container-highest transition-colors flex items-center justify-center gap-2 py-4 rounded-lg font-headline font-bold text-on-surface active:scale-[0.98]"
             onClick={handleRestart}
           >
-            <span className="material-symbols-outlined text-lg">home</span>
+            <Home className="text-lg" />
             Về trang chủ
           </button>
           <button 
@@ -163,7 +164,7 @@ export default function DonePage() {
               }
             }}
           >
-            <span className="material-symbols-outlined text-lg">share</span>
+            <Share2 className="text-lg" />
             Chia sẻ bạn bè
           </button>
         </div>

@@ -82,6 +82,23 @@ const VIETNAMESE_UNACCENT_MAP = [
   ['luc', 'lúc'],
   ['bat dau', 'bắt đầu'],
   ['ket thuc', 'kết thúc'],
+  ['khong dung', 'không đúng'],
+  ['ma', 'mã'],
+  ['sai', 'sai'],
+  ['het', 'hết'],
+  ['so', 'số'],
+  ['lan', 'lần'],
+  ['thu', 'thử'],
+  ['thu lai', 'thử lại'],
+  ['nhap', 'nhập'],
+  ['yeu cau', 'yêu cầu'],
+  ['lam', 'làm'],
+  ['nhan', 'nhận'],
+  ['gui', 'gửi'],
+  ['chua xac nhan', 'chưa xác nhận'],
+  ['tai khoan', 'tài khoản'],
+  ['dang ky', 'đăng ký'],
+  ['dang nhap', 'đăng nhập'],
 ];
 
 function capitalizeSentences(str) {
@@ -132,9 +149,25 @@ export function parseApiError(error) {
   // Lấy raw message từ BE (trước khi map) để check keywords
   const rawMsg = (details || message || '').toLowerCase();
 
-  // Ưu tiên: details/detail từ BE (chuyển không dấu → có dấu) → CODE_MAP → message từ BE → fallback
-  // details từ BE luôn giữ nguyên nội dung gốc (có dấu tiếng Việt)
-  const finalMessage = addVietnameseAccents(details) || ERROR_CODE_MAP[code] || message || 'Đã xảy ra lỗi hệ thống. Vui lòng thử lại.';
+  // Xử lý lỗi OTP cụ thể - kiểm tra details.otp trước
+  const otpErrorDetail = rawDetails?.otp?.toLowerCase?.() || '';
+  let finalMessage;
+
+  if (
+    (code === 'VALIDATION_ERROR' && otpErrorDetail) ||
+    otpErrorDetail.includes('invalid verification code') ||
+    otpErrorDetail.includes('incorrect') ||
+    rawMsg.includes('invalid verification code') ||
+    rawMsg.includes('ma otp khong dung') ||
+    rawMsg.includes('otp incorrect') ||
+    rawMsg.includes('wrong otp')
+  ) {
+    finalMessage = 'Mã OTP không đúng. Vui lòng kiểm tra và thử lại.';
+  } else {
+    // Ưu tiên: details/detail từ BE (chuyển không dấu → có dấu) → CODE_MAP → message từ BE → fallback
+    // details từ BE luôn giữ nguyên nội dung gốc (có dấu tiếng Việt)
+    finalMessage = addVietnameseAccents(details) || ERROR_CODE_MAP[code] || message || 'Đã xảy ra lỗi hệ thống. Vui lòng thử lại.';
+  }
 
   // Detect: email chưa xác minh → cần redirect sang /verify
   const shouldRedirectToVerify =

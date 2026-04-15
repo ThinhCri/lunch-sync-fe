@@ -4,6 +4,7 @@ import { message } from 'antd';
 import { api } from '@/api';
 import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
+import { PartyPopper, MapPin, Link, Camera, CheckCircle2 } from 'lucide-react';
 
 const TIER_OPTIONS = [
   { key: 'duoi_40k', label: 'Dưới 40k' },
@@ -102,7 +103,7 @@ export default function CrowdsourcePage() {
         {/* Hero Section */}
         <section className="mb-10 text-center">
           <div className="inline-flex items-center justify-center p-3 mb-4 rounded-full bg-primary-container/20">
-            <span className="material-symbols-outlined text-primary text-3xl">celebration</span>
+            <PartyPopper className="text-primary text-3xl" />
           </div>
           <h2 className="text-2xl font-extrabold text-on-surface leading-tight tracking-tight mb-2 font-headline">
             Chia sẻ địa điểm ăn uống yêu thích của bạn!
@@ -131,7 +132,7 @@ export default function CrowdsourcePage() {
             <div className="group">
               <label className="block text-sm font-semibold text-on-surface-variant mb-2 ml-1">Địa chỉ</label>
               <div className="relative">
-                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">location_on</span>
+                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-outline" />
                 <input 
                   className={`w-full h-14 pl-12 pr-5 rounded-lg bg-surface-container-lowest border-none ring-1 transition-all text-on-surface placeholder:text-outline-variant outline-none focus:ring-2 focus:ring-primary ${errors.address ? 'ring-red-400 focus:ring-red-500 bg-red-50/50' : 'ring-outline-variant/30'}`}
                   placeholder="Số nhà, tên đường, quận..." 
@@ -146,7 +147,7 @@ export default function CrowdsourcePage() {
             <div className="group">
               <label className="block text-sm font-semibold text-on-surface-variant mb-2 ml-1">Đường dẫn Google Maps</label>
               <div className="relative">
-                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">link</span>
+                <Link className="absolute left-4 top-1/2 -translate-y-1/2 text-outline" />
                 <input 
                   className="w-full h-14 pl-12 pr-5 rounded-lg bg-surface-container-lowest border-none ring-1 ring-outline-variant/30 focus:ring-2 focus:ring-primary transition-all text-on-surface placeholder:text-outline-variant outline-none" 
                   placeholder="Ví dụ: https://maps.app.goo.gl/..." 
@@ -175,7 +176,7 @@ export default function CrowdsourcePage() {
                     <img alt="Food preview" className="absolute inset-0 w-full h-full object-cover opacity-20 transition-opacity group-hover:opacity-30" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCAIMdkU3dqCZTN_GOc-YQZMc6TQ0iYyorkXQnYrbiWl-v5Pz3IvmsV10NmQh9OHhv55zWMnd87hGclsLnfPjitGOwOAnsD9PRGMWVqtKJrplcJC-wC1SDNIaRBnjhU0RxNblHLsnzEurlq1dolol_dXJkLsSdkT27x0zlA5kCbRP6lSlapIHccEcSDg2dvb2fwpy5kUh7vcmqTXxy2xsItbLcHguplnsZGpTelwf_2kV3mRPbDDP148rwpLirNrMNEPaIUX54gjvU"/>
                     <div className="z-10 flex flex-col items-center">
                       <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-lg mb-3 text-primary">
-                        <span className="material-symbols-outlined text-3xl">add_a_photo</span>
+                        <Camera className="text-3xl" />
                       </div>
                       <span className="text-sm font-bold text-on-surface">Nhấn để chọn ảnh</span>
                       <span className="text-xs text-on-surface-variant mt-1">Dung lượng tối đa 5MB</span>
@@ -227,7 +228,7 @@ export default function CrowdsourcePage() {
                 >
                   {tier.label}
                   {form.priceTier === tier.key && (
-                    <span className="material-symbols-outlined text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                    <CheckCircle2 className="text-lg" />
                   )}
                 </button>
               ))}

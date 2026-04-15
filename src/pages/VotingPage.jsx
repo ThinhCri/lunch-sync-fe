@@ -10,6 +10,7 @@ import { useSession } from '@/hooks/useSession';
 import { useReconnect } from '@/hooks/useReconnect';
 import { MAX_SKIP_COUNT } from '@/utils/constants';
 import Header from '@/components/layout/Header';
+import { Timer, Hand, SkipForward, HelpCircle } from 'lucide-react';
 
 const TOTAL_QUESTIONS = 8;
 
@@ -111,7 +112,7 @@ export default function VotingPage() {
         title="LunchSync Vote" 
         rightContent={
           <div className={`flex items-center gap-2 px-4 py-2 rounded-full transition-colors ${timeLeft <= 5 ? 'bg-red-100/50 dark:bg-red-900/20' : 'bg-red-50/50 dark:bg-red-900/10'}`}>
-            <span className={`material-symbols-outlined text-sm ${timeLeft <= 5 ? 'text-red-700 dark:text-red-500' : 'text-red-600 dark:text-red-400'}`}>timer</span>
+            <Timer className={`text-sm ${timeLeft <= 5 ? 'text-red-700 dark:text-red-500' : 'text-red-600 dark:text-red-400'}`} />
             <span className={`font-bold font-headline ${timeLeft <= 5 ? 'text-red-700 dark:text-red-500 animate-pulse' : 'text-red-600 dark:text-red-400'}`}>{formatTime(timeLeft)}</span>
           </div>
         }
@@ -191,7 +192,7 @@ export default function VotingPage() {
         {/* Instructional Tip */}
         <div className="mt-8 text-center pb-8">
           <p className="text-on-surface-variant font-medium flex items-center justify-center gap-2">
-            <span className="material-symbols-outlined text-lg">touch_app</span>
+            <Hand className="text-lg" />
             Chạm vào ảnh để chọn món bạn thèm nhất
           </p>
         </div>
@@ -205,7 +206,7 @@ export default function VotingPage() {
           className={`flex flex-col items-center justify-center p-2 transition-opacity group ${skipRemaining === 0 ? 'text-zinc-300 dark:text-zinc-600 cursor-not-allowed' : 'text-zinc-500 dark:text-zinc-400 hover:opacity-80'}`}
         >
           <div className="relative">
-            <span className="material-symbols-outlined mb-1">skip_next</span>
+            <SkipForward className="mb-1" />
             {skipRemaining > 0 && (
               <span className="absolute -top-1 -right-4 bg-primary text-on-primary text-[10px] px-1.5 rounded-full font-bold">{skipRemaining}</span>
             )}
@@ -215,7 +216,7 @@ export default function VotingPage() {
         </button>
 
         <button className="flex flex-col items-center justify-center text-zinc-500 dark:text-zinc-400 p-2 hover:opacity-80 transition-opacity">
-          <span className="material-symbols-outlined mb-1">help_outline</span>
+          <HelpCircle className="mb-1" />
           <span className="font-be-vietnam text-xs font-medium">Trợ giúp</span>
         </button>
       </nav>

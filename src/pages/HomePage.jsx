@@ -5,8 +5,7 @@ import { useAuthStore } from '@/store/authStore';
 import JoinModal from '@/components/modals/JoinModal';
 import BottomNav from '@/components/layout/BottomNav';
 import { api } from '@/api';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faStar, faMapMarkerAlt, faUtensils, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import { Plus, SearchX, Star, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -123,7 +122,7 @@ export default function HomePage() {
             </div>
           ) : restaurants.length === 0 ? (
             <div className="text-center py-20 bg-surface-container-lowest rounded-2xl border border-dashed border-outline/20">
-              <span className="material-symbols-outlined text-outline/30 text-5xl mb-4">search_off</span>
+              <SearchX className="mx-auto text-outline/30 text-5xl mb-4" />
               <p className="text-on-surface-variant font-medium">Khu vực này hiện chưa có quán nào.</p>
             </div>
           ) : (
@@ -136,18 +135,18 @@ export default function HomePage() {
                         <img src={res.thumbnail_url} alt={res.name} className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-outline/30 bg-surface-container-low">
-                          <FontAwesomeIcon icon={faUtensils} className="text-4xl" />
+                          <MapPin className="text-4xl" />
                         </div>
                       )}
-                      <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-amber-500 font-bold text-xs px-2 py-1 rounded-lg flex items-center gap-1 shadow-sm">
-                        <FontAwesomeIcon icon={faStar} /> {res.rating ? parseFloat(res.rating).toFixed(1) : 'N/A'}
-                      </div>
+                        <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-amber-500 font-bold text-xs px-2 py-1 rounded-lg flex items-center gap-1 shadow-sm">
+                          <Star className="text-amber-500 fill-amber-500" size={12} /> {res.rating ? parseFloat(res.rating).toFixed(1) : 'N/A'}
+                        </div>
                     </div>
                     <div className="p-5 sm:w-2/3 flex flex-col justify-between">
                       <div>
                         <h3 className="font-headline text-xl font-bold text-on-surface mb-2">{res.name}</h3>
                         <p className="text-on-surface-variant text-xs mb-3 flex items-start gap-1">
-                          <FontAwesomeIcon icon={faMapMarkerAlt} className="mt-0.5 text-outline shrink-0" />
+                          <MapPin className="mt-0.5 text-outline shrink-0" size={12} />
                           <span className="line-clamp-2">{res.address}</span>
                         </p>
                       </div>
@@ -174,7 +173,7 @@ export default function HomePage() {
                           : 'text-on-surface hover:bg-surface-container-highest hover:text-primary active:scale-95'
                         }`}
                     >
-                      <FontAwesomeIcon icon={faChevronLeft} className="text-base" />
+                      <ChevronLeft className="text-base" />
                     </button>
 
                     <div className="px-5 font-headline font-semibold text-base text-on-surface flex items-center gap-1.5 select-none md:text-sm">
@@ -191,7 +190,7 @@ export default function HomePage() {
                           : 'text-on-surface hover:bg-surface-container-highest hover:text-primary active:scale-95'
                         }`}
                     >
-                      <FontAwesomeIcon icon={faChevronRight} className="text-base" />
+                      <ChevronRight className="text-base" />
                     </button>
                   </div>
                 </div>
@@ -211,7 +210,7 @@ export default function HomePage() {
           }
         }}
         className="fixed bottom-32 right-6 z-50 bg-primary text-on-primary flex items-center gap-2 px-6 py-4 rounded-full shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all">
-        <span className="material-symbols-outlined text-[20px]">add_circle</span>
+        <Plus className="text-[20px]" />
         <span className="font-label font-bold text-sm tracking-wide">Đề xuất quán</span>
       </button>
 
