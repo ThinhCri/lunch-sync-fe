@@ -45,26 +45,22 @@ function ParticipantCard({ p, isYou }) {
             <div className="absolute -bottom-1 -right-1 bg-primary text-white text-[10px] font-black px-2 py-0.5 rounded-full ring-2 ring-white">HOST</div>
           </div>
           <div>
-            <p className="font-bold text-on-surface">{p.nickname} {isYou && '(bạn)'}</p>
-            <p className="text-xs text-on-surface-variant">Đã sẵn sàng</p>
+            <p className="font-bold text-on-surface text-lg">{p.nickname} {isYou && '(bạn)'}</p>
           </div>
         </div>
-        <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
       </div>
     );
   }
 
   // Guest
   return (
-    <div className="flex items-center justify-between bg-surface-container-lowest/50 p-4 rounded-lg">
+    <div className="flex items-center bg-surface-container-lowest/50 p-4 rounded-lg">
       <div className="flex items-center gap-4">
         <div className="w-12 h-12 rounded-full flex items-center justify-center bg-surface-container-high text-on-surface-variant font-bold text-lg">{initials}</div>
         <div>
-          <p className="font-bold text-on-surface">{p.nickname} {isYou && '(bạn)'}</p>
-          <p className="text-xs text-on-surface-variant">Đang chờ...</p>
+          <p className="font-bold text-on-surface text-lg">{p.nickname} {isYou && '(bạn)'}</p>
         </div>
       </div>
-      <span className="material-symbols-outlined text-outline-variant">hourglass_empty</span>
     </div>
   );
 }
@@ -74,7 +70,7 @@ const SESSION_DURATION_MS = 15 * 60 * 1000; // 15 phút
 export default function LobbyPage() {
   const { pin } = useParams();
   const navigate = useNavigate();
-  const { participants = [], setParticipants, sessionId, shareLink, reset } = useSessionStore();
+  const { participants = [], setParticipants, sessionId, participantId, isHost, shareLink, reset } = useSessionStore();
 
   const [sessionInfo, setSessionInfo] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -96,7 +92,11 @@ export default function LobbyPage() {
       const apiParticipants = (infoData.participants || []).map(p => ({
         ...p,
         isHost: p.is_host,
-      }));
+      })).sort((a, b) => {
+        if (a.isHost) return -1;
+        if (b.isHost) return 1;
+        return 0; // maintain original order for other guests
+      });
       setParticipants(apiParticipants);
 
       if (infoData.status === 'voting') {
@@ -111,6 +111,13 @@ export default function LobbyPage() {
 
   useSession({ pin, onStatus: fetchStatus, interval: 2000, enabled: true });
   useReconnect({ onReconnect: fetchStatus, enabled: true });
+
+  // Security check: if not in session, push to join
+  useEffect(() => {
+    if (!participantId && !sessionId) {
+      navigate(`/join/${pin}`, { replace: true });
+    }
+  }, [pin, participantId, sessionId, navigate]);
 
   useEffect(() => {
     fetchStatus();
@@ -217,9 +224,6 @@ export default function LobbyPage() {
             <section className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-bold font-headline">Thành viên ({sessionInfo?.participantCount || 0})</h2>
-                <div className="flex -space-x-2">
-                  <span className="w-8 h-8 rounded-full border-2 border-surface bg-red-50 flex items-center justify-center text-[10px] font-bold text-primary">SYNC</span>
-                </div>
               </div>
               
               <div className="space-y-3">
@@ -234,13 +238,23 @@ export default function LobbyPage() {
 
             {/* Action Buttons */}
             <section className="space-y-4 pt-4">
-              <button 
-                onClick={handleStart}
-                disabled={!enough || starting}
-                className={`w-full h-16 rounded-full font-headline font-bold text-lg transition-transform ${(!enough || starting) ? 'bg-primary/50 text-white/70 cursor-not-allowed' : 'bg-primary text-on-primary shadow-xl shadow-primary/20 active:scale-95'}`}
-              >
-                {starting ? 'Đang chuẩn bị...' : 'Bắt đầu bình chọn'}
-              </button>
+              {isHost ? (
+                <button 
+                  onClick={handleStart}
+                  disabled={!enough || starting}
+                  className={`w-full h-16 rounded-full font-headline font-bold text-lg transition-transform ${(!enough || starting) ? 'bg-primary/50 text-white/70 cursor-not-allowed' : 'bg-primary text-on-primary shadow-xl shadow-primary/20 active:scale-95'}`}
+                >
+                  {starting ? 'Đang chuẩn bị...' : 'Bắt đầu bình chọn'}
+                </button>
+              ) : (
+                <div className="bg-primary/5 border border-primary/10 rounded-2xl p-6 text-center space-y-2">
+                  <div className="flex justify-center flex-col items-center gap-3">
+                    <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                    <p className="font-headline font-bold text-primary">Đang chờ chủ phòng bắt đầu...</p>
+                  </div>
+                  <p className="text-xs text-on-surface-variant px-4">Khi chủ phòng nhấn bắt đầu, màn hình của bạn sẽ tự động chuyển sang phần bình chọn.</p>
+                </div>
+              )}
             </section>
           </>
         )}

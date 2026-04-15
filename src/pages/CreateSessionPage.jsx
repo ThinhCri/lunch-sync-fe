@@ -53,11 +53,12 @@ const GuestJoinView = () => {
       const data = res.data;
       setSession({
         pin,
-        sessionId: data.sessionId,
-        participantId: data.participantId,
+        sessionId: data.session_id,
+        participantId: data.participant_id,
+        shareLink: data.share_link,
         isHost: false,
       });
-      navigate(`/waiting/${pin}`);
+      navigate(`/lobby/${pin}`);
     } catch (err) {
       setError(err.message || 'Không thể tham gia phiên.');
     } finally {

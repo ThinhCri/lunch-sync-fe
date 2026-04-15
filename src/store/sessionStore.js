@@ -1,63 +1,69 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 export const useSessionStore = create(
-  (set) => ({
-    pin: null,
-    sessionId: null,
-    participantId: null,
-    isHost: false,
-    status: 'waiting',
-    collectionId: null,
-    collectionName: null,
-    priceTier: null,
-    priceDisplay: null,
-    shareLink: null,
-    participants: [],
-    results: null,
-    votingStartedAt: null,
-    votedCount: 0,
-    totalParticipants: 0,
+  persist(
+    (set) => ({
+      pin: null,
+      sessionId: null,
+      participantId: null,
+      isHost: false,
+      status: 'waiting',
+      collectionId: null,
+      collectionName: null,
+      priceTier: null,
+      priceDisplay: null,
+      shareLink: null,
+      participants: [],
+      results: null,
+      votingStartedAt: null,
+      votedCount: 0,
+      totalParticipants: 0,
 
-    // Thiết lập session (host hoặc participant)
-    setSession: (data) => set({ ...data, status: 'waiting' }),
+      // Thiết lập session (host hoặc participant)
+      setSession: (data) => set({ ...data, status: 'waiting' }),
 
-    // Restore từ localStorage
-    restore: () => {},
+      // Restore từ localStorage (now handled automatically by persist, kept for signature compatibility)
+      restore: () => {},
 
-    // Cập nhật trạng thái
-    setStatus: (status) => set({ status }),
+      // Cập nhật trạng thái
+      setStatus: (status) => set({ status }),
 
-    // Cập nhật participants
-    setParticipants: (participants) => set({ participants }),
+      // Cập nhật participants
+      setParticipants: (participants) => set({ participants }),
 
-    // Cập nhật kết quả
-    setResults: (results) => set({ results }),
+      // Cập nhật kết quả
+      setResults: (results) => set({ results }),
 
-    // Cập nhật thời điểm bắt đầu vote (cho countdown 90s)
-    setVotingStartedAt: (votingStartedAt) => set({ votingStartedAt }),
+      // Cập nhật thời điểm bắt đầu vote (cho countdown 90s)
+      setVotingStartedAt: (votingStartedAt) => set({ votingStartedAt }),
 
-    // Cập nhật số người đã vote
-    setVotedCount: (votedCount, totalParticipants) => set({ votedCount, totalParticipants }),
+      // Cập nhật số người đã vote
+      setVotedCount: (votedCount, totalParticipants) => set({ votedCount, totalParticipants }),
 
-    // Reset khi session kết thúc
-    reset: () => {
-      set({
-        pin: null,
-        sessionId: null,
-        participantId: null,
-        isHost: false,
-        status: 'waiting',
-        collectionId: null,
-        collectionName: null,
-        priceTier: null,
-        priceDisplay: null,
-        shareLink: null,
-        participants: [],
-        results: null,
-        votingStartedAt: null,
-        votedCount: 0,
-        totalParticipants: 0,
-      });
-    },
-  })
+      // Reset khi session kết thúc
+      reset: () => {
+        set({
+          pin: null,
+          sessionId: null,
+          participantId: null,
+          isHost: false,
+          status: 'waiting',
+          collectionId: null,
+          collectionName: null,
+          priceTier: null,
+          priceDisplay: null,
+          shareLink: null,
+          participants: [],
+          results: null,
+          votingStartedAt: null,
+          votedCount: 0,
+          totalParticipants: 0,
+        });
+      },
+    }),
+    {
+      name: 'lunchsync-session-store', // Tên key trong localStorage
+    }
+  )
 );

@@ -10,7 +10,6 @@ import RegisterPage from '@/pages/RegisterPage';
 import CreateSessionPage from '@/pages/CreateSessionPage';
 import LobbyPage from '@/pages/LobbyPage';
 import JoinPage from '@/pages/JoinPage';
-import WaitingRoomPage from '@/pages/WaitingRoomPage';
 import VotingPage from '@/pages/VotingPage';
 import VotingWaitPage from '@/pages/VotingWaitPage';
 import ResultsPage from '@/pages/ResultsPage';
@@ -72,8 +71,7 @@ function App() {
               <Route path="/suggest" element={<CrowdsourcePage />} />
               <Route path="/profile" element={<RequireAuth><ProfilePage /></RequireAuth>} />
               <Route path="/create" element={<CreateSessionPage />} />
-              <Route path="/lobby/:pin" element={<RequireAuth><LobbyPage /></RequireAuth>} />
-              <Route path="/waiting/:pin" element={<WaitingRoomPage />} />
+              <Route path="/lobby/:pin" element={<LobbyPage />} />
               <Route path="/vote/:pin" element={<VotingPage />} />
               <Route path="/voting-wait/:pin" element={<VotingWaitPage />} />
               <Route path="/results/:pin" element={<ResultsPage />} />

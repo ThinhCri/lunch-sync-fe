@@ -11,7 +11,7 @@ export default function JoinPage() {
   // Restore: nếu đã có participantId với cùng PIN → auto-redirect waiting
   useEffect(() => {
     if (pin && savedPin === pin && savedParticipantId) {
-      navigate(`/waiting/${pin}`, { replace: true });
+      navigate(`/lobby/${pin}`, { replace: true });
     }
   }, [pin, savedPin, savedParticipantId, navigate]);
 

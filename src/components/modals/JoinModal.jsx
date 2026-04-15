@@ -68,13 +68,14 @@ export default function JoinModal({ open, defaultPin = '', onClose }) {
 
       setSession({
         pin,
-        sessionId: data.sessionId,
-        participantId: data.participantId,
+        sessionId: data.session_id,
+        participantId: data.participant_id,
+        shareLink: data.share_link,
         isHost: false,
       });
 
       onClose();
-      navigate(`/waiting/${pin}`);
+      navigate(`/lobby/${pin}`);
     } catch (err) {
       message.error(err.message || 'Không thể tham gia phiên. Vui lòng thử lại.');
     } finally {
