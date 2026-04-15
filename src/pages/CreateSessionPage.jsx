@@ -55,6 +55,7 @@ const GuestJoinView = () => {
         pin,
         sessionId: data.session_id,
         participantId: data.participant_id,
+        nickname: data.nickname || nickname.trim(),
         shareLink: data.share_link,
         isHost: false,
       });
@@ -293,6 +294,7 @@ export default function CreateSessionPage() {
         pin: data.pin,
         sessionId: data.session_id,
         participantId: data.participant_id,
+        nickname: nickname.trim(),
         shareLink: data.share_link,
         isHost: true,
       });

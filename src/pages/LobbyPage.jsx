@@ -70,12 +70,13 @@ const SESSION_DURATION_MS = 15 * 60 * 1000; // 15 phút
 export default function LobbyPage() {
   const { pin } = useParams();
   const navigate = useNavigate();
-  const { participants = [], setParticipants, sessionId, participantId, isHost, shareLink, reset } = useSessionStore();
+  const { participants = [], setParticipants, sessionId, participantId, nickname, isHost, shareLink, reset } = useSessionStore();
 
   const [sessionInfo, setSessionInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   const fetchStatus = useCallback(async () => {
     try {
@@ -148,9 +149,13 @@ export default function LobbyPage() {
   const handleCopyShareLink = () => {
     const link = shareLink || `${window.location.origin}/join/${pin}`;
     navigator.clipboard.writeText(link).then(() => {
+      setLinkCopied(true);
       message.success('Đã copy link chia sẻ!');
+      setTimeout(() => setLinkCopied(false), 2500);
     });
   };
+
+  const shareUrl = shareLink || `${window.location.origin}/join/${pin}`;
 
   const priceTier = sessionInfo?.priceTier
     ? PRICE_TIERS.find((t) => t.key === sessionInfo.priceTier)
@@ -185,14 +190,37 @@ export default function LobbyPage() {
                   <span className="material-symbols-outlined">{copied ? 'check' : 'content_copy'}</span>
                 </button>
               </div>
-              <div className="space-y-2 mt-2">
-                <p className="text-on-surface-variant text-sm">Chia sẻ mã này để bạn bè cùng tham gia</p>
-                <button 
-                  onClick={handleCopyShareLink}
-                  className="text-primary hover:opacity-80 underline text-sm font-semibold transition-opacity"
-                >
-                  Hoặc copy đường dẫn (Link)
-                </button>
+              {/* Share Section */}
+              <div className="pt-2">
+                <div className="bg-surface-container-lowest rounded-2xl p-5 border border-outline-variant/20 shadow-sm">
+                  {/* Header */}
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                      <span className="material-symbols-outlined text-xl">link</span>
+                    </div>
+                    <div className="text-left">
+                      <p className="text-sm font-bold text-on-surface leading-tight">Mời bạn bè tham gia</p>
+                      <p className="text-xs text-on-surface-variant">Sao chép đường dẫn và gửi cho mọi người</p>
+                    </div>
+                  </div>
+
+                  {/* URL display + copy button */}
+                  <div className="flex items-center gap-2 bg-surface-container p-1 pl-4 rounded-xl border border-outline-variant/30">
+                    <span className="material-symbols-outlined text-base text-on-surface-variant shrink-0">public</span>
+                    <p className="flex-1 text-xs text-on-surface-variant truncate font-mono select-all">{shareUrl}</p>
+                    <button
+                      onClick={handleCopyShareLink}
+                      className={`shrink-0 flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-xs font-bold transition-all duration-300 active:scale-95 ${
+                        linkCopied
+                          ? 'bg-emerald-500 text-white'
+                          : 'bg-primary text-on-primary hover:opacity-90'
+                      }`}
+                    >
+                      <span className="material-symbols-outlined text-sm">{linkCopied ? 'check' : 'content_copy'}</span>
+                      <span className="whitespace-nowrap">{linkCopied ? 'Đã sao chép!' : 'Sao chép'}</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             </section>
 
@@ -228,7 +256,7 @@ export default function LobbyPage() {
               
               <div className="space-y-3">
                 {safeParticipants.map((p, i) => (
-                  <ParticipantCard key={p.id || p.nickname + i} p={p} isYou={p.nickname === 'Bạn' || p.isHost} />
+                  <ParticipantCard key={p.id || p.nickname + i} p={p} isYou={p.nickname === nickname} />
                 ))}
               </div>
               {!enough && (
