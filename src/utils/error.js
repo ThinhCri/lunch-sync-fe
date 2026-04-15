@@ -10,6 +10,8 @@ const ERROR_CODE_MAP = {
   VALIDATION_ERROR: 'Dữ liệu không hợp lệ.',
   WRONG_PASSWORD: 'Mật khẩu không đúng.',
   EMAIL_EXISTS: 'Email đã được sử dụng.',
+  EMAIL_NOT_VERIFIED: 'Tài khoản chưa được xác minh. Vui lòng xác nhận OTP.',
+  INVALID_CREDENTIALS: 'Email hoặc mật khẩu không đúng.',
 };
 
 export function parseApiError(error) {
@@ -23,7 +25,12 @@ export function parseApiError(error) {
   const message = errorObj?.message || data?.message;
   
   // Lấy detail/details: ưu tiên trong error object, sau đó là root data
-  const details = errorObj?.details || errorObj?.detail || data?.details || data?.detail;
+  // details/detail có thể là string hoặc object (VD: {email: "..."})
+  const rawDetails = errorObj?.details || errorObj?.detail || data?.details || data?.detail;
+  const details = typeof rawDetails === 'string' ? rawDetails
+    : typeof rawDetails === 'object' && rawDetails !== null
+      ? Object.values(rawDetails).join(' ').trim()
+      : null;
   
   const status = error?.response?.status;
 
