@@ -77,8 +77,11 @@ export default function LobbyPage() {
   const [starting, setStarting] = useState(false);
   const [copied, setCopied] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [sessionExpired, setSessionExpired] = useState(false);
+  const [expiredReason, setExpiredReason] = useState('');
 
   const fetchStatus = useCallback(async () => {
+    if (sessionExpired) return; // stop polling when already expired
     try {
       const infoRes = await api.sessions.getInfo(pin, sessionId);
       const infoData = infoRes.data;
@@ -96,21 +99,45 @@ export default function LobbyPage() {
       })).sort((a, b) => {
         if (a.isHost) return -1;
         if (b.isHost) return 1;
-        return 0; // maintain original order for other guests
+        return 0;
       });
       setParticipants(apiParticipants);
 
       if (infoData.status === 'voting') {
         navigate(`/vote/${pin}`);
       }
+
+      // Detect cancelled/expired session from status field
+      if (infoData.status === 'cancelled' || infoData.status === 'expired') {
+        setExpiredReason('Phên này đã bị hủy hoặc hết hạn. Vui lòng tạo phên mới để tiếp tục.');
+        setSessionExpired(true);
+        reset();
+      }
     } catch (err) {
-      console.error('[Lobby] fetchStatus error:', err);
+      // 404 → room deleted / never existed
+      // 410 → room explicitly gone/cancelled by backend
+      // SESSION_NOT_FOUND / SESSION_EXPIRED → error code from backend error body
+      const is404 = err.status === 404;
+      const is410 = err.status === 410;
+      const isExpiredCode = err.code === 'SESSION_NOT_FOUND' || err.code === 'SESSION_EXPIRED';
+
+      if (is404 || isExpiredCode) {
+        setExpiredReason('Mã phòng không còn tồn tại. Phên có thể đã bị hủy hoặc hết hạn sau 15 phút.');
+        setSessionExpired(true);
+        reset();
+      } else if (is410) {
+        setExpiredReason('Phên này đã bị đóng bởi chủ phòng hoặc hệ thống.');
+        setSessionExpired(true);
+        reset();
+      } else {
+        console.error('[Lobby] fetchStatus error:', err);
+      }
     } finally {
       setLoading(false);
     }
-  }, [pin, sessionId, navigate, setParticipants]);
+  }, [pin, sessionId, sessionExpired, navigate, setParticipants, reset]);
 
-  useSession({ pin, onStatus: fetchStatus, interval: 2000, enabled: true });
+  useSession({ pin, onStatus: fetchStatus, interval: 2000, enabled: !sessionExpired });
   useReconnect({ onReconnect: fetchStatus, enabled: true });
 
   // Security check: if not in session, push to join
@@ -136,7 +163,26 @@ export default function LobbyPage() {
     }
   };
 
-
+  const handleCancel = () => {
+    Modal.confirm({
+      title: 'Hủy phòng chờ?',
+      content: 'Tất cả thành viên sẽ bị đưa ra khỏi phiên. Hành động này không thể hoàn tác.',
+      okText: 'Hủy phòng',
+      okType: 'danger',
+      cancelText: 'Giữ lại',
+      centered: true,
+      onOk: async () => {
+        try {
+          await api.sessions.cancel(pin);
+          message.success('Đã hủy phòng thành công.');
+          reset();
+          navigate('/', { replace: true });
+        } catch (err) {
+          message.error(err.message || 'Không thể hủy phòng.');
+        }
+      },
+    });
+  };
 
   const handleCopyPin = () => {
     navigator.clipboard.writeText(pin).then(() => {
@@ -168,7 +214,35 @@ export default function LobbyPage() {
     <div className="bg-surface text-on-surface min-h-screen pb-32 font-body selection:bg-primary-container selection:text-on-primary-container">
       <Header title="LunchSync Lobby" />
 
-      <main className="max-w-xl mx-auto px-6 pt-24 space-y-8">
+      {/* Session Expired Screen */}
+      {sessionExpired && (
+        <main className="max-w-xl mx-auto px-6 pt-24 flex flex-col items-center justify-center min-h-[80vh] text-center space-y-6">
+          <div className="w-24 h-24 rounded-3xl bg-amber-100 flex items-center justify-center">
+            <span className="material-symbols-outlined text-5xl text-amber-500">hourglass_disabled</span>
+          </div>
+          <div className="space-y-2">
+            <h1 className="font-headline text-2xl font-bold text-on-surface">Phên đã kết thúc</h1>
+            <p className="text-sm text-on-surface-variant leading-relaxed max-w-xs mx-auto">{expiredReason}</p>
+          </div>
+          <div className="w-full space-y-3 pt-2">
+            <button
+              onClick={() => { reset(); navigate('/create', { replace: true }); }}
+              className="w-full h-14 rounded-full bg-primary text-on-primary font-headline font-bold text-base shadow-lg shadow-primary/20 active:scale-95 transition-transform flex items-center justify-center gap-2"
+            >
+              <span className="material-symbols-outlined text-xl">add_circle</span>
+              Tạo phên mới
+            </button>
+            <button
+              onClick={() => navigate('/explore', { replace: true })}
+              className="w-full h-12 rounded-full border border-outline-variant/40 text-on-surface-variant font-semibold text-sm active:scale-95 transition-transform"
+            >
+              Quay về Explore
+            </button>
+          </div>
+        </main>
+      )}
+
+      <main className={`max-w-xl mx-auto px-6 pt-24 space-y-8 ${sessionExpired ? 'hidden' : ''}`}>
         
         {loading ? (
           <div className="flex flex-col items-center justify-center py-32 gap-4">
@@ -265,15 +339,24 @@ export default function LobbyPage() {
             </section>
 
             {/* Action Buttons */}
-            <section className="space-y-4 pt-4">
+            <section className="space-y-3 pt-4">
               {isHost ? (
-                <button 
-                  onClick={handleStart}
-                  disabled={!enough || starting}
-                  className={`w-full h-16 rounded-full font-headline font-bold text-lg transition-transform ${(!enough || starting) ? 'bg-primary/50 text-white/70 cursor-not-allowed' : 'bg-primary text-on-primary shadow-xl shadow-primary/20 active:scale-95'}`}
-                >
-                  {starting ? 'Đang chuẩn bị...' : 'Bắt đầu bình chọn'}
-                </button>
+                <>
+                  <button 
+                    onClick={handleStart}
+                    disabled={!enough || starting}
+                    className={`w-full h-16 rounded-full font-headline font-bold text-lg transition-transform ${(!enough || starting) ? 'bg-primary/50 text-white/70 cursor-not-allowed' : 'bg-primary text-on-primary shadow-xl shadow-primary/20 active:scale-95'}`}
+                  >
+                    {starting ? 'Đang chuẩn bị...' : 'Bắt đầu bình chọn'}
+                  </button>
+                  <button
+                    onClick={handleCancel}
+                    className="w-full h-12 rounded-full font-headline font-semibold text-sm text-rose-500 border border-rose-300/50 bg-rose-50/50 hover:bg-rose-100/60 active:scale-95 transition-all flex items-center justify-center gap-2"
+                  >
+                    <span className="material-symbols-outlined text-base">cancel</span>
+                    Hủy phòng chờ
+                  </button>
+                </>
               ) : (
                 <div className="bg-primary/5 border border-primary/10 rounded-2xl p-6 text-center space-y-2">
                   <div className="flex justify-center flex-col items-center gap-3">

@@ -12,4 +12,5 @@ export const sessionsApi = {
   getResults: (pin) => client.get(`/sessions/${pin}/results`),
   boom: (pin) => client.post(`/sessions/${pin}/boom`),
   pick: (pin, data) => client.post(`/sessions/${pin}/pick`, data),
+  cancel: (pin) => client.post(`/sessions/${pin}/cancel`),
 };

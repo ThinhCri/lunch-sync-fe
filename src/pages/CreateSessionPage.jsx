@@ -230,7 +230,7 @@ const COLLECTION_STYLES = [
 
 export default function CreateSessionPage() {
   const navigate = useNavigate();
-  const { setSession } = useSessionStore();
+  const { setSession, pin: activePin, sessionId } = useSessionStore();
 
   // Collections
   const [collections, setCollections] = useState([]);
@@ -245,6 +245,13 @@ export default function CreateSessionPage() {
 
   // Join Modal
   const [showJoinModal, setShowJoinModal] = useState(false);
+
+  // Redirect back to active lobby if host/participant navigated away
+  useEffect(() => {
+    if (activePin && sessionId) {
+      navigate(`/lobby/${activePin}`, { replace: true });
+    }
+  }, [activePin, sessionId, navigate]);
 
   // Load default collections
   useEffect(() => {

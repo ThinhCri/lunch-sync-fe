@@ -41,6 +41,7 @@ export function parseApiError(error) {
 
   return {
     code: code || 'UNKNOWN',
+    status: status || null,
     message: finalMessage,
     details: details || error.message || null,
   };
