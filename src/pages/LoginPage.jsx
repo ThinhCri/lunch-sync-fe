@@ -57,25 +57,7 @@ export default function LoginPage() {
       const destination = location.state?.returnTo || '/';
       navigate(destination, { replace: true });
     } catch (err) {
-      const msg = (err.message || '').toLowerCase();
-      const code = err.code || '';
-      // EMAIL_NOT_VERIFIED → redirect sang trang verify OTP
-      // VALIDATION_ERROR với message liên quan email → cũng redirect
-      const isNotVerified =
-        code === 'EMAIL_NOT_VERIFIED' ||
-        (code === 'VALIDATION_ERROR' && (
-          msg.includes('chưa xác minh') ||
-          msg.includes('chua xac nhan') ||
-          msg.includes('xac nhan email') ||
-          msg.includes('not verified') ||
-          msg.includes('unverified')
-        )) ||
-        msg.includes('chưa xác minh') ||
-        msg.includes('chua xac nhan') ||
-        msg.includes('xac nhan email') ||
-        msg.includes('not verified') ||
-        msg.includes('unverified');
-      if (isNotVerified) {
+      if (err.shouldRedirectToVerify) {
         const dest = location.state?.returnTo || '/';
         navigate('/verify', { state: { email, returnTo: dest }, replace: true });
         return;

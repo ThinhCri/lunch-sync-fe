@@ -10,9 +10,95 @@ const ERROR_CODE_MAP = {
   VALIDATION_ERROR: 'Dữ liệu không hợp lệ.',
   WRONG_PASSWORD: 'Mật khẩu không đúng.',
   EMAIL_EXISTS: 'Email đã được sử dụng.',
+  USER_DUPLICATE: 'Email đã được sử dụng.',
   EMAIL_NOT_VERIFIED: 'Tài khoản chưa được xác minh. Vui lòng xác nhận OTP.',
   INVALID_CREDENTIALS: 'Email hoặc mật khẩu không đúng.',
 };
+
+// Chuyển tiếng Việt không dấu → có dấu
+const VIETNAMESE_UNACCENT_MAP = [
+  // Từ đơn
+  ['thong tin', 'thông tin'],
+  ['dang ky', 'đăng ký'],
+  ['dang nhap', 'đăng nhập'],
+  ['mat khau', 'mật khẩu'],
+  ['tai khoan', 'tài khoản'],
+  ['xac nhan', 'xác nhận'],
+  ['chua', 'chưa'],
+  ['khong', 'không'],
+  ['co', 'có'],
+  ['voi', 'với'],
+  ['truoc', 'trước'],
+  ['lai', 'lại'],
+  ['vao', 'vào'],
+  ['duoc', 'được'],
+  ['trong', 'trong'],
+  ['hien', 'hiện'],
+  ['het han', 'hết hạn'],
+  ['vui long', 'vui lòng'],
+  ['thong bao', 'thông báo'],
+  ['thanh cong', 'thành công'],
+  ['that bai', 'thất bại'],
+  ['loi', 'lỗi'],
+  ['tai', 'tải'],
+  ['bieu do', 'biểu đồ'],
+  ['danh sach', 'danh sách'],
+  ['thong tin', 'thông tin'],
+  ['ma xac nhan', 'mã xác nhận'],
+  ['ma otp', 'mã OTP'],
+  ['het han', 'hết hạn'],
+  ['da', 'đã'],
+  ['du lieu', 'dữ liệu'],
+  ['hop le', 'hợp lệ'],
+  ['khong hop le', 'không hợp lệ'],
+  ['ban', 'bạn'],
+  ['nguoi dung', 'người dùng'],
+  ['ngay', 'ngày'],
+  ['gio', 'giờ'],
+  ['phut', 'phút'],
+  ['tai khoan', 'tài khoản'],
+  ['mat khau', 'mật khẩu'],
+  ['xin chao', 'xin chào'],
+  ['chao mung', 'chào mừng'],
+  ['cam on', 'cảm ơn'],
+  ['nen', 'nên'],
+  ['muon', 'muốn'],
+  ['can', 'cần'],
+  ['chi', 'chỉ'],
+  ['nay', 'này'],
+  ['khi', 'khi'],
+  ['roi', 'rồi'],
+  ['di', 'đi'],
+  ['ra', 'ra'],
+  ['va', 'và'],
+  ['o', 'ở'],
+  ['bo', 'bỏ'],
+  ['toi', 'tôi'],
+  ['ho', 'họ'],
+  ['se', 'sẽ'],
+  ['du', 'đủ'],
+  ['duoc', 'được'],
+  ['theo', 'theo'],
+  ['luc', 'lúc'],
+  ['bat dau', 'bắt đầu'],
+  ['ket thuc', 'kết thúc'],
+];
+
+function capitalizeSentences(str) {
+  if (!str) return str;
+  return str.replace(/(^\s*|[.!?]\s+)(.)/g, (match, prefix, char) => {
+    return prefix + char.toUpperCase();
+  });
+}
+
+function addVietnameseAccents(str) {
+  if (!str) return str;
+  let result = str.toLowerCase();
+  for (const [unaccented, accented] of VIETNAMESE_UNACCENT_MAP) {
+    result = result.replace(new RegExp(unaccented, 'g'), accented);
+  }
+  return capitalizeSentences(result);
+}
 
 export function parseApiError(error) {
   const data = error?.response?.data;
@@ -43,13 +129,28 @@ export function parseApiError(error) {
     };
   }
 
-  // Ưu tiên: details/detail từ BE -> message từ BE -> mapping theo code -> fallback mặc định
-  const finalMessage = details || message || ERROR_CODE_MAP[code] || 'Đã xảy ra lỗi hệ thống. Vui lòng thử lại.';
+  // Lấy raw message từ BE (trước khi map) để check keywords
+  const rawMsg = (details || message || '').toLowerCase();
+
+  // Ưu tiên: details/detail từ BE (chuyển không dấu → có dấu) → CODE_MAP → message từ BE → fallback
+  // details từ BE luôn giữ nguyên nội dung gốc (có dấu tiếng Việt)
+  const finalMessage = addVietnameseAccents(details) || ERROR_CODE_MAP[code] || message || 'Đã xảy ra lỗi hệ thống. Vui lòng thử lại.';
+
+  // Detect: email chưa xác minh → cần redirect sang /verify
+  const shouldRedirectToVerify =
+    code === 'EMAIL_NOT_VERIFIED' ||
+    rawMsg.includes('chưa xác minh') ||
+    rawMsg.includes('chua xac nhan') ||
+    rawMsg.includes('xac nhan email') ||
+    rawMsg.includes('not verified') ||
+    rawMsg.includes('unverified') ||
+    rawMsg.includes('tai khoan chua duoc xac nhan');
 
   return {
     code: code || 'UNKNOWN',
     status: status || null,
     message: finalMessage,
     details: details || error.message || null,
+    shouldRedirectToVerify,
   };
 }
