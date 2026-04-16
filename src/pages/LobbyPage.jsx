@@ -1,21 +1,16 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { message, Modal } from 'antd';
 import { api } from '@/api';
-import { API_CONFIG } from '@/config';
 import { useSessionStore } from '@/store/sessionStore';
 import { useAuthStore } from '@/store/authStore';
+import { useToastStore } from '@/store/toastStore';
 import { useSession } from '@/hooks/useSession';
 import { useReconnect } from '@/hooks/useReconnect';
-import { MIN_PARTICIPANTS, MAX_PARTICIPANTS, PRICE_TIERS } from '@/utils/constants';
+import { parseApiError } from '@/utils/error';
+import { MIN_PARTICIPANTS, MAX_PARTICIPANTS, formatPriceDisplay } from '@/utils/constants';
 import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
 import { Copy, Check, Link, Globe, MapPin, Banknote, X } from 'lucide-react';
-
-const AVATAR_COLORS = [
-  'bg-rose-400', 'bg-orange-400', 'bg-amber-400', 'bg-emerald-400',
-  'bg-teal-400', 'bg-cyan-400', 'bg-blue-400', 'bg-violet-400',
-];
 
 function getInitials(name) {
   if (!name) return '?';
@@ -24,20 +19,10 @@ function getInitials(name) {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-function dedupeByNickname(list = []) {
-  const seen = new Set();
-  return list.filter((p) => {
-    const key = (p?.nickname || '').trim().toLowerCase();
-    if (!key || seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-}
-
 function ParticipantCard({ p, isYou }) {
   const isHost = p.isHost;
   const initials = getInitials(p.nickname);
-  
+
   if (isHost) {
     return (
       <div className="flex items-center justify-between bg-surface-container-lowest p-4 rounded-lg border-2 border-primary/20">
@@ -54,7 +39,6 @@ function ParticipantCard({ p, isYou }) {
     );
   }
 
-  // Guest
   return (
     <div className="flex items-center bg-surface-container-lowest/50 p-4 rounded-lg">
       <div className="flex items-center gap-4">
@@ -67,31 +51,69 @@ function ParticipantCard({ p, isYou }) {
   );
 }
 
-const SESSION_DURATION_MS = 15 * 60 * 1000; // 15 phút
+function ConfirmDialog({ open, title, message: msg, confirmText, cancelText, onConfirm, onCancel, danger, alwaysClosable }) {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 pointer-events-none">
+      {alwaysClosable && <div className="absolute inset-0 bg-black/40 backdrop-blur-sm pointer-events-auto" onClick={onCancel} />}
+      <div className="relative bg-surface rounded-3xl p-6 w-full max-w-sm shadow-2xl animate-scale-in pointer-events-auto">
+        <h3 className="font-headline font-bold text-lg text-on-surface mb-2">{title}</h3>
+        <p className="text-on-surface-variant text-sm leading-relaxed mb-6">{msg}</p>
+        <div className="flex gap-3">
+          {cancelText && (
+            <button
+              onClick={onCancel}
+              className="flex-1 h-12 rounded-full font-headline font-semibold text-sm bg-surface-container text-on-surface hover:bg-surface-container-high active:scale-95 transition-all"
+            >
+              {cancelText}
+            </button>
+          )}
+          <button
+            onClick={onConfirm}
+            className={`flex-1 h-12 rounded-full font-headline font-semibold text-sm text-white active:scale-95 transition-all ${
+              danger
+                ? 'bg-rose-500 hover:bg-rose-600 shadow-lg shadow-rose-500/30'
+                : 'bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20'
+            }`}
+          >
+            {confirmText}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function LobbyPage() {
   const { pin } = useParams();
   const navigate = useNavigate();
   const { participants = [], setParticipants, sessionId, participantId, nickname, isHost, shareLink, reset } = useSessionStore();
   const { isAuthenticated } = useAuthStore();
+  const { show } = useToastStore();
 
   const [sessionInfo, setSessionInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
   const [copied, setCopied] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
-  const expiredShownRef = useRef(false); // prevent duplicate modal
+  const expiredShownRef = useRef(false);
+
+  // Confirm dialog state
+  const [confirmDialog, setConfirmDialog] = useState({ open: false });
 
   const showExpiredModal = useCallback((reason) => {
     if (expiredShownRef.current) return;
     expiredShownRef.current = true;
     const loggedIn = isAuthenticated();
-    Modal.warning({
+    setConfirmDialog({
+      open: true,
       title: 'Phiên đã kết thúc',
-      content: reason,
-      okText: loggedIn ? 'Tạo phiên mới' : 'Tham gia phòng khác',
-      centered: true,
-      onOk() {
+      message: reason,
+      confirmText: loggedIn ? 'Tạo phiên mới' : 'Tham gia phòng khác',
+      cancelText: null,
+      danger: false,
+      onConfirm: () => {
+        setConfirmDialog({ open: false });
         reset();
         navigate(loggedIn ? '/create' : '/', { replace: true });
       },
@@ -100,14 +122,12 @@ export default function LobbyPage() {
 
   const fetchStatus = useCallback(async () => {
     if (expiredShownRef.current) return;
-    // Guard: sessionId is required for both getStatus and getInfo endpoints
     if (!pin || !sessionId) {
       console.warn('[Lobby] Missing pin or sessionId — skipping poll', { pin, sessionId });
       setLoading(false);
       return;
     }
     try {
-      // Step 1: Check session status (no auth required)
       const statusRes = await api.sessions.getStatus(pin, sessionId);
       const currentStatus = statusRes.data?.status;
 
@@ -125,7 +145,6 @@ export default function LobbyPage() {
         return;
       }
 
-      // Step 2: Fetch full info for participants (no auth required)
       const infoRes = await api.sessions.getInfo(pin, sessionId);
       const infoData = infoRes.data;
 
@@ -147,8 +166,6 @@ export default function LobbyPage() {
       setParticipants(apiParticipants);
     } catch (err) {
       console.error('[Lobby] fetchStatus caught error:', err);
-      // Any error at all when polling = session is likely gone
-      // Show expired modal regardless of error shape
       const httpStatus = err?.status ?? err?.response?.status;
       const isExpiredCode = err?.code === 'SESSION_NOT_FOUND' || err?.code === 'SESSION_EXPIRED';
 
@@ -160,7 +177,6 @@ export default function LobbyPage() {
           : 'Phiên không còn hoạt động.';
         showExpiredModal(msg);
       } else {
-        // Unknown error shape — still show expired as fallback
         showExpiredModal('Không thể kết nối tới phiên. Phiên có thể đã kết thúc.');
       }
     } finally {
@@ -171,7 +187,6 @@ export default function LobbyPage() {
   useSession({ pin, onStatus: fetchStatus, interval: 2000, enabled: !expiredShownRef.current });
   useReconnect({ onReconnect: fetchStatus, enabled: true });
 
-  // Security check: if not in session AND no expired flow active, redirect to join
   useEffect(() => {
     if (!participantId && !sessionId && !expiredShownRef.current) {
       navigate(`/join/${pin}`, { replace: true });
@@ -183,43 +198,48 @@ export default function LobbyPage() {
   }, [fetchStatus]);
 
   const handleStart = async () => {
+    if (!enough) return;
     setStarting(true);
     try {
-      await api.sessions.start(pin);
-      navigate(`/vote/${pin}`);
+      const res = await api.sessions.start(pin);
+      if (res.data.status === 'voting') {
+        navigate(`/vote/${pin}`);
+      }
     } catch (err) {
-      message.error(err.message || 'Không thể bắt đầu');
+      show(parseApiError(err).message, 'error');
     } finally {
       setStarting(false);
     }
   };
 
   const handleCancel = () => {
-    Modal.confirm({
+    setConfirmDialog({
+      open: true,
       title: 'Hủy phòng chờ?',
-      content: 'Tất cả thành viên sẽ bị đưa ra khỏi phiên. Hành động này không thể hoàn tác.',
-      okText: 'Hủy phòng',
-      okType: 'danger',
+      message: 'Tất cả thành viên sẽ bị đưa ra khỏi phiên. Hành động này không thể hoàn tác.',
+      confirmText: 'Hủy phòng',
       cancelText: 'Giữ lại',
-      centered: true,
-      onOk: async () => {
+      danger: true,
+      onConfirm: async () => {
+        setConfirmDialog({ open: false });
         try {
           await api.sessions.cancel(pin);
-          message.success('Đã hủy phòng thành công.');
-          expiredShownRef.current = true; // block security check redirect
+          show('Đã hủy phòng thành công.');
+          expiredShownRef.current = true;
           reset();
           navigate('/create', { replace: true });
         } catch (err) {
-          message.error(err.message || 'Không thể hủy phòng.');
+          show(parseApiError(err).message, 'error');
         }
       },
+      onCancel: () => setConfirmDialog({ open: false }),
     });
   };
 
   const handleCopyPin = () => {
     navigator.clipboard.writeText(pin).then(() => {
       setCopied(true);
-      message.success('Đã copy mã phòng!');
+      show('Đã copy mã phòng!');
       setTimeout(() => setCopied(false), 2500);
     });
   };
@@ -228,26 +248,36 @@ export default function LobbyPage() {
     const link = shareLink || `${window.location.origin}/join/${pin}`;
     navigator.clipboard.writeText(link).then(() => {
       setLinkCopied(true);
-      message.success('Đã copy link chia sẻ!');
+      show('Đã copy link chia sẻ!');
       setTimeout(() => setLinkCopied(false), 2500);
     });
   };
 
   const shareUrl = shareLink || `${window.location.origin}/join/${pin}`;
 
-  const priceTier = sessionInfo?.priceTier
-    ? PRICE_TIERS.find((t) => t.key === sessionInfo.priceTier)
-    : null;
+  const priceDisplay = sessionInfo?.priceDisplay
+    ? formatPriceDisplay(sessionInfo.priceDisplay)
+    : '';
 
   const safeParticipants = Array.isArray(participants) ? participants : [];
   const enough = safeParticipants.length >= MIN_PARTICIPANTS;
 
   return (
     <div className="bg-surface text-on-surface min-h-screen pb-32 font-body selection:bg-primary-container selection:text-on-primary-container">
-      <Header title="LunchSync Lobby" />
-
+      <Header title="LunchSync" />
+      <ConfirmDialog
+        open={confirmDialog.open}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        confirmText={confirmDialog.confirmText}
+        cancelText={confirmDialog.cancelText}
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={confirmDialog.onCancel || (() => setConfirmDialog({ open: false }))}
+        danger={confirmDialog.danger}
+        alwaysClosable={!!confirmDialog.cancelText}
+      />
       <main className="max-w-xl mx-auto px-6 pt-24 space-y-8">
-        
+
         {loading ? (
           <div className="flex flex-col items-center justify-center py-32 gap-4">
             <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
@@ -260,9 +290,13 @@ export default function LobbyPage() {
               <p className="text-on-surface-variant font-label text-sm tracking-widest uppercase">Mã phòng chờ</p>
               <div className="inline-flex items-center gap-4 bg-surface-container-lowest px-8 py-6 rounded-xl shadow-[0_4px_16px_rgba(44,47,48,0.04)] group">
                 <span className="text-4xl font-extrabold tracking-[0.2em] text-primary font-headline">{pin}</span>
-                <button 
+                <button
                   onClick={handleCopyPin}
-                  className="bg-primary-container/20 p-2 rounded-full text-primary hover:bg-primary-container/40 transition-colors"
+                  className={`p-2 rounded-full transition-colors ${
+                    copied
+                      ? 'bg-emerald-500/20 text-emerald-500'
+                      : 'bg-primary-container/20 text-primary hover:bg-primary-container/40'
+                  }`}
                   title="Copy Mã PIN"
                 >
                   {copied ? <Check /> : <Copy />}
@@ -288,14 +322,14 @@ export default function LobbyPage() {
                     <p className="flex-1 text-xs text-on-surface-variant truncate font-mono select-all">{shareUrl}</p>
                     <button
                       onClick={handleCopyShareLink}
-                      className={`shrink-0 flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-xs font-bold transition-all duration-300 active:scale-95 ${
+                      className={`shrink-0 p-2 rounded-full transition-colors ${
                         linkCopied
-                          ? 'bg-emerald-500 text-white'
-                          : 'bg-primary text-on-primary hover:opacity-90'
+                          ? 'bg-emerald-500/20 text-emerald-500'
+                          : 'bg-primary-container/20 text-primary hover:bg-primary-container/40'
                       }`}
+                      title="Copy link"
                     >
-                      {linkCopied ? <Check /> : <Copy />}
-                      <span className="whitespace-nowrap">{linkCopied ? 'Đã sao chép!' : 'Sao chép'}</span>
+                      {linkCopied ? <Check className="text-base" /> : <Copy className="text-base" />}
                     </button>
                   </div>
                 </div>
@@ -321,7 +355,7 @@ export default function LobbyPage() {
                     <Banknote className="text-[18px]" />
                     <span className="text-xs font-semibold">Mức giá</span>
                   </div>
-                  <p className="font-bold text-on-surface">{sessionInfo?.priceDisplay || priceTier?.priceDisplay || 'Tùy chọn'}</p>
+                  <p className="font-bold text-on-surface">{priceDisplay || 'Tùy chọn'}</p>
                 </div>
               </div>
             </section>
@@ -329,9 +363,17 @@ export default function LobbyPage() {
             {/* Participants Section */}
             <section className="space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold font-headline">Thành viên ({sessionInfo?.participantCount || 0})</h2>
+                <h2 className="text-lg font-bold font-headline">
+                  Thành viên ({sessionInfo?.participantCount || 0}
+                  <span className="text-xs text-on-surface-variant font-medium"> / {MAX_PARTICIPANTS}</span>)
+                </h2>
+                {safeParticipants.length >= MAX_PARTICIPANTS && (
+                  <span className="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full">
+                    Đã đầy
+                  </span>
+                )}
               </div>
-              
+
               <div className="space-y-3">
                 {safeParticipants.map((p, i) => (
                   <ParticipantCard key={p.id || p.nickname + i} p={p} isYou={p.nickname === nickname} />
@@ -346,7 +388,7 @@ export default function LobbyPage() {
             <section className="space-y-3 pt-4">
               {isHost ? (
                 <>
-                  <button 
+                  <button
                     onClick={handleStart}
                     disabled={!enough || starting}
                     className={`w-full h-16 rounded-full font-headline font-bold text-lg transition-transform ${(!enough || starting) ? 'bg-primary/50 text-white/70 cursor-not-allowed' : 'bg-primary text-on-primary shadow-xl shadow-primary/20 active:scale-95'}`}
@@ -374,8 +416,6 @@ export default function LobbyPage() {
           </>
         )}
       </main>
-
-
 
       {/* Bottom Navigation Bar */}
       <BottomNav />

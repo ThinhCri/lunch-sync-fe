@@ -75,7 +75,7 @@ export default function HomePage() {
 
   return (
     <div className="bg-surface text-on-surface font-body selection:bg-primary-container selection:text-on-primary-container min-h-screen">
-      <Header title="LunchSync Explore" />
+      <Header title="LunchSync" />
 
       <main className="pt-24 pb-56 px-4 max-w-2xl mx-auto space-y-8">
         {/* Header & Collection Selector */}

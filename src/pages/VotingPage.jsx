@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { message } from 'antd';
 // eslint-disable-next-line no-unused-vars
 import { AnimatePresence, motion } from 'framer-motion';
 import { api } from '@/api';
@@ -8,6 +7,7 @@ import { useSessionStore } from '@/store/sessionStore';
 import { useVoting } from '@/hooks/useVoting';
 import { useSession } from '@/hooks/useSession';
 import { useReconnect } from '@/hooks/useReconnect';
+import { useToastStore } from '@/store/toastStore';
 import { MAX_SKIP_COUNT } from '@/utils/constants';
 import Header from '@/components/layout/Header';
 import { Timer, Hand, SkipForward, HelpCircle } from 'lucide-react';
@@ -18,6 +18,7 @@ export default function VotingPage() {
   const { pin } = useParams();
   const navigate = useNavigate();
   const { participantId, sessionId } = useSessionStore();
+  const { show } = useToastStore();
   const [choices, setChoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -59,7 +60,7 @@ export default function VotingPage() {
     try {
       await api.sessions.vote(pin, { participantId, choices: answersArr });
     } catch {
-      message.error('Gửi phiếu thất bại, đang thử lại...');
+      show('Gửi phiếu thất bại, đang thử lại...', 'error');
       setSubmitting(false);
       return;
     }

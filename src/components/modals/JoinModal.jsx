@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { message } from 'antd';
 import { api } from '@/api';
 import { useSessionStore } from '@/store/sessionStore';
+import { useToastStore } from '@/store/toastStore';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faKey, faXmark, faExclamationCircle, faArrowRight, 
@@ -14,6 +14,7 @@ const PIN_LENGTH = 6;
 export default function JoinModal({ open, defaultPin = '', onClose }) {
   const navigate = useNavigate();
   const { setSession } = useSessionStore();
+  const { show } = useToastStore();
 
   const [step, setStep] = useState('pin');
   const [pin, setPin] = useState(defaultPin);
@@ -57,7 +58,7 @@ export default function JoinModal({ open, defaultPin = '', onClose }) {
 
   const handleNicknameSubmit = async () => {
     if (!nickname.trim() || nickname.length < 2 || nickname.length > 12) {
-      message.error('Nickname từ 2–12 ký tự');
+      show('Nickname từ 2–12 ký tự', 'error');
       return;
     }
 
@@ -84,7 +85,7 @@ export default function JoinModal({ open, defaultPin = '', onClose }) {
       onClose();
       navigate(`/lobby/${pin}`);
     } catch (err) {
-      message.error(err.message || 'Không thể tham gia phiên. Vui lòng thử lại.');
+      show(err.message || 'Không thể tham gia phiên. Vui lòng thử lại.', 'error');
     } finally {
       setLoading(false);
     }

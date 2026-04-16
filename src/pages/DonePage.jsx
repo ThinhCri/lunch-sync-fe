@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { message } from 'antd';
 import confetti from 'canvas-confetti';
 import { api } from '@/api';
 import { useSessionStore } from '@/store/sessionStore';
+import { useToastStore } from '@/store/toastStore';
 import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
 import { CheckCircle2, Star, MapPin, Map, Home, Share2 } from 'lucide-react';
@@ -34,6 +34,7 @@ export default function DonePage() {
   const { pin } = useParams();
   const navigate = useNavigate();
   const { reset } = useSessionStore();
+  const { show } = useToastStore();
 
   const [restaurant, setRestaurant] = useState(null);
   const confettiFired = useRef(false);
@@ -79,7 +80,7 @@ export default function DonePage() {
 
   return (
     <div className="bg-surface font-body text-on-surface min-h-screen">
-      <Header title="LunchSync Done" />
+      <Header title="LunchSync" />
 
       <main className="pt-20 pb-32 px-4 max-w-2xl mx-auto">
         {/* Success Hero Section */}
@@ -160,7 +161,7 @@ export default function DonePage() {
                 }).catch(() => {});
               } else {
                 navigator.clipboard.writeText(`Tụi mình sẽ đi ăn ở ${restaurant.name} nha! ${window.location.href}`);
-                message.success('Đã copy link');
+                show('Đã copy link', 'success');
               }
             }}
           >

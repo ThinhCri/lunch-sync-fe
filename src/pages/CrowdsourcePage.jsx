@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { message } from 'antd';
 import { api } from '@/api';
+import { useToastStore } from '@/store/toastStore';
 import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
 import { PartyPopper, MapPin, Link, Camera, CheckCircle2 } from 'lucide-react';
@@ -16,6 +16,7 @@ const TIER_OPTIONS = [
 export default function CrowdsourcePage() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
+  const { show } = useToastStore();
 
   const [form, setForm] = useState({
     restaurantName: '',
@@ -86,10 +87,10 @@ export default function CrowdsourcePage() {
         photoUrls: [],
         dishIds: [],
       });
-      message.success('Đề xuất thành công!');
+      show('Đề xuất thành công!');
       setTimeout(() => navigate('/'), 1000);
     } catch {
-      message.error('Gửi đề xuất thất bại. Vui lòng thử lại.');
+      show('Gửi đề xuất thất bại. Vui lòng thử lại.', 'error');
     } finally {
       setLoading(false);
     }
@@ -97,7 +98,7 @@ export default function CrowdsourcePage() {
 
   return (
     <div className="bg-surface text-on-surface min-h-screen pb-40">
-      <Header title="LunchSync Contribute" />
+      <Header title="LunchSync" />
 
       <main className="pt-28 px-6 max-w-2xl mx-auto">
         {/* Hero Section */}

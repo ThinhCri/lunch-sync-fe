@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { message } from 'antd';
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '@/api';
 import { useSessionStore } from '@/store/sessionStore';
+import { useToastStore } from '@/store/toastStore';
 import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -20,6 +20,7 @@ export default function BoomPage() {
   const { pin } = useParams();
   const navigate = useNavigate();
   const { isHost, sessionId } = useSessionStore();
+  const { show } = useToastStore();
 
   const [boomData, setBoomData] = useState(null);
   const [displayList, setDisplayList] = useState([]);
@@ -88,7 +89,7 @@ export default function BoomPage() {
       await api.sessions.pick(pin, { restaurantId });
       navigate(`/done/${pin}`);
     } catch {
-      message.error('Không thể chốt quán.');
+      show('Không thể chốt quán.', 'error');
       setPickingDone(false);
     }
   };
@@ -96,7 +97,7 @@ export default function BoomPage() {
   if (!boomData) {
     return (
       <div className="bg-surface font-body text-on-surface min-h-screen flex flex-col">
-        <Header title="LunchSync Boom" />
+        <Header title="LunchSync" />
         <div className="flex-grow flex flex-col items-center justify-center gap-4 pt-24 pb-32">
           <FontAwesomeIcon icon={faCircleNotch} className="text-primary text-4xl animate-spin" />
           <p className="font-bold text-on-surface-variant uppercase tracking-widest text-xs">Đang tải...</p>
@@ -110,7 +111,7 @@ export default function BoomPage() {
 
   return (
     <div className="bg-surface font-body text-on-surface min-h-screen flex flex-col">
-      <Header title="LunchSync Boom" />
+      <Header title="LunchSync" />
       <main className="pt-24 flex-grow flex flex-col items-center px-6 pb-32 max-w-4xl mx-auto w-full overflow-hidden relative">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] -z-10 pointer-events-none" />
 

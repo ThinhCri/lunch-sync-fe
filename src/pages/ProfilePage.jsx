@@ -20,7 +20,7 @@ export default function ProfilePage() {
 
   return (
     <div className="bg-background min-h-screen pb-32 font-body text-on-surface antialiased">
-      <Header title="LunchSync Profile" />
+      <Header title="LunchSync" />
 
       <main className="pt-24 px-6 max-w-2xl mx-auto">
         {/* Profile Header Section (Identity) */}

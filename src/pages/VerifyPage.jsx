@@ -106,7 +106,7 @@ export default function VerifyPage() {
       <div className="fixed top-20 -right-20 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
       <div className="fixed bottom-10 -left-20 w-80 h-80 bg-secondary/5 rounded-full blur-3xl pointer-events-none"></div>
 
-      <Header title="LunchSync Verification" />
+      <Header title="LunchSync" />
 
       <main className="flex-grow flex flex-col items-center px-6 pt-28 pb-32 relative z-10 w-full">
         <div className="w-full max-w-md flex flex-col shrink-0">

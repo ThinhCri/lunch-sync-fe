@@ -1,20 +1,22 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { message } from 'antd';
 import { api } from '@/api';
+import { parseApiError } from '@/utils/error';
 import { useSessionStore } from '@/store/sessionStore';
 import { useAuthStore } from '@/store/authStore';
+import { useToastStore } from '@/store/toastStore';
 import { PRICE_TIERS } from '@/utils/constants';
 import Header from '@/components/layout/Header';
 import JoinModal from '@/components/modals/JoinModal';
 import BottomNav from '@/components/layout/BottomNav';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faExclamationCircle, faArrowRight, faUser, faSpinner, faRightToBracket } from '@fortawesome/free-solid-svg-icons';
-import { User, UtensilsCrossed, Gem, CheckCircle2, UserPlus, Pin } from 'lucide-react';
+import { User, UtensilsCrossed, Gem, CheckCircle2, UserPlus } from 'lucide-react';
 
 const GuestJoinView = () => {
   const navigate = useNavigate();
   const { setSession } = useSessionStore();
+  const { show } = useToastStore();
 
   const [step, setStep] = useState('pin');
   const [pin, setPin] = useState('');
@@ -45,7 +47,7 @@ const GuestJoinView = () => {
 
   const handleNicknameSubmit = async () => {
     if (!nickname.trim() || nickname.length < 2 || nickname.length > 12) {
-      message.error('Nickname từ 2–12 ký tự');
+      show('Nickname từ 2–12 ký tự', 'error');
       return;
     }
     setLoading(true);
@@ -68,7 +70,12 @@ const GuestJoinView = () => {
       });
       navigate(`/lobby/${pin}`);
     } catch (err) {
-      setError(err.message || 'Không thể tham gia phiên.');
+      const parsed = parseApiError(err);
+      if (parsed.code === 'SESSION_FULL') {
+        setError('Phòng đã đầy 8 người, không thể tham gia.');
+      } else {
+        setError(parsed.message || 'Không thể tham gia phiên.');
+      }
     } finally {
       setLoading(false);
     }
@@ -76,7 +83,7 @@ const GuestJoinView = () => {
 
   return (
     <div className="bg-surface font-body text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container min-h-[100dvh] flex flex-col">
-      <Header title="LunchSync Join" />
+      <Header title="LunchSync" />
 
       <main className="flex-grow pt-24 pb-32 px-6 max-w-lg mx-auto w-full flex flex-col justify-center">
         {/* Banner Create */}
@@ -88,8 +95,8 @@ const GuestJoinView = () => {
             <FontAwesomeIcon icon={faPlus} className="text-primary text-2xl" />
           </div>
           <div>
-            <h3 className="font-headline font-bold text-on-surface text-base">Bạn muốn tự tạo nhóm?</h3>
-            <p className="text-sm text-on-surface-variant mt-1 font-medium">Đăng nhập để tạo phiên bình chọn bữa trưa mới ngay.</p>
+            <h3 className="font-headline font-bold text-on-primary-container text-base">Bạn muốn tự tạo nhóm?</h3>
+            <p className="text-sm text-on-primary-container/80 mt-1 font-medium">Đăng nhập để tạo phiên bình chọn bữa trưa mới ngay.</p>
           </div>
         </div>
 
@@ -238,6 +245,7 @@ const COLLECTION_STYLES = [
 export default function CreateSessionPage() {
   const navigate = useNavigate();
   const { setSession, pin: activePin, sessionId } = useSessionStore();
+  const { show } = useToastStore();
 
   // Collections
   const [collections, setCollections] = useState([]);
@@ -277,20 +285,20 @@ export default function CreateSessionPage() {
   const handleCreate = async (e) => {
     e.preventDefault();
     if (!nickname.trim()) {
-      message.error('Vui lòng nhập nickname');
+      show('Vui lòng nhập nickname', 'error');
       return;
     }
     if (!selectedTier) {
-      message.error('Vui lòng chọn mức giá');
+      show('Vui lòng chọn mức giá', 'error');
       return;
     }
     if (!selectedCollection) {
-      message.error('Vui lòng chọn khu vực ăn trưa');
+      show('Vui lòng chọn khu vực ăn trưa', 'error');
       return;
     }
 
     if (!isAuthenticated()) {
-      message.warning('Vui lòng đăng nhập để tạo nhóm');
+      show('Vui lòng đăng nhập để tạo nhóm', 'error');
       navigate('/login', { state: { returnTo: '/create' } });
       return;
     }
@@ -299,7 +307,7 @@ export default function CreateSessionPage() {
     try {
       const res = await api.sessions.create({
         collection_id: selectedCollection?.id || null,
-        price_tier: selectedTier.value,
+        price_tier: selectedTier.tier,
         nickname: nickname.trim(),
       });
       const data = res.data;
@@ -318,7 +326,7 @@ export default function CreateSessionPage() {
       }));
       navigate(`/lobby/${data.pin}`);
     } catch (err) {
-      message.error(err.message || 'Tạo phiên thất bại. Vui lòng thử lại.');
+      show(err.message || 'Tạo phiên thất bại. Vui lòng thử lại.', 'error');
     } finally {
       setCreating(false);
     }
@@ -330,13 +338,12 @@ export default function CreateSessionPage() {
 
   return (
     <div className="bg-surface font-body text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container min-h-screen">
-      <Header title="LunchSync Create" />
+      <Header title="LunchSync" />
 
       <main className="pt-24 pb-56 px-6 max-w-lg mx-auto">
         {/* Hero Editorial Section */}
         <div className="mb-10 flex justify-between items-start">
           <div>
-            <span className="text-primary font-bold tracking-widest text-[10px] uppercase block mb-2">Social Dining</span>
             <h2 className="font-headline font-extrabold text-4xl leading-tight tracking-tight text-on-surface">Tạo nhóm</h2>
             <p className="text-on-surface-variant mt-2 text-sm">Kết nối đồng nghiệp, khám phá ẩm thực cùng nhau.</p>
           </div>
@@ -386,9 +393,8 @@ export default function CreateSessionPage() {
                         <div className="space-y-1">
                           <h4 className="font-headline font-bold text-on-surface">{col.name}</h4>
                           <p className="text-xs text-on-surface-variant truncate max-w-[220px]">{col.description}</p>
-                          <div className={`flex items-center gap-2 mt-2 w-fit px-3 py-1 rounded-full ${style.bgClass}`}>
-                            <style.Icon className={`${style.colorClass}`} size={14} />
-                            <span className={`text-[10px] font-bold ${style.colorClass}`}>
+                          <div className="flex items-center gap-1.5 mt-2">
+                            <span className="text-[10px] font-bold text-primary bg-surface-container rounded-full px-2.5 py-0.5">
                               {col.restaurant_count ? `${col.restaurant_count} quán` : 'Nhiều lựa chọn'}
                             </span>
                           </div>
@@ -422,7 +428,7 @@ export default function CreateSessionPage() {
                       ? 'bg-primary text-on-primary border-primary shadow-md' 
                       : 'border-outline-variant text-on-surface-variant'
                     }`}>
-                      {tier.key === 'duoi_40k' ? 'Dưới 40k' : tier.key === '40_70k' ? '40k - 70k' : tier.key === '70_120k' ? '70k - 120k' : 'Trên 120k'}
+                      {tier.label}
                     </span>
                   </label>
                 );
@@ -461,7 +467,7 @@ export default function CreateSessionPage() {
         onClick={() => setShowJoinModal(true)}
         className="fixed bottom-32 right-6 z-50 bg-primary text-on-primary flex items-center gap-2 px-6 py-4 rounded-full shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all"
       >
-        <Pin className="text-[20px]" />
+        <FontAwesomeIcon icon={faRightToBracket} className="text-[18px]" />
         <span className="font-label font-bold text-sm tracking-wide">Tham gia</span>
       </button>
     </div>

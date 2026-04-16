@@ -92,7 +92,7 @@ export default function RegisterPage() {
     <div className="bg-surface text-on-surface h-[100dvh] w-full overflow-y-auto overflow-x-hidden flex flex-col font-body selection:bg-primary-container selection:text-on-primary-container relative">
 
       {/* Top Navigation Bar */}
-      <Header title="LunchSync Register" />
+      <Header title="LunchSync" />
 
       <main className="flex-grow flex flex-col items-center px-6 pt-28 pb-32 w-full max-w-xl mx-auto">
         {/* Header Content */}

@@ -4,6 +4,8 @@ const ERROR_CODE_MAP = {
   SESSION_NOT_FOUND: 'Không tìm thấy phiên với mã PIN này.',
   SESSION_EXPIRED: 'Phiên đã hết hạn. Vui lòng tạo phiên mới.',
   SESSION_FULL: 'Phiên đã đầy (8 người).',
+  SESSION_FULL_JOIN: 'Phiên đã đầy 8 người, không thể tham gia.',
+  INSUFFICIENT_PARTICIPANTS: 'Cần tối thiểu 3 người để bắt đầu.',
   NICKNAME_TAKEN: 'Nickname đã tồn tại trong phiên này.',
   VOTING_CLOSED: 'Voting đã đóng.',
   UNAUTHORIZED: 'Bạn không có quyền thực hiện thao tác này.',

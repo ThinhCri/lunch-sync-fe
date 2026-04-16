@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { message } from 'antd';
 import { api } from '@/api';
 import { useSessionStore } from '@/store/sessionStore';
+import { useToastStore } from '@/store/toastStore';
 import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
 import { BarChart3, Star, Sparkles, Dice5 } from 'lucide-react';
@@ -11,6 +11,7 @@ export default function ResultsPage() {
   const { pin } = useParams();
   const navigate = useNavigate();
   const { isHost, sessionId } = useSessionStore();
+  const { show } = useToastStore();
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(true);
   const [booming, setBooming] = useState(false);
@@ -27,7 +28,7 @@ export default function ResultsPage() {
         navigate(`/done/${pin}`);
       }
     } catch {
-      message.error('Không thể tải kết quả.');
+      show('Không thể tải kết quả.', 'error');
     } finally {
       setLoading(false);
     }
@@ -64,7 +65,7 @@ export default function ResultsPage() {
       await api.sessions.boom(pin);
       navigate(`/boom/${pin}`);
     } catch (err) {
-      message.error(err.message || 'Không thể kích hoạt Boom.');
+      show(err.message || 'Không thể kích hoạt Boom.', 'error');
       setBooming(false);
     }
   };
@@ -72,10 +73,10 @@ export default function ResultsPage() {
   const handleCloseVoting = async () => {
     try {
       await api.sessions.closeVoting(pin);
-      message.success('Đã chốt kết quả!');
+      show('Đã chốt kết quả!', 'success');
       fetchResults();
     } catch {
-      message.error('Thao tác thất bại.');
+      show('Thao tác thất bại.', 'error');
     }
   };
 
@@ -114,7 +115,7 @@ export default function ResultsPage() {
 
   return (
     <div className="bg-background font-body text-on-surface antialiased min-h-screen">
-      <Header title="LunchSync Results" />
+      <Header title="LunchSync" />
 
       <main className="pt-24 pb-32 px-4 space-y-10 max-w-xl mx-auto">
         {/* Top 3 Featured Dishes */}

@@ -1,6 +1,5 @@
 import { useCallback, useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { message } from 'antd';
 import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -9,6 +8,7 @@ import { useSession } from '@/hooks/useSession';
 import { useReconnect } from '@/hooks/useReconnect';
 import { useSessionStore } from '@/store/sessionStore';
 import { useVotingStore } from '@/store/votingStore';
+import { useToastStore } from '@/store/toastStore';
 import { VOTING_AUTO_CLOSE_SECONDS } from '@/utils/constants';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheck, faClock, faCircleNotch, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
@@ -19,6 +19,7 @@ export default function VotingWaitPage() {
   const { participants, isHost, sessionId } = useSessionStore();
   const { submitted } = useVotingStore();
   const { votingStartedAt } = useSessionStore();
+  const { show } = useToastStore();
   const [votedCount, setVotedCount] = useState(0);
   const [totalParticipants, setTotalParticipants] = useState(0);
   const [remainingSeconds, setRemainingSeconds] = useState(VOTING_AUTO_CLOSE_SECONDS);
@@ -49,7 +50,7 @@ export default function VotingWaitPage() {
     setTimeout(() => setClosing(true), 0);
 
     api.sessions.closeVoting(pin).then(() => {
-      message.warning('Đã tự động chốt kết quả!');
+      show('Đã tự động chốt kết quả!', 'error');
       navigate(`/results/${pin}`);
     }).catch(() => {
       setClosing(false);
@@ -97,7 +98,7 @@ export default function VotingWaitPage() {
   if (!submitted) {
     return (
       <div className="bg-surface font-body text-on-surface min-h-screen flex flex-col">
-        <Header title="LunchSync Voting Wait" />
+        <Header title="LunchSync" />
         <main className="flex-grow flex items-center justify-center px-6 pt-24 pb-32">
           <div className="bg-white border-2 border-dashed border-outline/50 rounded-3xl p-10 max-w-md w-full text-center flex flex-col items-center gap-6 shadow-sm">
             <div className="w-20 h-20 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant/40">
@@ -130,7 +131,7 @@ export default function VotingWaitPage() {
 
   return (
     <div className="bg-surface font-body text-on-surface min-h-screen flex flex-col">
-      <Header title="LunchSync Voting Wait" />
+      <Header title="LunchSync" />
       <main className="flex-grow flex flex-col items-center justify-center px-6 pt-24 pb-32 max-w-2xl mx-auto w-full relative">
         
         {/* Decorative blobs */}
@@ -227,16 +228,16 @@ export default function VotingWaitPage() {
                 }`}
                 onClick={async () => {
                   if (votedCount < 1) {
-                    message.warning('Cần ít nhất 1 người đã bỏ phiếu để chốt kết quả.');
+                    show('Cần ít nhất 1 người đã bỏ phiếu để chốt kết quả.', 'error');
                     return;
                   }
                   setClosing(true);
                   try {
                     await api.sessions.closeVoting(pin);
-                    message.success('Đã chốt kết quả!');
+                    show('Đã chốt kết quả!', 'success');
                     navigate(`/results/${pin}`);
                   } catch {
-                    message.error('Thao tác thất bại.');
+                    show('Thao tác thất bại.', 'error');
                     setClosing(false);
                   }
                 }}
