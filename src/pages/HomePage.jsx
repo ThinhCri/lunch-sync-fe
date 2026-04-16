@@ -34,7 +34,7 @@ export default function HomePage() {
           setSelectedCollectionId(data[0].id);
         }
       } catch (err) {
-        console.error('Failed to fetch collections:', err);
+        // silently handle
       } finally {
         setLoadingCollections(false);
       }
@@ -61,7 +61,6 @@ export default function HomePage() {
         }
         setCurrentPage(1);
       } catch (err) {
-        console.error('Failed to fetch collection details:', err);
         setErrorRestaurants('Không thể lấy danh sách quán trong khu vực này.');
       } finally {
         setLoadingRestaurants(false);

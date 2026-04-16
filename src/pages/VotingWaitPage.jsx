@@ -80,7 +80,7 @@ export default function VotingWaitPage() {
         navigate(`/waiting/${pin}`);
       }
       } catch (err) {
-        console.error('Error fetching status:', err);
+        // Silently handle — UI updates via onStatus callback
       }
   }, [pin, navigate, participants.length]);
 

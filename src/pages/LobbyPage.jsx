@@ -123,8 +123,6 @@ export default function LobbyPage() {
   const fetchStatus = useCallback(async () => {
     if (expiredShownRef.current) return;
     if (!pin || !sessionId) {
-      console.warn('[Lobby] Missing pin or sessionId — skipping poll', { pin, sessionId });
-      setLoading(false);
       return;
     }
     try {
@@ -165,8 +163,7 @@ export default function LobbyPage() {
       });
       setParticipants(apiParticipants);
     } catch (err) {
-      console.error('[Lobby] fetchStatus caught error:', err);
-      const httpStatus = err?.status ?? err?.response?.status;
+      const httpStatus = err?.response?.status;
       const isExpiredCode = err?.code === 'SESSION_NOT_FOUND' || err?.code === 'SESSION_EXPIRED';
 
       if (httpStatus || isExpiredCode) {

@@ -23,8 +23,7 @@ export function createPoller(fn, { interval = 3000, maxRetries = 3 } = {}) {
     } catch (err) {
       retries++;
       if (retries >= maxRetries) {
-        console.warn('Polling stopped after max retries');
-        return;
+      return;
       }
     }
     timer = setTimeout(poll, interval);

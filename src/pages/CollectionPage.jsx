@@ -25,8 +25,7 @@ export default function CollectionPage() {
           setRestaurants([]);
         }
       } catch (err) {
-        console.error('Failed to fetch collection details:', err);
-        setError('Không thể lấy danh sách quán trong khu vực này.');
+        // silently handle
       } finally {
         setLoading(false);
       }

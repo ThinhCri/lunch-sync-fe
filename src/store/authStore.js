@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
 export const useAuthStore = create(
   persist(
@@ -21,6 +21,9 @@ export const useAuthStore = create(
         return false;
       },
     }),
-    { name: 'lunchsync-auth' }
+    {
+      name: 'lunchsync-auth',
+      storage: createJSONStorage(() => localStorage),
+    }
   )
 );

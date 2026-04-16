@@ -181,11 +181,20 @@ export function parseApiError(error) {
     rawMsg.includes('unverified') ||
     rawMsg.includes('tai khoan chua duoc xac nhan');
 
+  // Sanitize details: block stack traces, long URLs, IPs
+  const SENSITIVE_PATTERNS = [
+    /at\s+.+\(\/.+\)/gi,
+    /https?:\/\/[^\s]{50,}/gi,
+    /[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/g,
+  ];
+  const safeDetails = typeof details === 'string' && details.length <= 200 &&
+    !SENSITIVE_PATTERNS.some((p) => p.test(details)) ? details : null;
+
   return {
     code: code || 'UNKNOWN',
     status: status || null,
     message: finalMessage,
-    details: details || error.message || null,
+    details: safeDetails,
     shouldRedirectToVerify,
   };
 }

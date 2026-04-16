@@ -1,13 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useVotingStore } from '@/store/votingStore';
-import { TIMER_DURATION, MAX_SKIP_COUNT } from '@/utils/constants';
+import { TIMER_DURATION } from '@/utils/constants';
 
 export function useVoting({ choices, onSubmit, autoAdvanceDelay = 300 }) {
   const [timeLeft, setTimeLeft] = useState(TIMER_DURATION);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState([]);
-  const [skipped, setSkipped] = useState([]);
   const transitioningRef = useRef(false);
   const currentIndexRef = useRef(0);
   const onSubmitRef = useRef(onSubmit);
@@ -23,23 +22,20 @@ export function useVoting({ choices, onSubmit, autoAdvanceDelay = 300 }) {
       currentIndexRef.current = state.currentIndex;
       setCurrentIndex(state.currentIndex);
       setAnswers(state.answers);
-      setSkipped(state.skipped);
     };
-    
+
     sync();
 
     const unsub = useVotingStore.subscribe((s) => {
       setCurrentIndex(s.currentIndex);
       currentIndexRef.current = s.currentIndex;
       setAnswers(s.answers);
-      setSkipped(s.skipped);
     });
     return unsub;
   }, []);
 
   const currentChoice = choices?.[currentIndex];
   const isLast = currentIndex === 7;
-  const skipRemaining = 2 - skipped.filter(Boolean).length;
 
   const selectOption = useCallback((option) => {
     if (transitioningRef.current) return;
@@ -54,36 +50,6 @@ export function useVoting({ choices, onSubmit, autoAdvanceDelay = 300 }) {
       const nextIndex = idx + 1;
 
       if (nextIndex > 7) {
-        useVotingStore.getState().submit();
-        useVotingStore.getState().submit();
-        const answersArr = useVotingStore.getState().getAnswers();
-        onSubmitRef.current?.(answersArr);
-      } else {
-        useVotingStore.getState().nextQuestion();
-        currentIndexRef.current = nextIndex;
-        setTimeLeft(TIMER_DURATION);
-        transitioningRef.current = false;
-        setIsTransitioning(false);
-      }
-    }, autoAdvanceDelay);
-  }, [autoAdvanceDelay]);
-
-  const handleSkip = useCallback(() => {
-    if (transitioningRef.current) return;
-    const skipRemaining = useVotingStore.getState().getSkipRemaining();
-    if (skipRemaining <= 0) return;
-    if (navigator.vibrate) navigator.vibrate(10);
-
-    transitioningRef.current = true;
-    setIsTransitioning(true);
-    useVotingStore.getState().skipQuestion();
-
-    setTimeout(() => {
-      const { currentIndex: idx } = useVotingStore.getState();
-      const nextIndex = idx + 1;
-
-      if (nextIndex > 7) {
-        useVotingStore.getState().submit();
         useVotingStore.getState().submit();
         const answersArr = useVotingStore.getState().getAnswers();
         onSubmitRef.current?.(answersArr);
@@ -103,7 +69,6 @@ export function useVoting({ choices, onSubmit, autoAdvanceDelay = 300 }) {
       if (transitioningRef.current) return;
       setTimeLeft((prev) => {
         if (prev <= 1) {
-          // Hết giờ: Tự động chọn (Auto-select)
           selectOption('A');
           return TIMER_DURATION;
         }
@@ -111,7 +76,7 @@ export function useVoting({ choices, onSubmit, autoAdvanceDelay = 300 }) {
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [selectOption, handleSkip]);
+  }, [selectOption]);
 
   const startVoting = useCallback(() => {
     useVotingStore.getState().reset();
@@ -121,7 +86,6 @@ export function useVoting({ choices, onSubmit, autoAdvanceDelay = 300 }) {
     setTimeLeft(TIMER_DURATION);
     setIsTransitioning(false);
     setAnswers([]);
-    setSkipped([]);
   }, []);
 
   return {
@@ -129,15 +93,10 @@ export function useVoting({ choices, onSubmit, autoAdvanceDelay = 300 }) {
     currentChoice,
     currentIndex,
     answers,
-    skipped,
-    skipRemaining,
     isLast,
-    isComplete: answers.filter(Boolean).length === 8,
+    isComplete: answers.length === 8,
     isTransitioning,
     selectOption,
-    handleSkip,
     startVoting,
   };
 }
-
-

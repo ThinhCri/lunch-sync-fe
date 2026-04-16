@@ -55,7 +55,7 @@ export default function BoomPage() {
       }, 1200);
 
     } catch (err) {
-      console.error('Error fetching boom data:', err);
+      // silently handle
     }
   }, [pin, navigate]);
 
@@ -76,7 +76,7 @@ export default function BoomPage() {
           navigate(`/done/${pin}`);
         }
       } catch (err) {
-        console.error('Error polling status:', err);
+        // silently handle
       }
     }, 2000);
     return () => clearInterval(interval);
