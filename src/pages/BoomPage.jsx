@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '@/api';
 import { useSessionStore } from '@/store/sessionStore';
@@ -8,52 +8,31 @@ import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faCheck,
-  faLock, faCircleNotch, faTrophy, faMedal, faAward
+  faCheck, faLock, faTrophy, faMedal, faAward, faCircleNotch,
+  faBolt, faMapPin, faStar, faExternalLink, faBowlFood
 } from '@fortawesome/free-solid-svg-icons';
 
 export default function BoomPage() {
   const { pin } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { isHost, sessionId } = useSessionStore();
   const { show } = useToastStore();
 
   const [boomData, setBoomData] = useState(null);
-  const [displayList, setDisplayList] = useState([]);
   const [pickingDone, setPickingDone] = useState(false);
 
-  const fetchBoomData = useCallback(async () => {
-    try {
-      const res = await api.sessions.getResults(pin);
-      const data = res.data;
-
-      const remaining = data.remaining || [];
-      const eliminated = data.eliminated || [];
-
-      setBoomData({ eliminated, remaining, status: data.status });
-      if (data.status === 'done') {
-        navigate(`/done/${pin}`);
-        return;
-      }
-
-      const all = [...remaining, ...eliminated].sort((a, b) => a.rank - b.rank);
-      setDisplayList(all);
-
-      setTimeout(() => {
-        setDisplayList(remaining);
-      }, 1200);
-
-    } catch {
-      // silently handle
+  useEffect(() => {
+    if (location.state?.boomData) {
+      setBoomData(location.state.boomData);
+    } else {
+      show('Không có dữ liệu boom.', 'error');
+      navigate(-1);
     }
-  }, [pin, navigate]);
+  }, [location.state, show, navigate]);
 
   useEffect(() => {
-    const timer = setTimeout(() => fetchBoomData(), 0);
-    return () => clearTimeout(timer);
-  }, [fetchBoomData]);
-
-  useEffect(() => {
+    if (!boomData) return;
     const interval = setInterval(async () => {
       try {
         const res = await api.sessions.getStatus(pin, sessionId);
@@ -62,14 +41,14 @@ export default function BoomPage() {
           navigate(`/done/${pin}`);
         }
       } catch {
-        // silently handle
+        // ignore
       }
     }, 2000);
     return () => clearInterval(interval);
-  }, [pin, navigate, sessionId]);
+  }, [boomData, pin, navigate, sessionId]);
 
   const handlePick = async (restaurantId) => {
-    if (!isHost) return;
+    if (!isHost || pickingDone) return;
     setPickingDone(true);
     try {
       await api.sessions.pick(pin, { restaurantId });
@@ -80,96 +59,151 @@ export default function BoomPage() {
     }
   };
 
-  if (!boomData) {
-    return (
-      <div className="bg-surface font-body text-on-surface min-h-screen flex flex-col">
-        <Header title="LunchSync" />
-        <div className="flex-grow flex flex-col items-center justify-center gap-4 pt-24 pb-32">
-          <FontAwesomeIcon icon={faCircleNotch} className="text-primary text-4xl animate-spin" />
-          <p className="font-bold text-on-surface-variant uppercase tracking-widest text-xs">Đang tải...</p>
-        </div>
-        <BottomNav />
-      </div>
-    );
-  }
+  const remaining = boomData?.remaining || [];
+
+  const getPriceDisplay = (priceTier) => {
+    const map = {
+      Under50k: 'Dưới 50k',
+      From50To70k: '50k - 70k',
+      From70To120k: '70k - 120k',
+      Over120k: 'Trên 120k',
+    };
+    return map[priceTier] || priceTier || '---';
+  };
 
   return (
     <div className="bg-surface font-body text-on-surface min-h-screen flex flex-col">
       <Header title="LunchSync" />
-      <main className="pt-24 flex-grow flex flex-col items-center px-6 pb-32 max-w-4xl mx-auto w-full overflow-hidden relative">
+      <main className="pt-24 flex-grow flex flex-col items-center px-5 pb-32 max-w-xl mx-auto w-full overflow-hidden relative">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] -z-10 pointer-events-none" />
 
-        <div className="w-full space-y-10 mt-8">
-          <div className="text-center space-y-4">
-            <h2 className="text-4xl font-headline font-black text-on-surface tracking-tight leading-none italic uppercase">
+        <div className="w-full space-y-10 mt-6">
+          {/* Header */}
+          <div className="text-center space-y-3">
+            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest">
+              <FontAwesomeIcon icon={faBolt} />
+              Boom kết quả
+            </div>
+            <h2 className="text-3xl font-headline font-black text-on-surface tracking-tight leading-tight italic uppercase">
               Chốt quán thôi nào!
             </h2>
-            <div className="inline-flex items-center gap-2.5 px-5 py-3 rounded-full bg-surface-container-lowest border border-outline/30 shadow-sm mx-auto">
-              <span className="text-sm font-black uppercase tracking-widest text-on-surface">
-                Vui lòng chọn 1 trong 3 quán còn lại
-              </span>
-            </div>
+            {remaining.length > 0 && (
+              <p className="text-sm text-on-surface-variant font-medium">
+                Còn <span className="font-black text-primary">{remaining.length}</span> quán để bạn chọn
+              </p>
+            )}
           </div>
 
-          <div className="grid grid-cols-1 gap-4 max-w-xl mx-auto relative">
-            <AnimatePresence>
-              {displayList.map((rest, i) => {
-                const iconColorIdx = i > 2 ? 2 : i;
-                const icon = iconColorIdx === 0 ? faTrophy : iconColorIdx === 1 ? faMedal : faAward;
-                const iconBgClass = iconColorIdx === 0
-                  ? 'bg-secondary/10 text-secondary'
-                  : iconColorIdx === 1
-                  ? 'bg-surface-container text-on-surface-variant'
-                  : 'bg-primary/10 text-primary';
+          {/* Remaining restaurants */}
+          <AnimatePresence>
+            {remaining.length > 0 && (
+              <div className="space-y-4">
+                <p className="text-center text-[10px] font-black uppercase tracking-widest text-primary/60">
+                  Còn lại
+                </p>
+                {remaining.map((rest, i) => {
+                  const icons = [faTrophy, faMedal, faAward];
+                  const iconBg = [
+                    'bg-amber-400/10 text-amber-500',
+                    'bg-slate-400/10 text-slate-500',
+                    'bg-orange-400/10 text-orange-500',
+                  ];
+                  const icon = icons[i] || faAward;
+                  const bg = iconBg[i] || iconBg[2];
 
-                return (
-                  <motion.button
-                    layout
-                    key={rest.id}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{
-                      x: i % 2 === 0 ? -1000 : 1000,
-                      opacity: 0,
-                      rotate: i % 2 === 0 ? -45 : 45
-                    }}
-                    transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-                    className={`group relative flex items-center gap-6 p-6 bg-surface-container-lowest border-2 rounded-[2rem] text-left transition-colors ${isHost && !pickingDone
-                        ? 'border-outline/10 hover:border-primary hover:shadow-xl active:scale-[0.98]'
-                        : 'border-outline/10 opacity-80 cursor-default'
+                  return (
+                    <motion.button
+                      key={rest.id}
+                      layout
+                      initial={{ opacity: 0, y: 30 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.1, type: 'spring', stiffness: 200, damping: 20 }}
+                      className={`group w-full text-left bg-surface-container-lowest border-2 rounded-2xl overflow-hidden transition-all ${
+                        isHost && !pickingDone
+                          ? 'border-outline/10 hover:border-primary hover:shadow-xl active:scale-[0.98]'
+                          : 'border-outline/10 opacity-80 cursor-default'
                       }`}
-                    onClick={() => handlePick(rest.id)}
-                    disabled={!isHost || pickingDone}
-                  >
-                    <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shadow-lg transition-transform group-hover:scale-110 ${iconBgClass}`}>
-                      <FontAwesomeIcon icon={icon} />
-                    </div>
-
-                    <div className="flex-grow min-w-0">
-                      <div className="text-sm font-black text-on-surface-variant/40 uppercase tracking-widest mb-1">Top {rest.rank || i + 1}</div>
-                      <div className="text-xl font-headline font-black text-on-surface truncate">{rest.name}</div>
-                      {rest.address && <div className="text-sm text-on-surface-variant font-medium truncate opacity-60">{rest.address}</div>}
-                    </div>
-
-                    {isHost && !pickingDone ? (
-                      <div className="w-12 h-12 rounded-full border-2 border-primary/20 flex items-center justify-center text-primary transition-all group-hover:bg-primary group-hover:text-white">
-                        <FontAwesomeIcon icon={faCheck} />
+                      onClick={() => handlePick(rest.id)}
+                      disabled={!isHost || pickingDone}
+                    >
+                      {/* Image */}
+                      <div className="relative w-full h-40 overflow-hidden">
+                        <img
+                          alt={rest.name}
+                          className="w-full h-full object-cover"
+                          src={rest.thumbnail_url || `https://picsum.photos/seed/${rest.id}/800/400`}
+                          onError={(e) => { e.target.src = `https://picsum.photos/seed/${rest.id}/800/400`; }}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                        <div className={`absolute top-3 left-3 ${bg} w-10 h-10 rounded-xl flex items-center justify-center shadow-lg`}>
+                          <FontAwesomeIcon icon={icon} className="text-lg" />
+                        </div>
+                        <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
+                          <span className="text-white font-black text-xl font-headline drop-shadow">{rest.name}</span>
+                        </div>
                       </div>
-                    ) : (
-                      <div className="text-on-surface-variant/20 italic text-xs font-bold uppercase tracking-widest">
-                        {isHost ? 'Đang gửi...' : <FontAwesomeIcon icon={faLock} />}
-                      </div>
-                    )}
-                  </motion.button>
-                );
-              })}
-            </AnimatePresence>
-          </div>
 
+                      {/* Info */}
+                      <div className="p-4 space-y-3">
+                        <div className="flex items-center gap-1.5 text-on-surface-variant text-[12px]">
+                          <FontAwesomeIcon icon={faMapPin} className="text-xs shrink-0" />
+                          <span className="truncate">{rest.address}</span>
+                        </div>
+
+                        <div className="flex items-center gap-4 text-[12px] font-semibold">
+                          <span className="text-primary">{getPriceDisplay(rest.price_tier)}</span>
+                          <span className="text-outline">|</span>
+                          <div className="flex items-center gap-1 text-primary">
+                            <FontAwesomeIcon icon={faStar} className="text-xs fill-primary text-primary" />
+                            <span>{rest.rating?.toFixed(1)}</span>
+                          </div>
+                        </div>
+
+                        {rest.matched_dishes && rest.matched_dishes.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5">
+                            {rest.matched_dishes.map((dish, idx) => (
+                              <span key={idx} className="bg-primary/8 text-primary text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
+                                <FontAwesomeIcon icon={faBowlFood} className="text-[9px]" />
+                                {dish}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+
+                        {rest.google_maps_url && (
+                          <a
+                            href={rest.google_maps_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-center gap-1.5 bg-primary/8 text-primary text-xs font-bold py-2 rounded-xl hover:bg-primary/15 active:scale-[0.98] transition-all"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <FontAwesomeIcon icon={faExternalLink} className="text-[10px]" />
+                            Mở bản đồ
+                          </a>
+                        )}
+
+                        {isHost && !pickingDone && (
+                          <div className="flex items-center justify-center gap-2 bg-primary text-white font-black text-sm py-3 rounded-xl mt-1">
+                            <FontAwesomeIcon icon={faCheck} />
+                            CHỌN QUÁN NÀY
+                          </div>
+                        )}
+                      </div>
+                    </motion.button>
+                  );
+                })}
+              </div>
+            )}
+          </AnimatePresence>
+
+          {/* Non-host waiting state */}
           {!isHost && (
-            <div className="flex flex-col items-center gap-4 py-8">
+            <div className="flex flex-col items-center gap-3 py-6">
               <FontAwesomeIcon icon={faCircleNotch} className="text-outline text-3xl animate-spin" />
-              <p className="text-on-surface-variant/50 font-bold uppercase tracking-widest text-[10px]">Đang chờ host chốt quán cuối cùng...</p>
+              <p className="text-on-surface-variant/50 font-bold uppercase tracking-widest text-[10px] text-center">
+                Đang chờ host chốt quán cuối cùng...
+              </p>
             </div>
           )}
         </div>
