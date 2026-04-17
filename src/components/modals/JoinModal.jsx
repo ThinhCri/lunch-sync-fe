@@ -76,6 +76,7 @@ export default function JoinModal({ open, defaultPin = '', onClose }) {
         pin,
         sessionId: data.session_id,
         participantId: data.participant_id,
+        participantId: data.participant_id,
         nickname: data.nickname || nickname.trim(),
         shareLink: data.share_link,
         isHost: false,

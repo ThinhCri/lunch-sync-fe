@@ -69,16 +69,6 @@ export default function ResultsPage() {
     }
   };
 
-  const handleCloseVoting = async () => {
-    try {
-      await api.sessions.closeVoting(pin);
-      show('Đã chốt kết quả!', 'success');
-      fetchResults();
-    } catch {
-      show('Thao tác thất bại.', 'error');
-    }
-  };
-
   if (loading) {
     return (
       <div className="bg-background min-h-screen pt-20 pb-32 flex items-center justify-center">
@@ -96,14 +86,6 @@ export default function ResultsPage() {
         <div className="bg-surface-container-lowest border border-outline/20 rounded-xl p-8 max-w-sm w-full text-center flex flex-col items-center gap-4 shadow-[0_4px_16px_rgba(0,0,0,0.04)]">
               <BarChart3 className="text-5xl text-outline/30" />
           <p className="text-on-surface-variant font-medium text-sm">Chưa có kết quả. Vui lòng chờ host chốt phiếu.</p>
-          {isHost && (
-            <button
-              className="mt-4 px-8 py-3 bg-primary text-white rounded-full font-bold shadow-lg shadow-primary/30 hover:opacity-90 transition-all active:scale-95"
-              onClick={handleCloseVoting}
-            >
-              Chốt kết quả ngay
-            </button>
-          )}
         </div>
         <BottomNav />
       </div>

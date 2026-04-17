@@ -1,21 +1,21 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { api } from '@/api';
 import { useSessionStore } from '@/store/sessionStore';
-import { useVotingStore } from '@/store/votingStore';
+import { useToastStore } from '@/store/toastStore';
 import { createPoller } from '@/utils/reconnect';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck } from '@fortawesome/free-solid-svg-icons';
+import { faCheck, faCircleNotch, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 
 const POLL_INTERVAL = 3000;
 
-export default function VotingSubmittedModal({ open, pin, initialVotedInfo, onResults }) {
-  const navigate = useNavigate();
+export default function VotingSubmittedModal({ open, pin, initialVotedInfo, isHost, onResults }) {
   const { sessionId, participants } = useSessionStore();
+  const { show } = useToastStore();
   const [votedCount, setVotedCount] = useState(0);
   const [totalParticipants, setTotalParticipants] = useState(0);
   const [allVoted, setAllVoted] = useState(false);
+  const [closing, setClosing] = useState(false);
   const pollerRef = useRef(null);
   const isDoneRef = useRef(false);
 
@@ -62,6 +62,19 @@ export default function VotingSubmittedModal({ open, pin, initialVotedInfo, onRe
       // ignore polling errors silently
     }
   }, [pin, sessionId, participants.length, handleRedirectToResults]);
+
+  const handleCloseVoting = useCallback(async () => {
+    if (closing || votedCount < 1) return;
+    setClosing(true);
+    try {
+      await api.sessions.closeSession(pin);
+      show('Đã chốt kết quả!', 'success');
+      handleRedirectToResults();
+    } catch {
+      show('Thao tác thất bại.', 'error');
+      setClosing(false);
+    }
+  }, [closing, votedCount, pin, show, handleRedirectToResults]);
 
   useEffect(() => {
     if (!open) return;
@@ -141,6 +154,41 @@ export default function VotingSubmittedModal({ open, pin, initialVotedInfo, onRe
             <span className="text-4xl font-headline font-black text-primary">{votedCount}</span>
             <span className="text-2xl font-headline font-bold text-on-surface-variant"> / {total}</span>
           </motion.div>
+
+          {/* Nút chốt kết quả cho Host */}
+          {isHost && (
+            <motion.div
+              className="w-full space-y-2"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              <button
+                onClick={handleCloseVoting}
+                disabled={closing || votedCount < 1}
+                className={`w-full py-3.5 rounded-full font-headline font-bold text-sm flex items-center justify-center gap-2 transition-all ${
+                  closing || votedCount < 1
+                    ? 'bg-outline/30 text-white/50 cursor-not-allowed'
+                    : 'bg-primary text-white hover:bg-primary/90 active:scale-[0.98] shadow-lg shadow-primary/20'
+                }`}
+              >
+                {closing ? (
+                  <>
+                    <FontAwesomeIcon icon={faCircleNotch} className="animate-spin text-sm" />
+                    ĐANG CHỐT...
+                  </>
+                ) : (
+                  <>
+                    CHỐT KẾT QUẢ
+                    <FontAwesomeIcon icon={faArrowLeft} className="rotate-180 text-xs" />
+                  </>
+                )}
+              </button>
+              {votedCount < 1 && (
+                <p className="text-[10px] text-center font-bold text-on-surface-variant/40 uppercase tracking-widest">Chờ ít nhất 1 người bỏ phiếu để có thể chốt</p>
+              )}
+            </motion.div>
+          )}
         </div>
       </motion.div>
 

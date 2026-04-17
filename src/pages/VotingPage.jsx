@@ -28,7 +28,7 @@ const QUESTIONS = [
 export default function VotingPage() {
   const { pin } = useParams();
   const navigate = useNavigate();
-  const { participantId, sessionId, reset: resetSession } = useSessionStore();
+  const { participantId, sessionId, isHost, reset: resetSession } = useSessionStore();
   const { show } = useToastStore();
   const [submitting, setSubmitting] = useState(false);
   const [cardKey, setCardKey] = useState(0);
@@ -231,6 +231,7 @@ export default function VotingPage() {
         open={showSubmittedModal}
         pin={pin}
         initialVotedInfo={initialVotedInfo}
+        isHost={isHost}
         onResults={() => navigate(`/results/${pin}`)}
       />
     </div>

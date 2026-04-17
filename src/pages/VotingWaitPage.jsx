@@ -41,22 +41,35 @@ export default function VotingWaitPage() {
     return () => clearInterval(interval);
   }, [votingStartedAt]);
 
-  // Tự động chốt kết quả khi countdown về 0
+  // Auto-close: tất cả đã vote
   useEffect(() => {
-    if (remainingSeconds > 0 || !isHost || autoCloseFired.current || votedCount < 1) return;
+    const total = totalParticipants || participants.length || 0;
+    if (!isHost || autoCloseFired.current) return;
+    if (votedCount < 1 || votedCount < total || total === 0) return;
     autoCloseFired.current = true;
-    
-    // Using setTimeout to avoid synchronous setState inside effect warning
-    setTimeout(() => setClosing(true), 0);
-
-    api.sessions.closeVoting(pin).then(() => {
-      show('Đã tự động chốt kết quả!', 'error');
+    setClosing(true);
+    api.sessions.closeSession(pin).then(() => {
+      show('Đã tự động chốt kết quả!', 'success');
       navigate(`/results/${pin}`);
     }).catch(() => {
       setClosing(false);
       autoCloseFired.current = false;
     });
-  }, [remainingSeconds, isHost, votedCount, pin, navigate]);
+  }, [votedCount, totalParticipants, participants.length, isHost, pin, navigate, show]);
+
+  // Auto-close: countdown về 0
+  useEffect(() => {
+    if (remainingSeconds > 0 || !isHost || autoCloseFired.current || votedCount < 1) return;
+    autoCloseFired.current = true;
+    setClosing(true);
+    api.sessions.closeSession(pin).then(() => {
+      show('Đã tự động chốt kết quả!', 'success');
+      navigate(`/results/${pin}`);
+    }).catch(() => {
+      setClosing(false);
+      autoCloseFired.current = false;
+    });
+  }, [remainingSeconds, isHost, votedCount, pin, navigate, show]);
 
   const handleSessionEnded = useCallback((status) => {
     const messages = {
@@ -230,7 +243,11 @@ export default function VotingWaitPage() {
               <div className="inline-flex items-center gap-2.5 px-5 py-3 rounded-full bg-white border border-outline/30 shadow-sm">
                 <FontAwesomeIcon icon={faClock} className={`text-lg ${remainingSeconds <= 15 ? 'text-error animate-pulse' : 'text-primary'}`} />
                 <span className={`text-sm font-black uppercase tracking-widest ${remainingSeconds <= 15 ? 'text-error' : 'text-on-surface'}`}>
-                  {remainingSeconds > 0 ? `Tự động chốt sau ${timeDisplay}` : 'Chốt ngay thôi!'}
+                  {voted === total && total > 0
+                    ? 'Tất cả đã bình chọn!'
+                    : remainingSeconds > 0
+                      ? `Tự động chốt sau ${timeDisplay}`
+                      : 'Chốt ngay thôi!'}
                 </span>
               </div>
 
@@ -248,7 +265,7 @@ export default function VotingWaitPage() {
                   }
                   setClosing(true);
                   try {
-                    await api.sessions.closeVoting(pin);
+                    await api.sessions.closeSession(pin);
                     show('Đã chốt kết quả!', 'success');
                     navigate(`/results/${pin}`);
                   } catch {
