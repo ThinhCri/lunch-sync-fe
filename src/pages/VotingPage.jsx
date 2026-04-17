@@ -35,13 +35,17 @@ export default function VotingPage() {
   const [showSubmittedModal, setShowSubmittedModal] = useState(false);
   const [initialVotedInfo, setInitialVotedInfo] = useState({ votedCount: 1, totalParticipants: 0 });
 
-  // Reset voting store ĐỒNG BỘ trước render — tránh bị giá trị cũ từ localStorage
+  // Reset store khi sang phiên mới hoặc đã submit; giữ lại câu trả lời nếu cùng phiên và chưa submit
   useLayoutEffect(() => {
     const store = useVotingStore.getState();
     const wasSubmitted = store.submitted && store.sessionPin === pin;
-    useVotingStore.getState().reset();
-    useVotingStore.getState().setSessionPin(pin);
-    // User đã vote ở phiên này rồi → hiện modal
+    const isNewSession = store.sessionPin !== pin;
+    if (isNewSession || wasSubmitted) {
+      useVotingStore.getState().reset();
+      useVotingStore.getState().setSessionPin(pin);
+    } else {
+      useVotingStore.getState().setSessionPin(pin);
+    }
     if (wasSubmitted) {
       setShowSubmittedModal(true);
       setInitialVotedInfo({ votedCount: 1, totalParticipants: 0 });
