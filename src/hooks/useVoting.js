@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useVotingStore } from '@/store/votingStore';
 import { TIMER_DURATION } from '@/utils/constants';
 
-export function useVoting({ choices, onSubmit, autoAdvanceDelay = 300 }) {
+export function useVoting({ choices, onSubmit, pin, autoAdvanceDelay = 300 }) {
   const [timeLeft, setTimeLeft] = useState(TIMER_DURATION);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -79,14 +79,21 @@ export function useVoting({ choices, onSubmit, autoAdvanceDelay = 300 }) {
   }, [selectOption]);
 
   const startVoting = useCallback(() => {
-    useVotingStore.getState().reset();
-    currentIndexRef.current = 0;
-    setCurrentIndex(0);
+    const store = useVotingStore.getState();
+    const currentPin = store.sessionPin;
+
+    // Chỉ reset nếu là session mới (khác pin)
+    if (currentPin !== pin) {
+      useVotingStore.getState().reset();
+      useVotingStore.getState().setSessionPin(pin);
+    }
+
+    currentIndexRef.current = useVotingStore.getState().currentIndex;
+    setCurrentIndex(useVotingStore.getState().currentIndex);
     transitioningRef.current = false;
     setTimeLeft(TIMER_DURATION);
     setIsTransitioning(false);
-    setAnswers([]);
-  }, []);
+  }, [pin]);
 
   return {
     timeLeft,

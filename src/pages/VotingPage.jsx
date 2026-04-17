@@ -26,15 +26,30 @@ const QUESTIONS = [
 export default function VotingPage() {
   const { pin } = useParams();
   const navigate = useNavigate();
-  const { participantId, sessionId } = useSessionStore();
+  const { participantId, sessionId, reset: resetSession } = useSessionStore();
   const { show } = useToastStore();
   const [submitting, setSubmitting] = useState(false);
   const [cardKey, setCardKey] = useState(0);
+
+  const handleSessionEnded = useCallback((status) => {
+    const messages = {
+      cancelled: 'Phiên này đã bị hủy bởi chủ phòng.',
+      expired: 'Phiên đã hết hạn do quá thời gian chờ.',
+      completed: 'Phiên này đã kết thúc.',
+    };
+    show(messages[status] || 'Phiên không còn hoạt động.', 'error');
+    resetSession();
+    navigate('/', { replace: true });
+  }, [resetSession, navigate, show]);
 
   const fetchStatus = useCallback(async () => {
     try {
       const res = await api.sessions.getStatus(pin, sessionId);
       const data = res.data;
+      if (data.status === 'cancelled' || data.status === 'expired' || data.status === 'completed') {
+        handleSessionEnded(data.status);
+        return;
+      }
       if (data.status === 'results') {
         navigate(`/results/${pin}`);
       } else if (data.status === 'waiting') {
@@ -43,9 +58,9 @@ export default function VotingPage() {
     } catch {
       // ignore
     }
-  }, [pin, sessionId, navigate]);
+  }, [pin, sessionId, navigate, handleSessionEnded]);
 
-  useSession({ pin, onStatus: fetchStatus, enabled: true });
+  const { stopPoller } = useSession({ pin, onStatus: fetchStatus, enabled: true });
   useReconnect({ onReconnect: fetchStatus, enabled: true });
 
   const handleSubmit = useCallback(async (answersStr) => {
@@ -68,7 +83,7 @@ export default function VotingPage() {
     isTransitioning,
     selectOption,
     startVoting,
-  } = useVoting({ choices: QUESTIONS, onSubmit: handleSubmit });
+  } = useVoting({ choices: QUESTIONS, onSubmit: handleSubmit, pin });
 
   useEffect(() => {
     startVoting();

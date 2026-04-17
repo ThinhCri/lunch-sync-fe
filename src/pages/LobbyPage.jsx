@@ -97,12 +97,14 @@ export default function LobbyPage() {
   const [copied, setCopied] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const expiredShownRef = useRef(false);
+  const stopPollerRef = useRef(null);
 
   const [confirmDialog, setConfirmDialog] = useState({ open: false });
 
   const showExpiredModal = useCallback((reason) => {
     if (expiredShownRef.current) return;
     expiredShownRef.current = true;
+    stopPollerRef.current?.();
     const loggedIn = isAuthenticated();
     setConfirmDialog({
       open: true,
@@ -178,8 +180,9 @@ export default function LobbyPage() {
     }
   }, [pin, sessionId, navigate, setParticipants, showExpiredModal]);
 
-  useSession({ pin, onStatus: fetchStatus, interval: 2000, enabled: !expiredShownRef.current });
-  useReconnect({ onReconnect: fetchStatus, enabled: true });
+  const { stopPoller } = useSession({ pin, onStatus: fetchStatus, interval: 2000, enabled: !expiredShownRef.current });
+  stopPollerRef.current = stopPoller;
+  useReconnect({ onReconnect: fetchStatus, enabled: !expiredShownRef.current });
 
   useEffect(() => {
     if (!participantId && !sessionId && !expiredShownRef.current) {

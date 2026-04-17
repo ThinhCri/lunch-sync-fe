@@ -16,7 +16,7 @@ import { faCheck, faClock, faCircleNotch, faArrowLeft } from '@fortawesome/free-
 export default function VotingWaitPage() {
   const { pin } = useParams();
   const navigate = useNavigate();
-  const { participants, isHost, sessionId } = useSessionStore();
+  const { participants, isHost, sessionId, reset: resetSession } = useSessionStore();
   const { submitted } = useVotingStore();
   const { votingStartedAt } = useSessionStore();
   const { show } = useToastStore();
@@ -58,6 +58,17 @@ export default function VotingWaitPage() {
     });
   }, [remainingSeconds, isHost, votedCount, pin, navigate]);
 
+  const handleSessionEnded = useCallback((status) => {
+    const messages = {
+      cancelled: 'Phiên này đã bị hủy bởi chủ phòng.',
+      expired: 'Phiên đã hết hạn do quá thời gian chờ.',
+      completed: 'Phiên này đã kết thúc.',
+    };
+    show(messages[status] || 'Phiên không còn hoạt động.', 'error');
+    resetSession();
+    navigate('/', { replace: true });
+  }, [resetSession, navigate, show]);
+
   const fetchStatus = useCallback(async () => {
     try {
       const res = await api.sessions.getStatus(pin, sessionId);
@@ -72,6 +83,10 @@ export default function VotingWaitPage() {
         useSessionStore.getState().setVotingStartedAt(data.votingStartedAt);
       }
 
+      if (data.status === 'cancelled' || data.status === 'expired' || data.status === 'completed') {
+        handleSessionEnded(data.status);
+        return;
+      }
       if (data.status === 'results') {
         navigate(`/results/${pin}`);
       } else if (data.status === 'voting') {
@@ -79,10 +94,10 @@ export default function VotingWaitPage() {
       } else if (data.status === 'waiting') {
         navigate(`/waiting/${pin}`);
       }
-      } catch (err) {
-        // Silently handle — UI updates via onStatus callback
-      }
-  }, [pin, navigate, participants.length]);
+    } catch {
+      // Silently handle — UI updates via onStatus callback
+    }
+  }, [pin, navigate, participants.length, handleSessionEnded]);
 
   useSession({ pin, onStatus: fetchStatus, enabled: true });
   useReconnect({ onReconnect: fetchStatus, enabled: true });

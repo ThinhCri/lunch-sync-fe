@@ -20,4 +20,11 @@ export function useSession({ pin, onStatus, interval = 3000, enabled = true }) {
     pollingRef.current.start();
     return () => pollingRef.current?.stop();
   }, [pin, interval, enabled]);
+
+  const stopPoller = () => {
+    pollingRef.current?.stop();
+    pollingRef.current = null;
+  };
+
+  return { stopPoller };
 }
