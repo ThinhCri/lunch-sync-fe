@@ -8,7 +8,7 @@ import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
 import { CheckCircle2, Star, MapPin, Map, Home, Share2 } from 'lucide-react';
 
-const BRAND_COLORS = ['#9c3f00', '#ff7a2f', '#4953ac', '#176a21', '#FFD700', '#ff6b00'];
+const BRAND_COLORS = ['#F97316', '#FF7A2F', '#3B82F6', '#16A34A', '#FFD700', '#FF6B00'];
 
 function fireConfetti() {
   const count = 200;
@@ -40,17 +40,14 @@ export default function DonePage() {
   const confettiFired = useRef(false);
 
   useEffect(() => {
-    // Try to get final restaurant from results
     api.sessions.getResults(pin).then((res) => {
       const data = res.data;
       if (data.finalRestaurant) {
         setRestaurant(data.finalRestaurant);
       }
-      // Fallback is handled by the mock - returning the first restaurant
     });
   }, [pin]);
 
-  // Fire confetti once on mount
   useEffect(() => {
     if (restaurant && !confettiFired.current) {
       confettiFired.current = true;
@@ -95,21 +92,21 @@ export default function DonePage() {
         {/* Kinetic Restaurant Card */}
         <div className="relative group mb-10">
           <div className="absolute -inset-4 bg-primary/5 rounded-xl blur-2xl opacity-50 group-hover:opacity-100 transition-opacity"></div>
-          <div className="relative bg-surface-container-lowest rounded-lg overflow-hidden shadow-[0_8px_24px_rgba(44,47,48,0.06)]">
+          <div className="relative bg-surface-container-lowest rounded-lg overflow-hidden shadow-[0_8px_24px_rgba(0,0,0,0.06)]">
             {/* Signature Image */}
             <div className="h-72 w-full relative">
-              <img 
-                alt={restaurant.name} 
-                className="w-full h-full object-cover" 
+              <img
+                alt={restaurant.name}
+                className="w-full h-full object-cover"
                 src={restaurant.thumbnailUrl || `https://picsum.photos/seed/${restaurant.id}/800/600`}
               />
               {/* Overlapping Rating Chip */}
               <div className="absolute top-4 right-4 bg-white/60 backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-1">
-                <Star className="text-orange-500 text-sm fill-orange-500" />
+                <Star className="text-primary text-sm fill-primary" />
                 <span className="font-headline font-bold text-sm text-on-surface">{restaurant.rating || '4.9'}</span>
               </div>
             </div>
-            
+
             {/* Restaurant Content */}
             <div className="p-8">
               <div className="flex justify-between items-start mb-4">
@@ -126,10 +123,10 @@ export default function DonePage() {
                   </span>
                 )}
               </div>
-              
+
               {/* Main CTA: Google Maps */}
-              <a 
-                className="flex items-center justify-center gap-3 w-full bg-primary text-on-primary py-5 rounded-full font-headline font-bold text-lg active:scale-[0.98] transition-transform shadow-lg shadow-primary/20" 
+              <a
+                className="flex items-center justify-center gap-3 w-full bg-primary text-white py-5 rounded-full font-headline font-bold text-lg active:scale-[0.98] transition-transform shadow-lg shadow-primary/20"
                 href={getMapsUrl()}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -143,14 +140,14 @@ export default function DonePage() {
 
         {/* Secondary Actions Grid */}
         <div className="grid grid-cols-2 gap-4 mb-10">
-          <button 
+          <button
             className="bg-surface-container-high hover:bg-surface-container-highest transition-colors flex items-center justify-center gap-2 py-4 rounded-lg font-headline font-bold text-on-surface active:scale-[0.98]"
             onClick={handleRestart}
           >
             <Home className="text-lg" />
             Về trang chủ
           </button>
-          <button 
+          <button
             className="bg-surface-container-high hover:bg-surface-container-highest transition-colors flex items-center justify-center gap-2 py-4 rounded-lg font-headline font-bold text-on-surface active:scale-[0.98]"
             onClick={() => {
               if (navigator.share) {

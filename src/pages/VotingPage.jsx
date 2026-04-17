@@ -12,7 +12,6 @@ import { Timer, Hand } from 'lucide-react';
 
 const TOTAL_QUESTIONS = 8;
 
-// 8 binary questions hardcoded — no API call needed
 const QUESTIONS = [
   { id: 'Q1', optionA: 'Nước',       optionB: 'Khô',        descA: 'Súp, canh, nước dùng',  descB: 'Cơm, bánh mì, món khô' },
   { id: 'Q2', optionA: 'Nóng',       optionB: 'Mát',         descA: 'Thích món vừa ra lò',    descB: 'Món lạnh, thanh mát' },
@@ -32,7 +31,6 @@ export default function VotingPage() {
   const [submitting, setSubmitting] = useState(false);
   const [cardKey, setCardKey] = useState(0);
 
-  // Reconnect: sync status when tab comes back
   const fetchStatus = useCallback(async () => {
     try {
       const res = await api.sessions.getStatus(pin, sessionId);
@@ -72,7 +70,6 @@ export default function VotingPage() {
     startVoting,
   } = useVoting({ choices: QUESTIONS, onSubmit: handleSubmit });
 
-  // Start voting on mount
   useEffect(() => {
     startVoting();
     setCardKey((k) => k + 1);
@@ -87,20 +84,19 @@ export default function VotingPage() {
   };
 
   const progressPct = (currentIndex / TOTAL_QUESTIONS) * 100;
+  const isUrgent = timeLeft <= 5;
 
   return (
     <div className="bg-surface font-body text-on-surface min-h-screen flex flex-col pt-20">
       <Header title="LunchSync" />
 
-      {/* Main Content */}
       <main className="flex-grow pb-32 px-6 flex flex-col max-w-4xl mx-auto w-full">
         {/* Progress Bar */}
         <div className="mb-8 mt-6">
-          {/* Countdown Timer */}
           <div className="flex justify-center mb-6">
-            <div className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full ${timeLeft <= 5 ? 'bg-red-100 dark:bg-red-900/30' : 'bg-surface-container-lowest'}`}>
-              <Timer className={`text-lg ${timeLeft <= 5 ? 'text-red-700 dark:text-red-500' : 'text-on-surface-variant'}`} />
-              <span className={`font-headline font-extrabold text-2xl tabular-nums ${timeLeft <= 5 ? 'text-red-700 dark:text-red-500 animate-pulse' : 'text-on-surface'}`}>{formatTime(timeLeft)}</span>
+            <div className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full ${isUrgent ? 'bg-error/10' : 'bg-surface-container-lowest'}`}>
+              <Timer className={`text-lg ${isUrgent ? 'text-error' : 'text-on-surface-variant'}`} />
+              <span className={`font-headline font-extrabold text-2xl tabular-nums ${isUrgent ? 'text-error animate-pulse' : 'text-on-surface'}`}>{formatTime(timeLeft)}</span>
             </div>
           </div>
 
@@ -131,7 +127,7 @@ export default function VotingPage() {
                 {/* Option A */}
                 <div
                   onClick={() => !isTransitioning && selectOption('A')}
-                  className={`group relative bg-surface-container-lowest rounded-2xl overflow-hidden shadow-[0_8px_24px_rgba(44,47,48,0.06)] transition-transform hover:scale-[1.02] active:scale-95 cursor-pointer ${isTransitioning ? 'opacity-50 pointer-events-none' : ''}`}
+                  className={`group relative bg-surface-container-lowest rounded-2xl overflow-hidden shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-transform hover:scale-[1.02] active:scale-95 cursor-pointer ${isTransitioning ? 'opacity-50 pointer-events-none' : ''}`}
                 >
                   <div className="flex flex-col items-center justify-center gap-5 py-14 px-6">
                     <span className="bg-primary/10 text-primary px-4 py-1 rounded-full text-xs font-bold tracking-widest uppercase border border-primary/20">Lựa chọn 1</span>
@@ -144,7 +140,7 @@ export default function VotingPage() {
                 {/* Option B */}
                 <div
                   onClick={() => !isTransitioning && selectOption('B')}
-                  className={`group relative bg-surface-container-lowest rounded-2xl overflow-hidden shadow-[0_8px_24px_rgba(44,47,48,0.06)] transition-transform hover:scale-[1.02] active:scale-95 cursor-pointer md:mt-8 ${isTransitioning ? 'opacity-50 pointer-events-none' : ''}`}
+                  className={`group relative bg-surface-container-lowest rounded-2xl overflow-hidden shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-transform hover:scale-[1.02] active:scale-95 cursor-pointer md:mt-8 ${isTransitioning ? 'opacity-50 pointer-events-none' : ''}`}
                 >
                   <div className="flex flex-col items-center justify-center gap-5 py-14 px-6 md:mt-8">
                     <span className="bg-secondary/10 text-secondary px-4 py-1 rounded-full text-xs font-bold tracking-widest uppercase border border-secondary/20">Lựa chọn 2</span>

@@ -43,12 +43,10 @@ export default function CrowdsourcePage() {
 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
-    // Limit to 5 files
     const newPhotos = files.slice(0, 5 - form.photos.length).map((file) => ({
       file,
       preview: URL.createObjectURL(file),
     }));
-
     setForm((prev) => ({
       ...prev,
       photos: [...prev.photos, ...newPhotos],
@@ -120,39 +118,39 @@ export default function CrowdsourcePage() {
           <section className="space-y-4">
             <div className="group">
               <label className="block text-sm font-semibold text-on-surface-variant mb-2 ml-1">Tên quán</label>
-              <input 
-                className={`w-full h-14 px-5 rounded-lg bg-surface-container-lowest border-none ring-1 transition-all text-on-surface placeholder:text-outline-variant outline-none focus:ring-2 focus:ring-primary ${errors.restaurantName ? 'ring-red-400 focus:ring-red-500 bg-red-50/50' : 'ring-outline-variant/30'}`}
-                placeholder="Ví dụ: Phở Thìn Lò Đúc" 
-                type="text" 
+              <input
+                className={`w-full h-14 px-5 rounded-lg bg-surface-container-lowest border-none ring-1 transition-all text-on-surface placeholder:text-on-surface-variant/50 outline-none focus:ring-2 focus:ring-primary ${errors.restaurantName ? 'ring-error focus:ring-error bg-error/5' : 'ring-outline/30'}`}
+                placeholder="Ví dụ: Phở Thìn Lò Đúc"
+                type="text"
                 value={form.restaurantName}
                 onChange={(e) => handleChange('restaurantName', e.target.value)}
               />
-              {errors.restaurantName && <p className="text-red-500 text-xs mt-1 ml-1">{errors.restaurantName}</p>}
+              {errors.restaurantName && <p className="text-error text-xs mt-1 ml-1">{errors.restaurantName}</p>}
             </div>
 
             <div className="group">
               <label className="block text-sm font-semibold text-on-surface-variant mb-2 ml-1">Địa chỉ</label>
               <div className="relative">
-                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-outline" />
-                <input 
-                  className={`w-full h-14 pl-12 pr-5 rounded-lg bg-surface-container-lowest border-none ring-1 transition-all text-on-surface placeholder:text-outline-variant outline-none focus:ring-2 focus:ring-primary ${errors.address ? 'ring-red-400 focus:ring-red-500 bg-red-50/50' : 'ring-outline-variant/30'}`}
-                  placeholder="Số nhà, tên đường, quận..." 
-                  type="text" 
+                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant" />
+                <input
+                  className={`w-full h-14 pl-12 pr-5 rounded-lg bg-surface-container-lowest border-none ring-1 transition-all text-on-surface placeholder:text-on-surface-variant/50 outline-none focus:ring-2 focus:ring-primary ${errors.address ? 'ring-error focus:ring-error bg-error/5' : 'ring-outline/30'}`}
+                  placeholder="Số nhà, tên đường, quận..."
+                  type="text"
                   value={form.address}
                   onChange={(e) => handleChange('address', e.target.value)}
                 />
               </div>
-              {errors.address && <p className="text-red-500 text-xs mt-1 ml-1">{errors.address}</p>}
+              {errors.address && <p className="text-error text-xs mt-1 ml-1">{errors.address}</p>}
             </div>
 
             <div className="group">
               <label className="block text-sm font-semibold text-on-surface-variant mb-2 ml-1">Đường dẫn Google Maps</label>
               <div className="relative">
-                <Link className="absolute left-4 top-1/2 -translate-y-1/2 text-outline" />
-                <input 
-                  className="w-full h-14 pl-12 pr-5 rounded-lg bg-surface-container-lowest border-none ring-1 ring-outline-variant/30 focus:ring-2 focus:ring-primary transition-all text-on-surface placeholder:text-outline-variant outline-none" 
-                  placeholder="Ví dụ: https://maps.app.goo.gl/..." 
-                  type="url" 
+                <Link className="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant" />
+                <input
+                  className="w-full h-14 pl-12 pr-5 rounded-lg bg-surface-container-lowest border-none ring-1 ring-outline/30 focus:ring-2 focus:ring-primary transition-all text-on-surface placeholder:text-on-surface-variant/50 outline-none"
+                  placeholder="Ví dụ: https://maps.app.goo.gl/..."
+                  type="url"
                   value={form.googleMapsUrl}
                   onChange={(e) => handleChange('googleMapsUrl', e.target.value)}
                 />
@@ -164,7 +162,7 @@ export default function CrowdsourcePage() {
           <section>
             <label className="block text-sm font-semibold text-on-surface-variant mb-3 ml-1">Tải lên hình ảnh món ăn</label>
             <div className="relative group cursor-pointer" onClick={triggerUpload}>
-              <div className="w-full aspect-[16/9] rounded-lg border-2 border-dashed border-outline-variant/50 bg-surface-container-low flex flex-col items-center justify-center overflow-hidden transition-all group-hover:bg-surface-container-high group-hover:border-primary/50">
+              <div className="w-full aspect-[16/9] rounded-lg border-2 border-dashed border-outline/50 bg-surface-container-low flex flex-col items-center justify-center overflow-hidden transition-all group-hover:bg-surface-container-high group-hover:border-primary/50">
                 {form.photos.length > 0 ? (
                   <div className="relative w-full h-full">
                     <img alt="Food preview" className="w-full h-full object-cover" src={form.photos[0].preview}/>
@@ -186,12 +184,12 @@ export default function CrowdsourcePage() {
                 )}
               </div>
             </div>
-            <input 
+            <input
               ref={fileInputRef}
-              accept="image/*" 
-              className="hidden" 
-              multiple 
-              type="file" 
+              accept="image/*"
+              className="hidden"
+              multiple
+              type="file"
               onChange={handleFileChange}
             />
             {form.photos.length > 1 && (
@@ -199,9 +197,9 @@ export default function CrowdsourcePage() {
                 {form.photos.slice(1).map((photo, i) => (
                   <div key={i} className="relative w-20 h-20 shrink-0 rounded-md overflow-hidden group/thumb">
                     <img src={photo.preview} className="w-full h-full object-cover" alt="Preview thumb" />
-                    <button 
+                    <button
                       type="button"
-                      className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs scale-0 group-hover/thumb:scale-100 transition-transform"
+                      className="absolute top-1 right-1 w-5 h-5 bg-error text-white rounded-full flex items-center justify-center text-xs scale-0 group-hover/thumb:scale-100 transition-transform"
                       onClick={(e) => { e.stopPropagation(); removePhoto(i+1); }}
                     >
                       ×
@@ -222,9 +220,9 @@ export default function CrowdsourcePage() {
                   type="button"
                   onClick={() => handleChange('priceTier', tier.key)}
                   className={`h-12 px-4 rounded-lg transition-all text-sm flex items-center justify-center gap-2 ${
-                    form.priceTier === tier.key 
-                    ? 'bg-red-50 ring-2 ring-primary text-primary font-bold' 
-                    : 'bg-surface-container-lowest border-none ring-1 ring-outline-variant/30 text-on-surface-variant font-semibold hover:bg-primary-container/10 hover:text-primary hover:ring-primary'
+                    form.priceTier === tier.key
+                    ? 'bg-secondary/10 ring-2 ring-secondary text-secondary font-bold'
+                    : 'bg-surface-container-lowest border-none ring-1 ring-outline/30 text-on-surface-variant font-semibold hover:bg-primary/5 hover:text-primary hover:ring-primary'
                   }`}
                 >
                   {tier.label}
@@ -239,9 +237,9 @@ export default function CrowdsourcePage() {
           {/* Section 4: Additional details */}
           <section>
             <label className="block text-sm font-semibold text-on-surface-variant mb-2 ml-1">Lời nhắn/Gợi ý món ngon (Tùy chọn)</label>
-            <textarea 
-              className="w-full p-5 rounded-lg bg-surface-container-lowest border-none ring-1 ring-outline-variant/30 focus:ring-2 focus:ring-primary transition-all text-on-surface placeholder:text-outline-variant outline-none resize-none" 
-              placeholder="Nên thử bún chả với nem cua bể ở đây..." 
+            <textarea
+              className="w-full p-5 rounded-lg bg-surface-container-lowest border-none ring-1 ring-outline/30 focus:ring-2 focus:ring-primary transition-all text-on-surface placeholder:text-on-surface-variant/50 outline-none resize-none"
+              placeholder="Nên thử bún chả với nem cua bể ở đây..."
               rows="4"
               value={form.notes}
               onChange={(e) => handleChange('notes', e.target.value)}
@@ -250,10 +248,10 @@ export default function CrowdsourcePage() {
 
           {/* Footer Action */}
           <section className="pt-4">
-            <button 
+            <button
               type="submit"
               disabled={loading}
-              className={`w-full h-16 bg-primary text-on-primary rounded-full font-bold text-lg shadow-lg shadow-primary/20 transition-transform ${loading ? 'opacity-70 cursor-not-allowed' : 'active:scale-[0.98]'}`}
+              className={`w-full h-16 bg-primary text-white rounded-full font-bold text-lg shadow-lg shadow-primary/20 transition-transform ${loading ? 'opacity-70 cursor-not-allowed' : 'active:scale-[0.98]'}`}
             >
               {loading ? 'Đang gửi...' : 'Gửi đề xuất'}
             </button>
@@ -264,7 +262,6 @@ export default function CrowdsourcePage() {
         </form>
       </main>
 
-      {/* BottomNavBar */}
       <BottomNav />
     </div>
   );

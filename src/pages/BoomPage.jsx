@@ -1,6 +1,5 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '@/api';
 import { useSessionStore } from '@/store/sessionStore';
@@ -10,11 +9,8 @@ import BottomNav from '@/components/layout/BottomNav';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCheck,
-  faLock, faCircleNotch, faClock,
-  faTrophy, faMedal, faAward
+  faLock, faCircleNotch, faTrophy, faMedal, faAward
 } from '@fortawesome/free-solid-svg-icons';
-
-
 
 export default function BoomPage() {
   const { pin } = useParams();
@@ -34,27 +30,20 @@ export default function BoomPage() {
       const remaining = data.remaining || [];
       const eliminated = data.eliminated || [];
 
-      setBoomData({
-        eliminated,
-        remaining,
-        status: data.status,
-      });
+      setBoomData({ eliminated, remaining, status: data.status });
       if (data.status === 'done') {
         navigate(`/done/${pin}`);
         return;
       }
 
-      // Combine all restaurants and sort by rank
       const all = [...remaining, ...eliminated].sort((a, b) => a.rank - b.rank);
       setDisplayList(all);
 
-      // Animate the eliminated out after a short delay
       setTimeout(() => {
-        // Only keep remaining
         setDisplayList(remaining);
       }, 1200);
 
-    } catch (err) {
+    } catch {
       // silently handle
     }
   }, [pin, navigate]);
@@ -64,9 +53,6 @@ export default function BoomPage() {
     return () => clearTimeout(timer);
   }, [fetchBoomData]);
 
-
-
-  // Poll for done
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
@@ -75,12 +61,12 @@ export default function BoomPage() {
           clearInterval(interval);
           navigate(`/done/${pin}`);
         }
-      } catch (err) {
+      } catch {
         // silently handle
       }
     }, 2000);
     return () => clearInterval(interval);
-  }, [pin, navigate]);
+  }, [pin, navigate, sessionId]);
 
   const handlePick = async (restaurantId) => {
     if (!isHost) return;
@@ -107,8 +93,6 @@ export default function BoomPage() {
     );
   }
 
-
-
   return (
     <div className="bg-surface font-body text-on-surface min-h-screen flex flex-col">
       <Header title="LunchSync" />
@@ -118,9 +102,9 @@ export default function BoomPage() {
         <div className="w-full space-y-10 mt-8">
           <div className="text-center space-y-4">
             <h2 className="text-4xl font-headline font-black text-on-surface tracking-tight leading-none italic uppercase">
-              Chốt quán thôi nào! 🏁
+              Chốt quán thôi nào!
             </h2>
-            <div className="inline-flex items-center gap-2.5 px-5 py-3 rounded-full bg-white border border-outline/30 shadow-sm mx-auto">
+            <div className="inline-flex items-center gap-2.5 px-5 py-3 rounded-full bg-surface-container-lowest border border-outline/30 shadow-sm mx-auto">
               <span className="text-sm font-black uppercase tracking-widest text-on-surface">
                 Vui lòng chọn 1 trong 3 quán còn lại
               </span>
@@ -130,11 +114,13 @@ export default function BoomPage() {
           <div className="grid grid-cols-1 gap-4 max-w-xl mx-auto relative">
             <AnimatePresence>
               {displayList.map((rest, i) => {
-                // Determine icon and color based on logical ranking order for the remaining set
-                // We use i (index of rendering) if it's top 3 to keep colors stable.
-                const iconColorIdx = i > 2 ? 2 : i; 
+                const iconColorIdx = i > 2 ? 2 : i;
                 const icon = iconColorIdx === 0 ? faTrophy : iconColorIdx === 1 ? faMedal : faAward;
-                const iconBgClass = iconColorIdx === 0 ? 'bg-amber-100 text-amber-600' : iconColorIdx === 1 ? 'bg-slate-100 text-slate-500' : 'bg-orange-100 text-orange-600';
+                const iconBgClass = iconColorIdx === 0
+                  ? 'bg-secondary/10 text-secondary'
+                  : iconColorIdx === 1
+                  ? 'bg-surface-container text-on-surface-variant'
+                  : 'bg-primary/10 text-primary';
 
                 return (
                   <motion.button
@@ -142,13 +128,13 @@ export default function BoomPage() {
                     key={rest.id}
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    exit={{ 
-                      x: i % 2 === 0 ? -1000 : 1000, 
-                      opacity: 0, 
-                      rotate: i % 2 === 0 ? -45 : 45 
+                    exit={{
+                      x: i % 2 === 0 ? -1000 : 1000,
+                      opacity: 0,
+                      rotate: i % 2 === 0 ? -45 : 45
                     }}
                     transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-                    className={`group relative flex items-center gap-6 p-6 bg-white border-2 rounded-[2rem] text-left transition-colors ${isHost && !pickingDone
+                    className={`group relative flex items-center gap-6 p-6 bg-surface-container-lowest border-2 rounded-[2rem] text-left transition-colors ${isHost && !pickingDone
                         ? 'border-outline/10 hover:border-primary hover:shadow-xl active:scale-[0.98]'
                         : 'border-outline/10 opacity-80 cursor-default'
                       }`}
@@ -182,7 +168,7 @@ export default function BoomPage() {
 
           {!isHost && (
             <div className="flex flex-col items-center gap-4 py-8">
-              <FontAwesomeIcon icon={faCircleNotch} className="text-outline-variant text-3xl animate-spin" />
+              <FontAwesomeIcon icon={faCircleNotch} className="text-outline text-3xl animate-spin" />
               <p className="text-on-surface-variant/50 font-bold uppercase tracking-widest text-[10px]">Đang chờ host chốt quán cuối cùng...</p>
             </div>
           )}

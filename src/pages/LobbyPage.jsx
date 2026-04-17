@@ -72,7 +72,7 @@ function ConfirmDialog({ open, title, message: msg, confirmText, cancelText, onC
             onClick={onConfirm}
             className={`flex-1 h-12 rounded-full font-headline font-semibold text-sm text-white active:scale-95 transition-all ${
               danger
-                ? 'bg-rose-500 hover:bg-rose-600 shadow-lg shadow-rose-500/30'
+                ? 'bg-error hover:bg-error/90 shadow-lg shadow-error/30'
                 : 'bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20'
             }`}
           >
@@ -98,7 +98,6 @@ export default function LobbyPage() {
   const [linkCopied, setLinkCopied] = useState(false);
   const expiredShownRef = useRef(false);
 
-  // Confirm dialog state
   const [confirmDialog, setConfirmDialog] = useState({ open: false });
 
   const showExpiredModal = useCallback((reason) => {
@@ -122,9 +121,7 @@ export default function LobbyPage() {
 
   const fetchStatus = useCallback(async () => {
     if (expiredShownRef.current) return;
-    if (!pin || !sessionId) {
-      return;
-    }
+    if (!pin || !sessionId) return;
     try {
       const statusRes = await api.sessions.getStatus(pin, sessionId);
       const currentStatus = statusRes.data?.status;
@@ -251,11 +248,7 @@ export default function LobbyPage() {
   };
 
   const shareUrl = shareLink || `${window.location.origin}/join/${pin}`;
-
-  const priceDisplay = sessionInfo?.priceDisplay
-    ? formatPriceDisplay(sessionInfo.priceDisplay)
-    : '';
-
+  const priceDisplay = sessionInfo?.priceDisplay ? formatPriceDisplay(sessionInfo.priceDisplay) : '';
   const safeParticipants = Array.isArray(participants) ? participants : [];
   const enough = safeParticipants.length >= MIN_PARTICIPANTS;
 
@@ -285,24 +278,22 @@ export default function LobbyPage() {
             {/* PIN Code Section */}
             <section className="text-center space-y-4">
               <p className="text-on-surface-variant font-label text-sm tracking-widest uppercase">Mã phòng chờ</p>
-              <div className="inline-flex items-center gap-4 bg-surface-container-lowest px-8 py-6 rounded-xl shadow-[0_4px_16px_rgba(44,47,48,0.04)] group">
+              <div className="inline-flex items-center gap-4 bg-surface-container-lowest px-8 py-6 rounded-xl shadow-[0_4px_16px_rgba(0,0,0,0.04)] group">
                 <span className="text-4xl font-extrabold tracking-[0.2em] text-primary font-headline">{pin}</span>
                 <button
                   onClick={handleCopyPin}
                   className={`p-2 rounded-full transition-colors ${
                     copied
-                      ? 'bg-emerald-500/20 text-emerald-500'
-                      : 'bg-primary-container/20 text-primary hover:bg-primary-container/40'
+                      ? 'bg-secondary-container text-secondary'
+                      : 'bg-primary/10 text-primary hover:bg-primary/20'
                   }`}
                   title="Copy Mã PIN"
                 >
                   {copied ? <Check /> : <Copy />}
                 </button>
               </div>
-              {/* Share Section */}
               <div className="pt-2">
-                <div className="bg-surface-container-lowest rounded-2xl p-5 border border-outline-variant/20 shadow-sm">
-                  {/* Header */}
+                <div className="bg-surface-container-lowest rounded-2xl p-5 border border-outline/20 shadow-sm">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
                       <Link className="text-xl" />
@@ -312,17 +303,15 @@ export default function LobbyPage() {
                       <p className="text-xs text-on-surface-variant">Sao chép đường dẫn và gửi cho mọi người</p>
                     </div>
                   </div>
-
-                  {/* URL display + copy button */}
-                  <div className="flex items-center gap-2 bg-surface-container p-1 pl-4 rounded-xl border border-outline-variant/30">
+                  <div className="flex items-center gap-2 bg-surface-container p-1 pl-4 rounded-xl border border-outline/30">
                     <Globe className="text-base text-on-surface-variant shrink-0" />
                     <p className="flex-1 text-xs text-on-surface-variant truncate font-mono select-all">{shareUrl}</p>
                     <button
                       onClick={handleCopyShareLink}
                       className={`shrink-0 p-2 rounded-full transition-colors ${
                         linkCopied
-                          ? 'bg-emerald-500/20 text-emerald-500'
-                          : 'bg-primary-container/20 text-primary hover:bg-primary-container/40'
+                          ? 'bg-secondary-container text-secondary'
+                          : 'bg-primary/10 text-primary hover:bg-primary/20'
                       }`}
                       title="Copy link"
                     >
@@ -365,7 +354,7 @@ export default function LobbyPage() {
                   <span className="text-xs text-on-surface-variant font-medium"> / {MAX_PARTICIPANTS}</span>)
                 </h2>
                 {safeParticipants.length >= MAX_PARTICIPANTS && (
-                  <span className="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full">
+                  <span className="bg-secondary/10 text-secondary text-xs font-bold px-3 py-1 rounded-full">
                     Đã đầy
                   </span>
                 )}
@@ -388,13 +377,13 @@ export default function LobbyPage() {
                   <button
                     onClick={handleStart}
                     disabled={!enough || starting}
-                    className={`w-full h-16 rounded-full font-headline font-bold text-lg transition-transform ${(!enough || starting) ? 'bg-primary/50 text-white/70 cursor-not-allowed' : 'bg-primary text-on-primary shadow-xl shadow-primary/20 active:scale-95'}`}
+                    className={`w-full h-16 rounded-full font-headline font-bold text-lg transition-transform ${(!enough || starting) ? 'bg-primary/50 text-white/70 cursor-not-allowed' : 'bg-primary text-white shadow-xl shadow-primary/20 active:scale-95'}`}
                   >
                     {starting ? 'Đang chuẩn bị...' : 'Bắt đầu bình chọn'}
                   </button>
                   <button
                     onClick={handleCancel}
-                    className="w-full h-12 rounded-full font-headline font-semibold text-sm text-rose-500 border border-rose-300/50 bg-rose-50/50 hover:bg-rose-100/60 active:scale-95 transition-all flex items-center justify-center gap-2"
+                    className="w-full h-12 rounded-full font-headline font-semibold text-sm text-error border border-error/30 bg-error/5 hover:bg-error/10 active:scale-95 transition-all flex items-center justify-center gap-2"
                   >
                     <X className="text-base" />
                     Hủy phòng chờ
@@ -414,7 +403,6 @@ export default function LobbyPage() {
         )}
       </main>
 
-      {/* Bottom Navigation Bar */}
       <BottomNav />
     </div>
   );

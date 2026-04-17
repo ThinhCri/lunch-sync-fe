@@ -10,11 +10,11 @@ const defaultClient = axios.create({
   timeout: API_CONFIG.TIMEOUT,
 });
 
-// Request interceptor: gắn JWT từ authStore
+// Request interceptor: lấy JWT từ authStore gắn vào header
 const requestInterceptor = (config) => {
-  const token = useAuthStore.getState().token;
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  const userToken = useAuthStore.getState().userToken;
+  if (userToken) {
+    config.headers.Authorization = `Bearer ${userToken}`;
   }
   return config;
 };

@@ -109,7 +109,7 @@ export default function VotingWaitPage() {
               <p className="text-on-surface-variant font-medium">Bạn chưa hoàn thành phiếu bình chọn.</p>
             </div>
             <button 
-              className="w-full py-4 bg-primary text-white rounded-full font-bold shadow-lg shadow-primary/30 hover:bg-primary-dark transition-all active:scale-95" 
+              className="w-full py-4 bg-primary text-white rounded-full font-bold shadow-lg shadow-primary/30 hover:bg-primary/90 transition-all active:scale-95" 
               onClick={() => navigate(`/vote/${pin}`)}
             >
               Quay lại bình chọn
@@ -142,12 +142,12 @@ export default function VotingWaitPage() {
           {/* Animated checkmark */}
           <div className="flex justify-center">
             <motion.div
-              className="w-24 h-24 rounded-full bg-accent-green/10 flex items-center justify-center shadow-lg shadow-accent-green/5"
+              className="w-24 h-24 rounded-full bg-secondary/10 flex items-center justify-center shadow-lg shadow-secondary/5"
               initial={{ scale: 0, rotate: -45 }}
               animate={{ scale: 1, rotate: 0 }}
               transition={{ type: 'spring', stiffness: 200, damping: 15 }}
             >
-              <FontAwesomeIcon icon={faCheck} className="text-accent-green text-4xl" />
+              <FontAwesomeIcon icon={faCheck} className="text-secondary text-4xl" />
             </motion.div>
           </div>
 
@@ -224,7 +224,7 @@ export default function VotingWaitPage() {
                 className={`w-full py-5 rounded-full font-headline font-extrabold text-base flex items-center justify-center gap-3 transition-all shadow-2xl ${
                   closing || votedCount < 1
                     ? 'bg-outline/40 text-white/50 cursor-not-allowed'
-                    : 'bg-primary text-white hover:bg-primary-dark active:scale-[0.99] shadow-primary/30'
+                    : 'bg-primary text-white hover:bg-primary/90 active:scale-[0.99] shadow-primary/30'
                 }`}
                 onClick={async () => {
                   if (votedCount < 1) {

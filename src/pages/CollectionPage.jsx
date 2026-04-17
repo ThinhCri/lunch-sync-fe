@@ -83,8 +83,8 @@ export default function CollectionPage() {
                       <FontAwesomeIcon icon={faUtensils} className="text-4xl" />
                     </div>
                   )}
-                  <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-amber-500 font-bold text-xs px-2 py-1 rounded-lg flex items-center gap-1 shadow-sm">
-                    <FontAwesomeIcon icon={faStar} /> {res.rating ? parseFloat(res.rating).toFixed(1) : 'N/A'}
+                  <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-primary font-bold text-xs px-2 py-1 rounded-lg flex items-center gap-1 shadow-sm">
+                    <FontAwesomeIcon icon={faStar} className="text-primary" /> {res.rating ? parseFloat(res.rating).toFixed(1) : 'N/A'}
                   </div>
                 </div>
                 <div className="p-5 sm:w-2/3 flex flex-col justify-between">

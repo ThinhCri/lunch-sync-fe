@@ -21,7 +21,7 @@ import VerifyPage from '@/pages/VerifyPage';
 import CollectionPage from '@/pages/CollectionPage';
 
 function RequireAuth({ children }) {
-  const isAuth = useAuthStore((s) => !!s.token);
+  const isAuth = useAuthStore((s) => !!s.userToken);
   if (!isAuth) return <Navigate to="/login" />;
   return children;
 }

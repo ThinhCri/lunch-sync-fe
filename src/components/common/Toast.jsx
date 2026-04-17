@@ -16,8 +16,8 @@ function ToastItem({ id, message, type }) {
     <div
       className={`fixed top-24 z-[9999] flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl text-sm font-semibold animate-slide-down pointer-events-none ${
         isSuccess
-          ? 'bg-emerald-500 text-white'
-          : 'bg-rose-500 text-white'
+          ? 'bg-secondary text-white'
+          : 'bg-error text-white'
       }`}
       style={{ left: '50%', transform: 'translateX(-50%)' }}
     >

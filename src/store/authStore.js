@@ -4,18 +4,22 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 export const useAuthStore = create(
   persist(
     (set, get) => ({
-      token: null,
+      // JWT được server trả về khi login thành công, dùng để gắn vào header request
+      userToken: null,
       user: null,
 
-      isAuthenticated: () => !!get().token,
+      // true khi có userToken (user đã login)
+      isAuthenticated: () => !!get().userToken,
 
-      login: (token, user) => set({ token, user }),
+      // Lưu JWT + thông tin user sau khi login
+      login: (userToken, user) => set({ userToken, user }),
 
-      logout: () => set({ token: null, user: null }),
+      // Xoá JWT + user khi logout
+      logout: () => set({ userToken: null, user: null }),
 
       restoreSession: () => {
         const state = get();
-        if (state.token) {
+        if (state.userToken) {
           return true;
         }
         return false;

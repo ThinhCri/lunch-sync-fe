@@ -253,7 +253,8 @@ export default function CreateSessionPage() {
   const [selectedCollection, setSelectedCollection] = useState(null);
 
   // Form
-  const { user, isAuthenticated } = useAuthStore();
+  const { user } = useAuthStore();
+  const isLoggedIn = useAuthStore((s) => !!s.userToken);
   const [nickname, setNickname] = useState(user?.fullName || '');
   const [selectedTier, setSelectedTier] = useState(null);
   const [creating, setCreating] = useState(false);
@@ -270,8 +271,8 @@ export default function CreateSessionPage() {
 
   // Load default collections
   useEffect(() => {
-    // Only load collections if authenticated (since GuestJoinView doesn't need them)
-    if (!isAuthenticated()) return;
+    // Chỉ load collections khi user đã login
+    if (!isLoggedIn) return;
     
     api.collections.list().then((res) => {
       const data = Array.isArray(res.data) ? res.data : res.data?.collections || [];
@@ -297,7 +298,7 @@ export default function CreateSessionPage() {
       return;
     }
 
-    if (!isAuthenticated()) {
+    if (!isLoggedIn) {
       show('Vui lòng đăng nhập để tạo nhóm', 'error');
       navigate('/login', { state: { returnTo: '/create' } });
       return;
@@ -332,7 +333,7 @@ export default function CreateSessionPage() {
     }
   };
 
-  if (!isAuthenticated()) {
+  if (!isLoggedIn) {
     return <GuestJoinView />;
   }
 

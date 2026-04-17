@@ -1,67 +1,59 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap');
 @import "tailwindcss";
 
-/* ─── Tailwind custom color extensions ─────────────────────── */
+/* ─── Tailwind v4 — Custom theme: Warm Mobile Food App ──────── */
+/* Palette: 5 hues — Orange (primary) · Green (secondary) · Gray (surface) */
 @theme {
-  /* Primary — Tomato Red-Orange */
-  --color-primary: #D93A00;
-  --color-primary-container: #FF6B3D;
+  /* Primary — Warm Orange (appetizing, action color) */
+  --color-primary: #F97316;
+  --color-primary-container: #FDE68A;
   --color-on-primary: #ffffff;
-  --color-on-primary-container: #ffffff;
-  --color-inverse-primary: #FFB4A0;
-  --color-primary-fixed: #FFD9CE;
-  --color-primary-fixed-dim: #FFB09A;
-  --color-on-primary-fixed: #3B0A00;
-  --color-on-primary-fixed-variant: #A32B00;
+  --color-on-primary-container: #7C2D12;
+  --color-inverse-primary: #FFD6A8;
 
-  /* Secondary — Fresh Herb Green */
-  --color-secondary: #1B7B48;
-  --color-secondary-container: #6DDFA0;
+  /* Secondary — Fresh Green (healthy, secondary actions) */
+  --color-secondary: #16A34A;
+  --color-secondary-container: #BBF7D0;
   --color-on-secondary: #ffffff;
-  --color-on-secondary-container: #054525;
-  --color-secondary-fixed: #C2FFE0;
-  --color-secondary-fixed-dim: #6DDFA0;
-  --color-on-secondary-fixed: #002113;
-  --color-on-secondary-fixed-variant: #125E36;
+  --color-on-secondary-container: #14532D;
 
-  /* Tertiary — Amber Honey */
-  --color-tertiary: #A05C00;
-  --color-tertiary-container: #FFC142;
-  --color-on-tertiary: #ffffff;
-  --color-on-tertiary-container: #321A00;
-  --color-tertiary-fixed: #FFE0A7;
-  --color-tertiary-fixed-dim: #FFC142;
-  --color-on-tertiary-fixed: #321A00;
-  --color-on-tertiary-fixed-variant: #7A4500;
-
-  /* Surface — Warm Cream */
-  --color-surface: #FFFBF5;
-  --color-surface-bright: #FFFBF5;
-  --color-surface-dim: #E5DED6;
-  --color-surface-tint: #D93A00;
-  --color-surface-container: #F5EFE6;
-  --color-surface-container-low: #FAF5EE;
+  /* Surface — Clean Neutral (white → gray scale) */
+  --color-surface: #ffffff;
+  --color-surface-bright: #ffffff;
+  --color-surface-dim: #D1D5DB;
+  --color-surface-tint: #F97316;
+  --color-surface-container: #F9FAFB;
+  --color-surface-container-low: #F3F4F6;
   --color-surface-container-lowest: #ffffff;
-  --color-surface-container-high: #EDE7DE;
-  --color-surface-container-highest: #E5DED6;
-  --color-surface-variant: #F2E0D4;
-  --color-on-surface: #1A120B;
-  --color-on-surface-variant: #4D3A2E;
+  --color-surface-container-high: #E5E7EB;
+  --color-surface-container-highest: #D1D5DB;
+  --color-surface-variant: #E5E7EB;
+  --color-on-surface: #111827;
+  --color-on-surface-variant: #374151;
 
-  --color-background: #FFF5EE;
-  --color-on-background: #1A120B;
+  /* Background */
+  --color-background: #ffffff;
+  --color-on-background: #111827;
 
-  --color-outline: #7A6055;
-  --color-outline-variant: #D5B9AD;
+  /* Outline */
+  --color-outline: #9CA3AF;
+  --color-outline-variant: #D1D5DB;
 
-  --color-error: #BA1A1A;
+  /* Inverse */
+  --color-inverse-surface: #1F2937;
+  --color-inverse-on-surface: #F9FAFB;
+
+  /* Error */
+  --color-error: #DC2626;
   --color-on-error: #ffffff;
-  --color-error-container: #FFDAD6;
-  --color-on-error-container: #93000A;
+  --color-error-container: #FEE2E2;
+  --color-on-error-container: #991B1B;
 
+  /* Typography */
   --font-headline: 'Plus Jakarta Sans', sans-serif;
   --font-body: 'Be Vietnam Pro', sans-serif;
 
+  /* Border radius */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
@@ -71,81 +63,50 @@
 
 /* ─── Theme CSS custom properties ─────────────────────────────── */
 :root {
-  /* Primary — Tomato Red-Orange */
-  --color-primary: #D93A00;
-  --color-primary-container: #FF6B3D;
+  /* Primary — Warm Orange */
+  --color-primary: #F97316;
+  --color-primary-container: #FDE68A;
   --color-on-primary: #ffffff;
-  --color-on-primary-container: #ffffff;
-  --color-inverse-primary: #FFB4A0;
-  --color-primary-fixed: #FFD9CE;
-  --color-primary-fixed-dim: #FFB09A;
-  --color-on-primary-fixed: #3B0A00;
-  --color-on-primary-fixed-variant: #A32B00;
+  --color-on-primary-container: #7C2D12;
+  --color-inverse-primary: #FFD6A8;
 
-  /* Secondary — Fresh Herb Green */
-  --color-secondary: #1B7B48;
-  --color-secondary-container: #6DDFA0;
+  /* Secondary — Fresh Green */
+  --color-secondary: #16A34A;
+  --color-secondary-container: #BBF7D0;
   --color-on-secondary: #ffffff;
-  --color-on-secondary-container: #054525;
-  --color-secondary-fixed: #C2FFE0;
-  --color-secondary-fixed-dim: #6DDFA0;
-  --color-on-secondary-fixed: #002113;
-  --color-on-secondary-fixed-variant: #125E36;
+  --color-on-secondary-container: #14532D;
 
-  /* Tertiary — Amber Honey */
-  --color-tertiary: #A05C00;
-  --color-tertiary-container: #FFC142;
-  --color-on-tertiary: #ffffff;
-  --color-on-tertiary-container: #321A00;
-  --color-tertiary-fixed: #FFE0A7;
-  --color-tertiary-fixed-dim: #FFC142;
-  --color-on-tertiary-fixed: #321A00;
-  --color-on-tertiary-fixed-variant: #7A4500;
-
-  /* Surface — Warm Cream */
-  --color-surface: #FFFBF5;
-  --color-surface-bright: #FFFBF5;
-  --color-surface-dim: #E5DED6;
-  --color-surface-tint: #D93A00;
-  --color-surface-container: #F5EFE6;
-  --color-surface-container-low: #FAF5EE;
+  /* Surface — Clean Neutral */
+  --color-surface: #ffffff;
+  --color-surface-bright: #ffffff;
+  --color-surface-dim: #D1D5DB;
+  --color-surface-tint: #F97316;
+  --color-surface-container: #F9FAFB;
+  --color-surface-container-low: #F3F4F6;
   --color-surface-container-lowest: #ffffff;
-  --color-surface-container-high: #EDE7DE;
-  --color-surface-container-highest: #E5DED6;
-  --color-surface-variant: #F2E0D4;
-  --color-on-surface: #1A120B;
-  --color-on-surface-variant: #4D3A2E;
+  --color-surface-container-high: #E5E7EB;
+  --color-surface-container-highest: #D1D5DB;
+  --color-surface-variant: #E5E7EB;
+  --color-on-surface: #111827;
+  --color-on-surface-variant: #374151;
 
   /* Background */
-  --color-background: #FFF5EE;
-  --color-on-background: #1A120B;
+  --color-background: #ffffff;
+  --color-on-background: #111827;
 
   /* Outline */
-  --color-outline: #7A6055;
-  --color-outline-variant: #D5B9AD;
+  --color-outline: #9CA3AF;
+  --color-outline-variant: #D1D5DB;
 
   /* Inverse */
-  --color-inverse-surface: #2E1F17;
-  --color-inverse-on-surface: #FAEEE7;
+  --color-inverse-surface: #1F2937;
+  --color-inverse-on-surface: #F9FAFB;
 
   /* Error */
-  --color-error: #BA1A1A;
+  --color-error: #DC2626;
   --color-on-error: #ffffff;
-  --color-error-container: #FFDAD6;
-  --color-on-error-container: #93000A;
-
-
-  /* Spacing (8px grid) */
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 20px;
-  --space-6: 24px;
-  --space-8: 32px;
-  --space-10: 40px;
-  --space-12: 48px;
-  --space-16: 64px;
+  --color-error-container: #FEE2E2;
+  --color-on-error-container: #991B1B;
 
   /* Typography */
   --font-headline: 'Plus Jakarta Sans', sans-serif;
@@ -193,18 +154,19 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
+h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-headline);
 }
 
-/* ─── Scrollbar ─────────────────────────────────────────────── */
+/* ─── Touch & mobile UX ───────────────────────────────────── */
+button, a, [role="button"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ─── Scrollbar (minimal for mobile) ──────────────────────── */
 ::-webkit-scrollbar {
-  width: 4px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -216,7 +178,6 @@ h6 {
   border-radius: var(--radius-full);
 }
 
-
 /* ─── Custom animations ───────────────────────────────────── */
 @keyframes slide-down {
   from {
@@ -226,6 +187,17 @@ h6 {
   to {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -254,15 +226,14 @@ h6 {
 }
 
 .glass-nav {
-  background-color: rgba(245, 240, 235, 0.95);
+  background-color: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(137, 114, 105, 0.1);
+  border-bottom: 1px solid rgba(156, 163, 175, 0.1);
 }
 
 /* ─── Reduce motion ─────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-
   *,
   *::before,
   *::after {

@@ -4,9 +4,9 @@ import { api } from '@/api';
 import { useSessionStore } from '@/store/sessionStore';
 import { useToastStore } from '@/store/toastStore';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faKey, faXmark, faExclamationCircle, faArrowRight, 
-  faDoorOpen, faUser, faSpinner, faRightToBracket 
+import {
+  faKey, faXmark, faExclamationCircle, faArrowRight,
+  faDoorOpen, faUser, faSpinner, faRightToBracket
 } from '@fortawesome/free-solid-svg-icons';
 
 const PIN_LENGTH = 6;
@@ -108,31 +108,31 @@ export default function JoinModal({ open, defaultPin = '', onClose }) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: 'rgba(28,28,25,0.5)', backdropFilter: 'blur(4px)' }}
+      style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }}
       onClick={handleBackdropClick}
     >
       <div
-        className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden"
+        className="relative w-full max-w-md bg-surface-container-lowest rounded-3xl shadow-2xl overflow-hidden"
         style={{ animation: 'slideUp 0.3s ease-out' }}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-8 pt-8 pb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-[#9a410f]/10 flex items-center justify-center">
-              <FontAwesomeIcon icon={faKey} className="text-[#9a410f]" />
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <FontAwesomeIcon icon={faKey} className="text-primary" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-[#1c1c19]">
+              <h2 className="text-xl font-bold text-on-surface">
                 {step === 'pin' ? 'LunchSync Join' : 'Nhập nickname'}
               </h2>
-              <p className="text-sm text-[#56423a]">
+              <p className="text-sm text-on-surface-variant">
                 {step === 'pin' ? 'Nhập mã PIN để tham gia voting bữa trưa' : 'Đặt nickname để mọi người nhận biết bạn'}
               </p>
             </div>
           </div>
           <button
             onClick={handleClose}
-            className="w-8 h-8 rounded-full bg-[#ebe8e3] flex items-center justify-center text-[#56423a] hover:bg-[#e6e2dd] transition-colors"
+            className="w-8 h-8 rounded-full bg-surface-variant flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors"
           >
             <FontAwesomeIcon icon={faXmark} className="text-lg" />
           </button>
@@ -154,12 +154,12 @@ export default function JoinModal({ open, defaultPin = '', onClose }) {
                       className={`
                         w-11 h-14 rounded-xl border-2 flex items-center justify-center text-xl font-bold transition-all duration-150
                         ${pin[i]
-                          ? 'border-[#9a410f] bg-[#fff5f0] text-[#1c1c19]'
+                          ? 'border-primary bg-primary/10 text-on-surface'
                           : i === pin.length
-                          ? 'border-[#dcc1b6] bg-white text-[#1c1c19]'
-                          : 'border-[#e6e2dd] bg-white text-[#1c1c19]'
+                          ? 'border-outline bg-surface-container-lowest text-on-surface'
+                          : 'border-outline-variant bg-surface-container-lowest text-on-surface'
                         }
-                        ${error ? 'border-[#ba1a1a] bg-[#fff5f5]' : ''}
+                        ${error ? 'border-error bg-error-container' : ''}
                       `}
                     >
                       {pin[i] || ''}
@@ -179,7 +179,7 @@ export default function JoinModal({ open, defaultPin = '', onClose }) {
                   aria-label="PIN input"
                 />
                 {error && (
-                  <p className="text-xs text-[#ba1a1a] text-center mt-2 flex items-center justify-center gap-1">
+                  <p className="text-xs text-error text-center mt-2 flex items-center justify-center gap-1">
                     <FontAwesomeIcon icon={faExclamationCircle} className="text-xs" />
                     {error}
                   </p>
@@ -193,8 +193,8 @@ export default function JoinModal({ open, defaultPin = '', onClose }) {
                 className={`
                   w-full py-4 rounded-full text-lg font-bold transition-all duration-200 flex items-center justify-center gap-2
                   ${pin.length === PIN_LENGTH
-                    ? 'bg-[#9a410f] text-white shadow-lg hover:shadow-xl active:scale-95'
-                    : 'bg-[#ebe8e3] text-[#897269] cursor-not-allowed'
+                    ? 'bg-primary text-on-primary shadow-lg hover:shadow-xl active:scale-95'
+                    : 'bg-surface-variant text-on-surface-variant cursor-not-allowed'
                   }
                 `}
               >
@@ -207,17 +207,17 @@ export default function JoinModal({ open, defaultPin = '', onClose }) {
           ) : (
             <div className="flex flex-col gap-6">
               {/* PIN badge */}
-              <div className="flex items-center justify-center gap-3 bg-[#fff5f0] rounded-xl py-3 px-4">
-                <div className="w-8 h-8 rounded-full bg-[#9a410f]/10 flex items-center justify-center">
-                  <FontAwesomeIcon icon={faDoorOpen} className="text-[#9a410f] text-base" />
+              <div className="flex items-center justify-center gap-3 bg-primary/10 rounded-xl py-3 px-4">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <FontAwesomeIcon icon={faDoorOpen} className="text-primary text-base" />
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-[#897269]">Phòng</span>
-                  <span className="text-lg font-bold text-[#1c1c19] font-mono tracking-widest">{pin}</span>
+                  <span className="text-sm text-on-surface-variant">Phòng</span>
+                  <span className="text-lg font-bold text-on-surface font-mono tracking-widest">{pin}</span>
                 </div>
                 <button
                   onClick={() => { setStep('pin'); setNickname(''); }}
-                  className="ml-auto text-xs text-[#9a410f] hover:underline font-medium"
+                  className="ml-auto text-xs text-primary hover:underline font-medium"
                 >
                   Đổi
                 </button>
@@ -225,14 +225,14 @@ export default function JoinModal({ open, defaultPin = '', onClose }) {
 
               {/* Nickname Input */}
               <div className="space-y-2">
-                <label className="block text-sm font-semibold text-[#56423a] ml-1">
+                <label className="block text-sm font-semibold text-on-surface-variant ml-1">
                   Nickname của bạn
                 </label>
                 <div className="relative">
-                  <FontAwesomeIcon icon={faUser} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#897269]" />
+                  <FontAwesomeIcon icon={faUser} className="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant" />
                   <input
                     type="text"
-                    className="w-full pl-12 pr-4 py-4 bg-[#f7f3ee] rounded-xl border-2 border-transparent focus:border-[#9a410f] focus:bg-white transition-all duration-200 outline-none text-[#1c1c19] placeholder:text-[#c4b8b1]"
+                    className="w-full pl-12 pr-4 py-4 bg-surface-variant rounded-xl border-2 border-transparent focus:border-primary focus:bg-surface-container-lowest transition-all duration-200 outline-none text-on-surface placeholder:text-on-surface-variant/50"
                     placeholder="VD: Tuấn, Minh, Bình..."
                     maxLength={12}
                     value={nickname}
@@ -245,7 +245,7 @@ export default function JoinModal({ open, defaultPin = '', onClose }) {
                     autoFocus
                   />
                 </div>
-                <p className="text-xs text-[#897269] ml-1">
+                <p className="text-xs text-on-surface-variant ml-1">
                   2–12 ký tự, sẽ hiển thị với mọi người trong phòng
                 </p>
               </div>
@@ -257,8 +257,8 @@ export default function JoinModal({ open, defaultPin = '', onClose }) {
                 className={`
                   w-full py-4 rounded-full text-lg font-bold transition-all duration-200 flex items-center justify-center gap-2
                   ${loading || !nickname.trim() || nickname.length < 2
-                    ? 'bg-[#ebe8e3] text-[#897269] cursor-not-allowed'
-                    : 'bg-[#9a410f] text-white shadow-lg hover:shadow-xl active:scale-95'
+                    ? 'bg-surface-variant text-on-surface-variant cursor-not-allowed'
+                    : 'bg-primary text-on-primary shadow-lg hover:shadow-xl active:scale-95'
                   }
                 `}
               >

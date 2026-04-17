@@ -10,21 +10,19 @@ import { formatPriceDisplay } from '@/utils/constants';
 
 export default function HomePage() {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuthStore();
+  const isLoggedIn = useAuthStore((s) => !!s.userToken);
   const [showJoinModal, setShowJoinModal] = useState(false);
 
-  // Collections state
   const [collections, setCollections] = useState([]);
   const [loadingCollections, setLoadingCollections] = useState(true);
   const [selectedCollectionId, setSelectedCollectionId] = useState(null);
 
-  // Restaurants state
   const [restaurants, setRestaurants] = useState([]);
   const [loadingRestaurants, setLoadingRestaurants] = useState(false);
   const [errorRestaurants, setErrorRestaurants] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 6;
-  // Fetch Collections
+
   useEffect(() => {
     const fetchCollections = async () => {
       try {
@@ -43,7 +41,6 @@ export default function HomePage() {
     fetchCollections();
   }, []);
 
-  // Fetch Restaurants when collection changes
   useEffect(() => {
     if (!selectedCollectionId) return;
 
@@ -74,7 +71,7 @@ export default function HomePage() {
   const currentRestaurants = restaurants.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   return (
-    <div className="bg-surface text-on-surface font-body selection:bg-primary-container selection:text-on-primary-container min-h-screen">
+    <div className="bg-background text-on-background font-body selection:bg-primary-container selection:text-on-primary-container min-h-screen">
       <Header title="LunchSync" />
 
       <main className="pt-24 pb-56 px-4 max-w-2xl mx-auto space-y-8">
@@ -138,8 +135,8 @@ export default function HomePage() {
                           <MapPin className="text-4xl" />
                         </div>
                       )}
-                        <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-amber-500 font-bold text-xs px-2 py-1 rounded-lg flex items-center gap-1 shadow-sm">
-                          <Star className="text-amber-500 fill-amber-500" size={12} /> {res.rating ? parseFloat(res.rating).toFixed(1) : 'N/A'}
+                        <div className="absolute top-3 left-3 bg-surface-container-lowest/90 backdrop-blur-sm text-primary font-bold text-xs px-2 py-1 rounded-lg flex items-center gap-1 shadow-sm">
+                          <Star className="text-primary fill-primary" size={12} /> {res.rating ? parseFloat(res.rating).toFixed(1) : 'N/A'}
                         </div>
                     </div>
                     <div className="p-5 sm:w-2/3 flex flex-col justify-between">
@@ -169,7 +166,7 @@ export default function HomePage() {
                       onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
                       className={`w-12 h-12 flex items-center justify-center rounded-full transition-all duration-300 ${currentPage === 1
-                          ? 'text-on-surface/20 cursor-not-allowed'
+                          ? 'text-on-surface-variant cursor-not-allowed opacity-40'
                           : 'text-on-surface hover:bg-surface-container-highest hover:text-primary active:scale-95'
                         }`}
                     >
@@ -186,7 +183,7 @@ export default function HomePage() {
                       onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                       disabled={currentPage === totalPages}
                       className={`w-12 h-12 flex items-center justify-center rounded-full transition-all duration-300 ${currentPage === totalPages
-                          ? 'text-on-surface/20 cursor-not-allowed'
+                          ? 'text-on-surface-variant cursor-not-allowed opacity-40'
                           : 'text-on-surface hover:bg-surface-container-highest hover:text-primary active:scale-95'
                         }`}
                     >
@@ -203,7 +200,7 @@ export default function HomePage() {
       {/* FAB: Đề xuất quán */}
       <button
         onClick={() => {
-          if (isAuthenticated()) {
+          if (isLoggedIn) {
             navigate('/suggest');
           } else {
             navigate('/login');

@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faExclamationCircle, faEnvelope, faRotateRight, faCheck } from '@fortawesome/free-solid-svg-icons';
 
 const CODE_LENGTH = 6;
-const RESEND_COOLDOWN = 60; // seconds
+const RESEND_COOLDOWN = 60;
 
 export default function VerifyPage() {
   const navigate = useNavigate();
@@ -23,14 +23,12 @@ export default function VerifyPage() {
   const [cooldown, setCooldown] = useState(0);
   const inputRef = useRef(null);
 
-  // Redirect if no email in state (direct access)
   useEffect(() => {
     if (!email) {
       navigate('/register', { replace: true });
     }
   }, [email, navigate]);
 
-  // Cooldown timer for resend button
   useEffect(() => {
     if (cooldown <= 0) return;
     const timer = setInterval(() => {
@@ -39,7 +37,6 @@ export default function VerifyPage() {
     return () => clearInterval(timer);
   }, [cooldown]);
 
-  // Auto-focus hidden input on mount
   useEffect(() => {
     setTimeout(() => inputRef.current?.focus(), 200);
   }, []);
@@ -57,7 +54,6 @@ export default function VerifyPage() {
     try {
       await authApi.verifyOTP({ email, otp: code });
       setSuccess(true);
-      // Wait a moment for the success animation, then redirect to login
       setTimeout(() => {
         navigate('/login', {
           replace: true,
@@ -115,13 +111,13 @@ export default function VerifyPage() {
           <div className="text-center mb-10">
             <div className="relative inline-block mb-6">
               <div className="absolute -inset-4 bg-primary/10 rounded-full blur-2xl"></div>
-              <div className={`relative w-24 h-24 rounded-full flex items-center justify-center border-4 shadow-[0_8px_24px_rgba(44,47,48,0.06)] transition-all duration-500 ${success
-                ? 'bg-green-50 border-green-200'
+              <div className={`relative w-24 h-24 rounded-full flex items-center justify-center border-4 shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all duration-500 ${success
+                ? 'bg-secondary-container border-secondary'
                 : 'bg-primary-container/20 border-surface-container-lowest'
                 }`}>
                 <FontAwesomeIcon
                   icon={success ? faCheck : faEnvelope}
-                  className={`text-3xl transition-all duration-500 ${success ? 'text-green-600' : 'text-primary'}`}
+                  className={`text-3xl transition-all duration-500 ${success ? 'text-secondary' : 'text-primary'}`}
                 />
               </div>
             </div>
@@ -139,10 +135,10 @@ export default function VerifyPage() {
           {!success && (
             <>
               {/* Verification Card */}
-              <div className="bg-surface-container-lowest p-8 rounded-2xl shadow-[0_4px_16px_rgba(44,47,48,0.03)] border border-outline-variant/10">
+              <div className="bg-surface-container-lowest p-8 rounded-2xl shadow-[0_4px_16px_rgba(0,0,0,0.03)] border border-outline/10">
 
                 {error && (
-                  <div className="mb-6 px-4 py-3 bg-error-container/20 text-error rounded-lg flex items-center gap-2 text-sm font-medium">
+                  <div className="mb-6 px-4 py-3 bg-error-container text-error rounded-lg flex items-center gap-2 text-sm font-medium">
                     <FontAwesomeIcon icon={faExclamationCircle} className="text-sm flex-shrink-0" />
                     {error}
                   </div>
@@ -163,7 +159,7 @@ export default function VerifyPage() {
                             ? 'border-primary bg-primary/5 text-primary'
                             : i === code.length
                               ? 'border-primary/40 bg-surface-container-lowest text-on-surface'
-                              : 'border-outline-variant/30 bg-surface-container-low text-on-surface'
+                              : 'border-outline bg-surface-container text-on-surface'
                           }
                         `}
                       >
@@ -192,8 +188,8 @@ export default function VerifyPage() {
                   className={`
                     w-full py-4 rounded-full text-lg font-bold transition-all duration-200 flex items-center justify-center gap-2
                     ${loading || code.length !== CODE_LENGTH
-                      ? 'bg-surface-variant/50 text-on-surface-variant/40 cursor-not-allowed'
-                      : 'bg-primary text-on-primary shadow-lg shadow-primary/20 active:scale-[0.98]'
+                      ? 'bg-surface-container text-on-surface-variant/40 cursor-not-allowed'
+                      : 'bg-primary text-white shadow-lg shadow-primary/20 active:scale-[0.98]'
                     }
                   `}
                 >
