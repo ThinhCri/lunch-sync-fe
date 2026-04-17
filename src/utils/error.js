@@ -166,9 +166,8 @@ export function parseApiError(error) {
   ) {
     finalMessage = 'Mã OTP không đúng. Vui lòng kiểm tra và thử lại.';
   } else {
-    // Ưu tiên: details/detail từ BE (chuyển không dấu → có dấu) → CODE_MAP → message từ BE → fallback
-    // details từ BE luôn giữ nguyên nội dung gốc (có dấu tiếng Việt)
-    finalMessage = addVietnameseAccents(details) || ERROR_CODE_MAP[code] || message || 'Đã xảy ra lỗi hệ thống. Vui lòng thử lại.';
+    // Ưu tiên: CODE_MAP (known business error) → message từ BE → details (raw, usually English) → fallback
+    finalMessage = ERROR_CODE_MAP[code] || message || addVietnameseAccents(details) || 'Đã xảy ra lỗi hệ thống. Vui lòng thử lại.';
   }
 
   // Detect: email chưa xác minh → cần redirect sang /verify
