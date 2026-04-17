@@ -1,14 +1,16 @@
-import { useEffect, useCallback, useState } from 'react';
+import { useEffect, useCallback, useState, useLayoutEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { api } from '@/api';
 import { useSessionStore } from '@/store/sessionStore';
+import { useVotingStore } from '@/store/votingStore';
 import { useVoting } from '@/hooks/useVoting';
 import { useSession } from '@/hooks/useSession';
 import { useReconnect } from '@/hooks/useReconnect';
 import { useToastStore } from '@/store/toastStore';
 import Header from '@/components/layout/Header';
 import { Timer, Hand } from 'lucide-react';
+import VotingSubmittedModal from '@/components/modals/VotingSubmittedModal';
 
 const TOTAL_QUESTIONS = 8;
 
@@ -30,6 +32,21 @@ export default function VotingPage() {
   const { show } = useToastStore();
   const [submitting, setSubmitting] = useState(false);
   const [cardKey, setCardKey] = useState(0);
+  const [showSubmittedModal, setShowSubmittedModal] = useState(false);
+  const [initialVotedInfo, setInitialVotedInfo] = useState({ votedCount: 1, totalParticipants: 0 });
+
+  // Reset voting store ĐỒNG BỘ trước render — tránh bị giá trị cũ từ localStorage
+  useLayoutEffect(() => {
+    const store = useVotingStore.getState();
+    const wasSubmitted = store.submitted && store.sessionPin === pin;
+    useVotingStore.getState().reset();
+    useVotingStore.getState().setSessionPin(pin);
+    // Chỉ hiện modal nếu đã vote ở ĐÚNG phiên này
+    if (wasSubmitted) {
+      setShowSubmittedModal(true);
+      setInitialVotedInfo({ votedCount: 1, totalParticipants: 0 });
+    }
+  }, [pin]);
 
   const handleSessionEnded = useCallback((status) => {
     const messages = {
@@ -66,15 +83,23 @@ export default function VotingPage() {
   const handleSubmit = useCallback(async (answersStr) => {
     if (submitting) return;
     setSubmitting(true);
+    // Stop session polling so the modal stays visible instead of being redirected
+    stopPoller();
     try {
-      await api.sessions.vote(pin, { participantId, choices: answersStr });
-    } catch {
-      show('Gửi phiếu thất bại, đang thử lại...', 'error');
+      const res = await api.sessions.vote(pin, { participant_id: participantId, choices: answersStr });
+      const data = res.data;
+      setSubmitting(false);
+      setInitialVotedInfo({
+        votedCount: data.total_voted || 1,
+        totalParticipants: data.total_participants || 0,
+      });
+      setShowSubmittedModal(true);
+    } catch (err) {
+      show(err.message || 'Gửi phiếu thất bại, đang thử lại...', 'error');
       setSubmitting(false);
       return;
     }
-    navigate(`/voting-wait/${pin}`);
-  }, [pin, participantId, navigate, submitting, show]);
+  }, [pin, participantId, submitting, show, stopPoller]);
 
   const {
     timeLeft,
@@ -200,6 +225,17 @@ export default function VotingPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Popup theo dõi sau khi vote thành công */}
+      <VotingSubmittedModal
+        open={showSubmittedModal}
+        pin={pin}
+        initialVotedInfo={initialVotedInfo}
+        onDone={() => {
+          setShowSubmittedModal(false);
+          navigate(`/voting-wait/${pin}`);
+        }}
+      />
     </div>
   );
 }

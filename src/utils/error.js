@@ -8,6 +8,7 @@ const ERROR_CODE_MAP = {
   INSUFFICIENT_PARTICIPANTS: 'Cần tối thiểu 3 người để bắt đầu.',
   NICKNAME_TAKEN: 'Nickname đã tồn tại trong phiên này.',
   VOTING_CLOSED: 'Voting đã đóng.',
+  BUSINESS_RULE_VIOLATION: 'Bạn đã vote xong trước đó rồi.',
   UNAUTHORIZED: 'Bạn không có quyền thực hiện thao tác này.',
   VALIDATION_ERROR: 'Dữ liệu không hợp lệ.',
   WRONG_PASSWORD: 'Mật khẩu không đúng.',
@@ -165,6 +166,13 @@ export function parseApiError(error) {
     rawMsg.includes('wrong otp')
   ) {
     finalMessage = 'Mã OTP không đúng. Vui lòng kiểm tra và thử lại.';
+  } else if (
+    code === 'BUSINESS_RULE_VIOLATION' ||
+    rawMsg.includes('already voted') ||
+    rawMsg.includes('da vote') ||
+    rawMsg.includes('đã vote')
+  ) {
+    finalMessage = 'Bạn đã vote xong trước đó rồi.';
   } else {
     // Ưu tiên: CODE_MAP (known business error) → message từ BE → details (raw, usually English) → fallback
     finalMessage = ERROR_CODE_MAP[code] || message || addVietnameseAccents(details) || 'Đã xảy ra lỗi hệ thống. Vui lòng thử lại.';

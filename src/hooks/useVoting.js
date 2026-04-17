@@ -38,7 +38,8 @@ export function useVoting({ choices, onSubmit, pin, autoAdvanceDelay = 300 }) {
   const isLast = currentIndex === 7;
 
   const selectOption = useCallback((option) => {
-    if (transitioningRef.current) return;
+    const state = useVotingStore.getState();
+    if (transitioningRef.current || state.submitted) return;
     if (navigator.vibrate) navigator.vibrate(10);
 
     transitioningRef.current = true;
@@ -50,9 +51,21 @@ export function useVoting({ choices, onSubmit, pin, autoAdvanceDelay = 300 }) {
       const nextIndex = idx + 1;
 
       if (nextIndex > 7) {
-        useVotingStore.getState().submit();
         const answersArr = useVotingStore.getState().getAnswers();
-        onSubmitRef.current?.(answersArr);
+        // Chỉ submit khi đủ 8 câu — tránh submit trùng khi chưa trả lời
+        if (answersArr.length === 8) {
+          useVotingStore.getState().submit();
+          onSubmitRef.current?.(answersArr);
+        } else {
+          // Chưa đủ câu → quay về câu 0
+          useVotingStore.getState().reset();
+          useVotingStore.getState().setSessionPin(pin);
+          currentIndexRef.current = 0;
+          setCurrentIndex(0);
+          setAnswers([]);
+          transitioningRef.current = false;
+          setIsTransitioning(false);
+        }
       } else {
         useVotingStore.getState().nextQuestion();
         currentIndexRef.current = nextIndex;
@@ -66,7 +79,8 @@ export function useVoting({ choices, onSubmit, pin, autoAdvanceDelay = 300 }) {
   // Timer per question
   useEffect(() => {
     const interval = setInterval(() => {
-      if (transitioningRef.current) return;
+      const state = useVotingStore.getState();
+      if (transitioningRef.current || state.submitted) return;
       setTimeLeft((prev) => {
         if (prev <= 1) {
           selectOption('A');
@@ -80,20 +94,22 @@ export function useVoting({ choices, onSubmit, pin, autoAdvanceDelay = 300 }) {
 
   const startVoting = useCallback(() => {
     const store = useVotingStore.getState();
-    const currentPin = store.sessionPin;
 
-    // Chỉ reset nếu là session mới (khác pin)
-    if (currentPin !== pin) {
-      useVotingStore.getState().reset();
-      useVotingStore.getState().setSessionPin(pin);
+    if (store.submitted) {
+      transitioningRef.current = true;
+      setIsTransitioning(true);
+      setCurrentIndex(store.currentIndex);
+      currentIndexRef.current = store.currentIndex;
+      return;
     }
 
-    currentIndexRef.current = useVotingStore.getState().currentIndex;
-    setCurrentIndex(useVotingStore.getState().currentIndex);
+    currentIndexRef.current = store.currentIndex;
+    setCurrentIndex(store.currentIndex);
+    setAnswers(store.answers);
     transitioningRef.current = false;
     setTimeLeft(TIMER_DURATION);
     setIsTransitioning(false);
-  }, [pin]);
+  }, []);
 
   return {
     timeLeft,
