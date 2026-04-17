@@ -41,7 +41,7 @@ export default function VotingPage() {
     const wasSubmitted = store.submitted && store.sessionPin === pin;
     useVotingStore.getState().reset();
     useVotingStore.getState().setSessionPin(pin);
-    // Chỉ hiện modal nếu đã vote ở ĐÚNG phiên này
+    // User đã vote ở phiên này rồi → hiện modal
     if (wasSubmitted) {
       setShowSubmittedModal(true);
       setInitialVotedInfo({ votedCount: 1, totalParticipants: 0 });
@@ -77,13 +77,12 @@ export default function VotingPage() {
     }
   }, [pin, sessionId, navigate, handleSessionEnded]);
 
-  const { stopPoller } = useSession({ pin, onStatus: fetchStatus, enabled: true });
-  useReconnect({ onReconnect: fetchStatus, enabled: true });
+  const { stopPoller } = useSession({ pin, onStatus: fetchStatus, enabled: !showSubmittedModal });
+  useReconnect({ onReconnect: fetchStatus, enabled: !showSubmittedModal });
 
   const handleSubmit = useCallback(async (answersStr) => {
     if (submitting) return;
     setSubmitting(true);
-    // Stop session polling so the modal stays visible instead of being redirected
     stopPoller();
     try {
       const res = await api.sessions.vote(pin, { participant_id: participantId, choices: answersStr });
@@ -97,7 +96,6 @@ export default function VotingPage() {
     } catch (err) {
       show(err.message || 'Gửi phiếu thất bại, đang thử lại...', 'error');
       setSubmitting(false);
-      return;
     }
   }, [pin, participantId, submitting, show, stopPoller]);
 
@@ -225,16 +223,11 @@ export default function VotingPage() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Popup theo dõi sau khi vote thành công */}
       <VotingSubmittedModal
         open={showSubmittedModal}
         pin={pin}
         initialVotedInfo={initialVotedInfo}
-        onDone={() => {
-          setShowSubmittedModal(false);
-          navigate(`/voting-wait/${pin}`);
-        }}
+        onResults={() => navigate(`/results/${pin}`)}
       />
     </div>
   );
