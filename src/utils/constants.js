@@ -16,13 +16,15 @@ export const PRICE_TIERS = [
 ];
 
 export function formatPriceDisplay(apiDisplay) {
+  if (!apiDisplay) return '';
+  const clean = apiDisplay.replace('/phần', '').trim();
   const map = {
-    'Under40k/phần': 'Dưới 40k/phần',
-    'From40To70k/phần': '40–70k/phần',
-    'From70To120k/phần': '70–120k/phần',
-    'Over120k/phần': 'Trên 120k/phần',
+    'Under40k':    'Dưới 40k/phần',
+    'From40To70k': '40–70k/phần',
+    'From70To120k':'70–120k/phần',
+    'Over120k':    'Trên 120k/phần',
   };
-  return map[apiDisplay] || apiDisplay || '';
+  return map[clean] || apiDisplay;
 }
 
 // Voting config

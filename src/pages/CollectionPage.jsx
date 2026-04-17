@@ -4,6 +4,7 @@ import Header from '@/components/layout/Header';
 import { api } from '@/api';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faStar, faMapMarkerAlt, faUtensils } from '@fortawesome/free-solid-svg-icons';
+import { formatPriceDisplay } from '@/utils/constants';
 
 export default function CollectionPage() {
   const { id } = useParams();
@@ -97,7 +98,7 @@ export default function CollectionPage() {
 
                   <div className="mt-4">
                     <div className="inline-block bg-primary-container/20 text-primary px-3 py-1.5 rounded-full text-xs font-bold ring-1 ring-primary/20">
-                      {res.price_display}
+                      {formatPriceDisplay(res.price_display)}
                     </div>
                   </div>
                 </div>

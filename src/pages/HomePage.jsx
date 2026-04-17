@@ -6,6 +6,7 @@ import JoinModal from '@/components/modals/JoinModal';
 import BottomNav from '@/components/layout/BottomNav';
 import { api } from '@/api';
 import { Plus, SearchX, Star, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
+import { formatPriceDisplay } from '@/utils/constants';
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -152,7 +153,7 @@ export default function HomePage() {
 
                       <div className="mt-4">
                         <div className="inline-block bg-primary-container/20 text-primary px-3 py-1.5 rounded-full text-xs font-bold ring-1 ring-primary/20">
-                          {res.price_display}
+                          {formatPriceDisplay(res.price_display)}
                         </div>
                       </div>
                     </div>
