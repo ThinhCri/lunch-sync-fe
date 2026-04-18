@@ -254,7 +254,7 @@ export default function CreateSessionPage() {
 
   // Form
   const { user } = useAuthStore();
-  const isLoggedIn = useAuthStore((s) => !!s.userToken);
+  const isLoggedIn = useAuthStore((s) => !!s.accessToken);
   const [nickname, setNickname] = useState(user?.fullName || '');
   const [selectedTier, setSelectedTier] = useState(null);
   const [creating, setCreating] = useState(false);

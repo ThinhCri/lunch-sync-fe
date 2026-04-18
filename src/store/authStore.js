@@ -4,26 +4,25 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 export const useAuthStore = create(
   persist(
     (set, get) => ({
-      // JWT được server trả về khi login thành công, dùng để gắn vào header request
-      userToken: null,
+      accessToken: null,
+      idToken: null,
+      refreshToken: null,
       user: null,
 
-      // true khi có userToken (user đã login)
-      isAuthenticated: () => !!get().userToken,
+      isAuthenticated: () => !!get().accessToken,
 
-      // Lưu JWT + thông tin user sau khi login
-      login: (userToken, user) => set({ userToken, user }),
-
-      // Xoá JWT + user khi logout
-      logout: () => set({ userToken: null, user: null }),
-
-      restoreSession: () => {
-        const state = get();
-        if (state.userToken) {
-          return true;
-        }
-        return false;
+      loginWithTokens: ({ access_token, id_token, refresh_token, user }) => {
+        set({
+          accessToken: access_token,
+          idToken: id_token,
+          refreshToken: refresh_token,
+          user: user || null,
+        });
       },
+
+      logout: () => set({ accessToken: null, idToken: null, refreshToken: null, user: null }),
+
+      restoreSession: () => !!get().accessToken,
     }),
     {
       name: 'lunchsync-auth',

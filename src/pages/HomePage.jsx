@@ -10,7 +10,7 @@ import { formatPriceDisplay } from '@/utils/constants';
 
 export default function HomePage() {
   const navigate = useNavigate();
-  const isLoggedIn = useAuthStore((s) => !!s.userToken);
+  const isLoggedIn = useAuthStore((s) => !!s.accessToken);
   const [showJoinModal, setShowJoinModal] = useState(false);
 
   const [collections, setCollections] = useState([]);

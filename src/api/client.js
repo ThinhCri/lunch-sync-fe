@@ -4,28 +4,24 @@ import { parseApiError } from '@/utils/error';
 import { useAuthStore } from '@/store/authStore';
 import { API_CONFIG } from '@/config';
 
-// Default client
 const defaultClient = axios.create({
   baseURL: API_CONFIG.BASE_URL,
   timeout: API_CONFIG.TIMEOUT,
 });
 
-// Request interceptor: lấy JWT từ authStore gắn vào header
 const requestInterceptor = (config) => {
-  const userToken = useAuthStore.getState().userToken;
-  if (userToken) {
-    config.headers.Authorization = `Bearer ${userToken}`;
+  const accessToken = useAuthStore.getState().accessToken;
+  if (accessToken) {
+    config.headers.Authorization = `Bearer ${accessToken}`;
   }
   return config;
 };
 
-// Response interceptor: xử lý 401 → logout, 5xx → retry 1 lần
 let isRetrying = false;
 
 const responseInterceptor = async (error) => {
   const originalRequest = error.config;
 
-  // 401 Unauthorized → logout
   const isAuthEndpoint = originalRequest?.url?.includes('/auth/');
   if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
     originalRequest._retry = true;
@@ -35,7 +31,6 @@ const responseInterceptor = async (error) => {
     return Promise.reject(error);
   }
 
-  // 5xx → retry 1 lần
   if (error.response?.status >= 500 && !originalRequest._retry && !isRetrying) {
     originalRequest._retry = true;
     isRetrying = true;
@@ -52,7 +47,6 @@ const responseInterceptor = async (error) => {
   return Promise.reject(parseApiError(error));
 };
 
-// Apply interceptors to default client
 defaultClient.interceptors.request.use(requestInterceptor, (error) => Promise.reject(error));
 defaultClient.interceptors.response.use(
   (response) => response,

@@ -4,7 +4,7 @@ import { useAuthStore } from '@/store/authStore';
 export default function BottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
-  const isLoggedIn = useAuthStore((state) => state.userToken !== null);
+  const isLoggedIn = useAuthStore((state) => state.accessToken !== null);
 
   const handleNavigation = (path) => {
     if (path === '/profile' && !isLoggedIn) {
