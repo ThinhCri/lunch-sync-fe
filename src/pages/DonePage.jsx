@@ -1,72 +1,93 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import confetti from 'canvas-confetti';
 import { api } from '@/api';
 import { useSessionStore } from '@/store/sessionStore';
 import { useToastStore } from '@/store/toastStore';
 import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
-import { CheckCircle2, Star, MapPin, Map, Home, Share2 } from 'lucide-react';
+import { MapPin, Star, Map, Utensils } from 'lucide-react';
 
-const BRAND_COLORS = ['#F97316', '#FF7A2F', '#3B82F6', '#16A34A', '#FFD700', '#FF6B00'];
-
-function fireConfetti() {
-  const count = 200;
-  const defaults = { origin: { y: 0.7 }, colors: BRAND_COLORS };
-
-  function burst(overrides) {
-    confetti({
-      ...defaults,
-      ...overrides,
-      particleCount: Math.floor(count / 2),
-      spread: 60,
-      scalar: 1,
-    });
-  }
-
-  burst({ spread: 26, startVelocity: 55 });
-  burst({ spread: 60 });
-  burst({ spread: 100, decay: 0.91, scalar: 0.8 });
-  burst({ spread: 120, decay: 0.9, scalar: 1.2 });
-}
+const PRICE_MAP = {
+  Under50k: 'Dưới 50k',
+  From50To70k: '50k - 70k',
+  From70To120k: '70k - 120k',
+  Over120k: 'Trên 120k',
+};
 
 export default function DonePage() {
   const { pin } = useParams();
   const navigate = useNavigate();
-  const { reset } = useSessionStore();
+  const { isHost, reset } = useSessionStore();
   const { show } = useToastStore();
 
   const [restaurant, setRestaurant] = useState(null);
-  const confettiFired = useRef(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.sessions.getResults(pin).then((res) => {
-      const data = res.data;
-      if (data.finalRestaurant) {
-        setRestaurant(data.finalRestaurant);
+    const saved = localStorage.getItem('lunchsync_final_restaurant');
+    if (saved) {
+      try {
+        const rest = JSON.parse(saved);
+        setRestaurant({
+          id: rest.id,
+          name: rest.name,
+          address: rest.address || rest.location,
+          thumbnailUrl: rest.thumbnail_url || rest.thumbnailUrl || rest.image_url || rest.imageUrl,
+          rating: rest.rating || rest.score,
+          priceDisplay: PRICE_MAP[rest.price_tier] || PRICE_MAP[rest.priceDisplay] || null,
+          mapsUrl: rest.google_maps_url || rest.mapsUrl || null,
+          matchedDishes: rest.matched_dishes || rest.matchedDishes || [],
+        });
+        localStorage.removeItem('lunchsync_final_restaurant');
+      } catch {
+        localStorage.removeItem('lunchsync_final_restaurant');
+        show('Không tìm thấy thông tin quán ăn.', 'error');
+      } finally {
+        setLoading(false);
       }
-    });
-  }, [pin]);
-
-  useEffect(() => {
-    if (restaurant && !confettiFired.current) {
-      confettiFired.current = true;
-      setTimeout(fireConfetti, 400);
+    } else {
+      api.sessions.getResults(pin).then((res) => {
+        const data = res.data;
+        const rest = data.final_restaurant || data.finalRestaurant || data.winner || data;
+        if (rest && rest.name) {
+          setRestaurant({
+            id: rest.id,
+            name: rest.name,
+            address: rest.address || rest.location,
+            thumbnailUrl: rest.thumbnailUrl || rest.thumbnail_url || rest.image_url || rest.imageUrl,
+            rating: rest.rating || rest.score,
+            priceDisplay: PRICE_MAP[rest.priceDisplay] || PRICE_MAP[rest.price_tier] || null,
+            mapsUrl: rest.google_maps_url || rest.mapsUrl || null,
+            matchedDishes: rest.matched_dishes || rest.matchedDishes || [],
+          });
+        }
+      }).catch(() => {
+        show('Không tìm thấy thông tin quán ăn.', 'error');
+      }).finally(() => {
+        setLoading(false);
+      });
     }
-  }, [restaurant]);
+  }, [pin, show]);
 
   const getMapsUrl = () => {
     if (!restaurant) return '#';
+    if (restaurant.mapsUrl) return restaurant.mapsUrl;
     const encoded = encodeURIComponent(`${restaurant.name} ${restaurant.address}`);
     return `https://www.google.com/maps/dir/?api=1&destination=${encoded}`;
   };
 
-  const handleRestart = () => {
+  const goNext = () => {
+    localStorage.removeItem('lunchsync-session');
+    localStorage.removeItem('lunchsync-session-store');
     reset();
-    navigate('/');
+    if (isHost) {
+      navigate('/create');
+    } else {
+      navigate('/');
+    }
   };
 
-  if (!restaurant) {
+  if (loading) {
     return (
       <div className="bg-surface min-h-[100dvh] flex flex-col items-center justify-center gap-4 pt-24 pb-32">
         <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
@@ -75,97 +96,101 @@ export default function DonePage() {
     );
   }
 
+  if (!restaurant) {
+    return (
+      <div className="bg-surface min-h-screen font-body text-on-surface">
+        <Header title="LunchSync" />
+        <main className="pt-24 pb-32 px-4 max-w-xl mx-auto flex flex-col items-center justify-center min-h-[60vh]">
+          <p className="text-on-surface-variant font-medium text-sm">Không tìm thấy thông tin quán ăn.</p>
+          <button
+            className="mt-6 w-full max-w-xs h-12 bg-primary text-white rounded-full font-headline font-bold text-sm active:scale-95 transition-transform"
+            onClick={goNext}
+          >
+            Tiếp tục
+          </button>
+        </main>
+        <BottomNav />
+      </div>
+    );
+  }
+
   return (
     <div className="bg-surface font-body text-on-surface min-h-screen">
       <Header title="LunchSync" />
 
-      <main className="pt-20 pb-32 px-4 max-w-2xl mx-auto">
-        {/* Success Hero Section */}
-        <section className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-primary-container/20 rounded-full mb-6">
-            <CheckCircle2 className="text-primary text-4xl" />
+      <main className="pt-24 pb-32 px-4 max-w-xl mx-auto">
+        {/* Hero Image */}
+        {restaurant.thumbnailUrl && (
+          <div className="w-full rounded-xl overflow-hidden mb-6 shadow-sm">
+            <img
+              alt={restaurant.name}
+              className="w-full h-52 object-cover"
+              src={restaurant.thumbnailUrl}
+            />
           </div>
-          <h2 className="font-headline text-4xl font-extrabold tracking-tight text-on-surface mb-2">Bữa trưa đã sẵn sàng!</h2>
-          <p className="text-on-surface-variant font-medium">Chúc bạn ngon miệng tại điểm đến tuyệt vời này.</p>
-        </section>
+        )}
 
-        {/* Kinetic Restaurant Card */}
-        <div className="relative group mb-10">
-          <div className="absolute -inset-4 bg-primary/5 rounded-xl blur-2xl opacity-50 group-hover:opacity-100 transition-opacity"></div>
-          <div className="relative bg-surface-container-lowest rounded-lg overflow-hidden shadow-[0_8px_24px_rgba(0,0,0,0.06)]">
-            {/* Signature Image */}
-            <div className="h-72 w-full relative">
-              <img
-                alt={restaurant.name}
-                className="w-full h-full object-cover"
-                src={restaurant.thumbnailUrl || `https://picsum.photos/seed/${restaurant.id}/800/600`}
-              />
-              {/* Overlapping Rating Chip */}
-              <div className="absolute top-4 right-4 bg-white/60 backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-1">
-                <Star className="text-primary text-sm fill-primary" />
-                <span className="font-headline font-bold text-sm text-on-surface">{restaurant.rating || '4.9'}</span>
+        {/* Restaurant Info Card */}
+        <div className="bg-surface-container-lowest rounded-xl p-5 shadow-sm mb-4 space-y-4">
+          {/* Name & Address */}
+          <div className="space-y-2">
+            <h1 className="font-headline text-2xl font-extrabold text-on-surface leading-tight tracking-tight">
+              {restaurant.name}
+            </h1>
+            {restaurant.address && (
+              <p className="text-on-surface-variant text-sm flex items-start gap-1.5 leading-snug">
+                <MapPin className="text-sm shrink-0 mt-0.5" />
+                {restaurant.address}
+              </p>
+            )}
+          </div>
+
+          {/* Rating & Price */}
+          <div className="flex items-center gap-3">
+            {restaurant.rating && (
+              <div className="flex items-center gap-1.5 bg-secondary-container text-on-secondary-container px-3 py-1.5 rounded-full">
+                <Star className="text-xs fill-primary text-primary" />
+                <span className="text-sm font-bold">{restaurant.rating}</span>
               </div>
-            </div>
-
-            {/* Restaurant Content */}
-            <div className="p-8">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h3 className="font-headline text-3xl font-bold tracking-tight text-on-surface mb-1">{restaurant.name}</h3>
-                  <p className="text-on-surface-variant flex items-center gap-1 mb-4">
-                    <MapPin className="text-sm" />
-                    {restaurant.address}
-                  </p>
-                </div>
-                {restaurant.priceDisplay && (
-                  <span className="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-xs font-bold tracking-widest uppercase">
-                    {restaurant.priceDisplay}
-                  </span>
-                )}
+            )}
+            {restaurant.priceDisplay && (
+              <div className="bg-secondary-container text-on-secondary-container px-3 py-1.5 rounded-full">
+                <span className="text-sm font-bold">{restaurant.priceDisplay}</span>
               </div>
-
-              {/* Main CTA: Google Maps */}
-              <a
-                className="flex items-center justify-center gap-3 w-full bg-primary text-white py-5 rounded-full font-headline font-bold text-lg active:scale-[0.98] transition-transform shadow-lg shadow-primary/20"
-                href={getMapsUrl()}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Map />
-                Xem trên Google Maps
-              </a>
-            </div>
+            )}
           </div>
         </div>
 
-        {/* Secondary Actions Grid */}
-        <div className="grid grid-cols-2 gap-4 mb-10">
-          <button
-            className="bg-surface-container-high hover:bg-surface-container-highest transition-colors flex items-center justify-center gap-2 py-4 rounded-lg font-headline font-bold text-on-surface active:scale-[0.98]"
-            onClick={handleRestart}
-          >
-            <Home className="text-lg" />
-            Về trang chủ
-          </button>
-          <button
-            className="bg-surface-container-high hover:bg-surface-container-highest transition-colors flex items-center justify-center gap-2 py-4 rounded-lg font-headline font-bold text-on-surface active:scale-[0.98]"
-            onClick={() => {
-              if (navigator.share) {
-                navigator.share({
-                  title: 'Bữa trưa hôm nay!',
-                  text: `Tụi mình sẽ đi ăn ở ${restaurant.name} nha!`,
-                  url: window.location.href,
-                }).catch(() => {});
-              } else {
-                navigator.clipboard.writeText(`Tụi mình sẽ đi ăn ở ${restaurant.name} nha! ${window.location.href}`);
-                show('Đã copy link', 'success');
-              }
-            }}
-          >
-            <Share2 className="text-lg" />
-            Chia sẻ bạn bè
-          </button>
-        </div>
+        {/* Matched Dishes */}
+        {restaurant.matchedDishes?.length > 0 && (
+          <div className="bg-surface-container-lowest rounded-xl p-5 shadow-sm mb-6 space-y-3">
+            <div className="flex items-center gap-2 text-on-surface">
+              <Utensils className="text-primary text-base" />
+              <span className="text-sm font-bold">Món ăn phù hợp</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {restaurant.matchedDishes.map((dish, i) => (
+                <span
+                  key={i}
+                  className="bg-primary-container text-on-primary-container px-3 py-1.5 rounded-full text-xs font-bold"
+                >
+                  {dish}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Action Button - Google Maps */}
+        <a
+          className="flex items-center justify-center gap-2 w-full h-14 bg-primary text-white rounded-full font-headline font-bold text-base shadow-lg shadow-primary/20 active:scale-95 transition-transform"
+          href={getMapsUrl()}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Map className="text-lg" />
+          Mở Google Maps
+        </a>
       </main>
 
       <BottomNav />

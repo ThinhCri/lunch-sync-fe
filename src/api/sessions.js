@@ -11,6 +11,8 @@ export const sessionsApi = {
   vote: (pin, data) => client.post(`/sessions/${pin}/vote`, data),
   getResults: (pin) => client.get(`/sessions/${pin}/results`),
   boom: (pin) => client.post(`/sessions/${pin}/boom`),
-  pick: (pin, data) => client.post(`/sessions/${pin}/pick`, data),
+  pick: (pin, restaurantId) => client.post(`/sessions/${pin}/pick`, `"${restaurantId}"`, {
+    headers: { 'Content-Type': 'application/json' },
+  }),
   cancel: (pin) => client.post(`/sessions/${pin}/cancel`),
 };

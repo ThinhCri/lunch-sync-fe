@@ -23,6 +23,7 @@ export default function BoomPage() {
   const [pickingDone, setPickingDone] = useState(false);
 
   useEffect(() => {
+    console.log('[BoomPage] location.state:', location.state);
     if (location.state?.boomData) {
       setBoomData(location.state.boomData);
     } else {
@@ -36,8 +37,13 @@ export default function BoomPage() {
     const interval = setInterval(async () => {
       try {
         const res = await api.sessions.getStatus(pin, sessionId);
+        console.log('[BoomPage] getStatus response:', res.data);
         if (res.data.status === 'done') {
           clearInterval(interval);
+          const final = res.data.final_restaurant || res.data.finalRestaurant;
+          if (final) {
+            localStorage.setItem('lunchsync_final_restaurant', JSON.stringify(final));
+          }
           navigate(`/done/${pin}`);
         }
       } catch {
@@ -48,10 +54,15 @@ export default function BoomPage() {
   }, [boomData, pin, navigate, sessionId]);
 
   const handlePick = async (restaurantId) => {
+    console.log('[BoomPage] handlePick called with:', restaurantId);
     if (!isHost || pickingDone) return;
     setPickingDone(true);
     try {
-      await api.sessions.pick(pin, { restaurantId });
+      const res = await api.sessions.pick(pin, restaurantId);
+      console.log('[BoomPage] pick response:', res.data);
+      const finalRestaurant = res.data?.final_restaurant || res.data?.finalRestaurant || res.data;
+      console.log('[BoomPage] finalRestaurant:', finalRestaurant);
+      localStorage.setItem('lunchsync_final_restaurant', JSON.stringify(finalRestaurant));
       navigate(`/done/${pin}`);
     } catch {
       show('Không thể chốt quán.', 'error');
