@@ -5,7 +5,6 @@ import { api } from '@/api';
 import { useSessionStore } from '@/store/sessionStore';
 import { useToastStore } from '@/store/toastStore';
 import Header from '@/components/layout/Header';
-import BottomNav from '@/components/layout/BottomNav';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCheck, faLock, faTrophy, faMedal, faAward, faCircleNotch,
@@ -248,7 +247,6 @@ export default function BoomPage() {
         </div>
         )}
       </main>
-      <BottomNav />
     </div>
   );
 }

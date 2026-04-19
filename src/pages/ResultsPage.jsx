@@ -4,7 +4,6 @@ import { api } from '@/api';
 import { useSessionStore } from '@/store/sessionStore';
 import { useToastStore } from '@/store/toastStore';
 import Header from '@/components/layout/Header';
-import BottomNav from '@/components/layout/BottomNav';
 import { motion } from 'framer-motion';
 import { BarChart3, Star, Sparkles, Dice5, MapPin, ExternalLink } from 'lucide-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -82,7 +81,6 @@ export default function ResultsPage() {
           <BarChart3 className="text-5xl text-outline/30" />
           <p className="text-on-surface-variant font-medium text-sm">Chưa có kết quả. Vui lòng chờ host chốt phiếu.</p>
         </div>
-        <BottomNav />
       </div>
     );
   }
@@ -296,8 +294,6 @@ export default function ResultsPage() {
           </section>
         )}
       </main>
-
-      <BottomNav />
     </div>
   );
 }

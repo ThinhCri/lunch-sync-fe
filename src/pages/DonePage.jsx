@@ -4,8 +4,7 @@ import { api } from '@/api';
 import { useSessionStore } from '@/store/sessionStore';
 import { useToastStore } from '@/store/toastStore';
 import Header from '@/components/layout/Header';
-import BottomNav from '@/components/layout/BottomNav';
-import { MapPin, Star, Map, Utensils } from 'lucide-react';
+import { MapPin, Star, Map, Utensils, Home } from 'lucide-react';
 
 const PRICE_MAP = {
   Under50k: 'Dưới 50k',
@@ -17,7 +16,7 @@ const PRICE_MAP = {
 export default function DonePage() {
   const { pin } = useParams();
   const navigate = useNavigate();
-  const { isHost, reset } = useSessionStore();
+  const { isHost, sessionId, reset } = useSessionStore();
   const { show } = useToastStore();
 
   const [restaurant, setRestaurant] = useState(null);
@@ -76,14 +75,27 @@ export default function DonePage() {
     return `https://www.google.com/maps/dir/?api=1&destination=${encoded}`;
   };
 
-  const goNext = () => {
-    localStorage.removeItem('lunchsync-session');
-    localStorage.removeItem('lunchsync-session-store');
-    reset();
-    if (isHost) {
-      navigate('/create');
-    } else {
-      navigate('/');
+  const [goHomeLoading, setGoHomeLoading] = useState(false);
+
+  const goHome = async () => {
+    if (goHomeLoading) return;
+    setGoHomeLoading(true);
+    try {
+      const res = await api.sessions.getStatus(pin, sessionId);
+      const status = res.data?.status;
+      localStorage.removeItem('lunchsync-session');
+      localStorage.removeItem('lunchsync-session-store');
+      reset();
+      if (isHost && status === 'done') {
+        window.location.href = '/create';
+      } else if (isHost) {
+        navigate('/create');
+      } else {
+        navigate('/');
+      }
+    } catch {
+      show('Không thể quay về trang chủ.', 'error');
+      setGoHomeLoading(false);
     }
   };
 
@@ -104,12 +116,11 @@ export default function DonePage() {
           <p className="text-on-surface-variant font-medium text-sm">Không tìm thấy thông tin quán ăn.</p>
           <button
             className="mt-6 w-full max-w-xs h-12 bg-primary text-white rounded-full font-headline font-bold text-sm active:scale-95 transition-transform"
-            onClick={goNext}
+            onClick={goHome}
           >
-            Tiếp tục
+            Về trang chủ
           </button>
         </main>
-        <BottomNav />
       </div>
     );
   }
@@ -191,9 +202,19 @@ export default function DonePage() {
           <Map className="text-lg" />
           Mở Google Maps
         </a>
-      </main>
 
-      <BottomNav />
+        {/* Về trang chủ - chỉ host thấy */}
+        {isHost && (
+          <button
+            className="mt-3 flex items-center justify-center gap-2 w-full h-12 bg-surface-container-low text-on-surface border border-outline/20 rounded-full font-headline font-bold text-sm active:scale-95 transition-transform"
+            onClick={goHome}
+            disabled={goHomeLoading}
+          >
+            <Home className="text-sm" />
+            {goHomeLoading ? 'Đang xử lý...' : 'Về trang chủ'}
+          </button>
+        )}
+      </main>
     </div>
   );
 }
