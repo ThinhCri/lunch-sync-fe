@@ -255,9 +255,16 @@ export default function CreateSessionPage() {
   // Form
   const { user } = useAuthStore();
   const isLoggedIn = useAuthStore((s) => !!s.accessToken);
-  const [nickname, setNickname] = useState(user?.fullName || '');
+  const [nickname, setNickname] = useState('');
   const [selectedTier, setSelectedTier] = useState(null);
   const [creating, setCreating] = useState(false);
+
+  // Sync nickname when user data becomes available after login
+  useEffect(() => {
+    if (user?.fullName && !nickname) {
+      setNickname(user.fullName);
+    }
+  }, [user]);
 
   // Join Modal
   const [showJoinModal, setShowJoinModal] = useState(false);

@@ -8,7 +8,7 @@ import BottomNav from '@/components/layout/BottomNav';
 export default function RegisterPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const loginWithTokens = useAuthStore((s) => s.loginWithTokens);
+  const { loginWithTokens } = useAuthStore();
   const accessToken = useAuthStore((s) => s.accessToken);
 
   const [fullName, setFullName] = useState('');
@@ -49,7 +49,18 @@ export default function RegisterPage() {
     setError('');
     try {
       const res = await authApi.register(email.trim(), password, fullName.trim());
-      loginWithTokens(res.data);
+      const data = res.data;
+      const user = {
+        id: data.user_id,
+        email: data.email || email.trim(),
+        fullName: data.full_name || fullName.trim(),
+        role: data.role,
+      };
+      loginWithTokens({
+        access_token: data.access_token,
+        refresh_token: data.refresh_token,
+        user,
+      });
       const returnTo = location.state?.returnTo || '/';
       navigate(returnTo, { replace: true });
     } catch (err) {

@@ -40,15 +40,19 @@ export default function VotingPage() {
     const store = useVotingStore.getState();
     const wasSubmitted = store.submitted && store.sessionPin === pin;
     const isNewSession = store.sessionPin !== pin;
-    if (isNewSession || wasSubmitted) {
+
+    if (wasSubmitted) {
+      // User đã vote rồi — không reset, chỉ show modal
+      setShowSubmittedModal(true);
+      setInitialVotedInfo({ votedCount: 1, totalParticipants: 0 });
+      useVotingStore.getState().setSessionPin(pin);
+    } else if (isNewSession) {
+      // Sang phiên mới — reset toàn bộ
       useVotingStore.getState().reset();
       useVotingStore.getState().setSessionPin(pin);
     } else {
+      // Cùng phiên, chưa vote — giữ nguyên state
       useVotingStore.getState().setSessionPin(pin);
-    }
-    if (wasSubmitted) {
-      setShowSubmittedModal(true);
-      setInitialVotedInfo({ votedCount: 1, totalParticipants: 0 });
     }
   }, [pin]);
 
