@@ -1,24 +1,21 @@
-import { useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
-import { COGNITO_CONFIG } from '@/config';
+import { authApi } from '@/api/auth';
 import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
-
-const buildCognitoLoginUrl = () => {
-  const params = new URLSearchParams({
-    client_id: COGNITO_CONFIG.CLIENT_ID,
-    redirect_uri: COGNITO_CONFIG.REDIRECT_URI,
-    response_type: 'code',
-    scope: COGNITO_CONFIG.SCOPE,
-  });
-  return `${COGNITO_CONFIG.DOMAIN}/login?${params.toString()}`;
-};
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const loginWithTokens = useAuthStore((s) => s.loginWithTokens);
   const accessToken = useAuthStore((s) => s.accessToken);
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (accessToken) {
@@ -27,15 +24,31 @@ export default function LoginPage() {
     }
   }, [accessToken, location.state, navigate]);
 
-  const handleLogin = () => {
-    if (!COGNITO_CONFIG.DOMAIN || !COGNITO_CONFIG.CLIENT_ID) {
-      console.error('COGNITO_CONFIG missing:', COGNITO_CONFIG);
-      alert('Cognito chưa được config. Vui lòng kiểm tra .env file.');
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    if (!email.trim() || !password) {
+      setError('Vui lòng nhập đầy đủ email và mật khẩu.');
       return;
     }
-    const returnTo = location.state?.returnTo || '/';
-    sessionStorage.setItem('auth_return_to', returnTo);
-    window.location.href = buildCognitoLoginUrl();
+    setLoading(true);
+    setError('');
+    try {
+      const res = await authApi.login(email.trim(), password);
+      loginWithTokens(res.data);
+      const returnTo = location.state?.returnTo || '/';
+      navigate(returnTo, { replace: true });
+    } catch (err) {
+      const msg = err?.message || 'Đăng nhập thất bại. Vui lòng thử lại.';
+      if (msg.toLowerCase().includes('password') || msg.toLowerCase().includes('invalid')) {
+        setError('Email hoặc mật khẩu không đúng.');
+      } else if (msg.toLowerCase().includes('not found') || msg.toLowerCase().includes('exist')) {
+        setError('Tài khoản không tồn tại.');
+      } else {
+        setError(msg);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -51,30 +64,100 @@ export default function LoginPage() {
             <div className="relative inline-block mb-6">
               <div className="absolute -inset-4 bg-primary/10 rounded-full blur-2xl"></div>
               <img
-                alt="Appetizing healthy salad bowl"
+                alt="LunchSync"
                 className="relative w-24 h-24 rounded-full object-cover border-4 border-surface-container-lowest shadow-[0_8px_24px_rgba(44,47,48,0.06)]"
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5w4bIGcCVNEeYO2k_6bA_4h018IxYIhvl0YUGLxX_RZ0F4Td41tdLHY8AYkWY2mtgcRrp_o8mHKLTgxiO5ruGeSHu-t9GxF7ROJGtY6MwDeHsMeMzNcFEYRRAiuqwCg6iH9wVpxlRSJrJz7P9vUFPVT59bxT9aUmWO9ehV6aPv1uftYVErK76Tc6mf4ql3sI1EW-n4JkKGthHuukXtan6x-3-BBrbA_xG9hKS31sHElV40CAwi4J2Q0fUT2ZvuRN7-utBXlOIsoM"
               />
             </div>
-            <h1 className="text-4xl font-extrabold tracking-tight text-on-surface mb-2 font-headline">Sẵn sàng cho bữa trưa?</h1>
-            <p className="text-on-surface-variant text-sm font-medium">Kết nối với đồng nghiệp và tìm những địa điểm ăn uống tốt nhất hôm nay.</p>
+            <h1 className="text-4xl font-extrabold tracking-tight text-on-surface mb-2 font-headline">Chào mừng trở lại!</h1>
+            <p className="text-on-surface-variant text-sm font-medium">Đăng nhập để tiếp tục khám phá những địa điểm ăn uống tuyệt vời.</p>
           </div>
 
           <div className="bg-surface-container-lowest p-8 rounded-2xl shadow-[0_4px_16px_rgba(44,47,48,0.03)] border border-outline-variant/10">
-            <button
-              className="w-full py-4 rounded-full bg-primary text-on-primary font-bold text-lg shadow-lg shadow-primary/20 hover:scale-[0.99] active:scale-95 transition-all duration-200 flex justify-center items-center gap-3"
-              onClick={handleLogin}
-              type="button"
-            >
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
-                <path d="M21.5 12h-3V10.5C18.5 8.5 16.5 7 14 7h-4C8 7 6 8.5 6 10.5V12H3C2.5 12 2 12.5 2 13S2.5 14 3 14h3v3c0 1.5 1 2.5 2.5 2.5h7C16.5 19.5 17.5 18.5 17.5 17V14h3c.5 0 1-.5 1-1s-.5-1-1-1zM10 10.5C10 9.7 10.7 9 11.5 9h1C13.3 9 14 9.7 14 10.5V12H10v-1.5z" fill="currentColor"/>
-              </svg>
-              Đăng nhập với Email
-            </button>
+            {error && (
+              <div className="mb-5 px-4 py-3 bg-error-container text-error rounded-lg text-sm font-medium">
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-on-surface mb-1.5" htmlFor="email">
+                  Email
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                  className="w-full px-4 py-3 rounded-xl border border-outline bg-surface text-on-surface text-base placeholder:text-on-surface-variant/50 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-on-surface mb-1.5" htmlFor="password">
+                  Mật khẩu
+                </label>
+                <div className="relative">
+                  <input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Nhập mật khẩu"
+                    autoComplete="current-password"
+                    className="w-full px-4 py-3 pr-12 rounded-xl border border-outline bg-surface text-on-surface text-base placeholder:text-on-surface-variant/50 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant p-1 hover:text-primary transition-colors"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? (
+                      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                        <line x1="1" y1="1" x2="23" y2="23"/>
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-4 rounded-full bg-primary text-on-primary font-bold text-lg shadow-lg shadow-primary/20 hover:scale-[0.99] active:scale-95 transition-all duration-200 flex justify-center items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
+              >
+                {loading ? (
+                  <>
+                    <svg className="w-5 h-5 animate-spin" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                    </svg>
+                    Đang đăng nhập...
+                  </>
+                ) : (
+                  'Đăng nhập'
+                )}
+              </button>
+            </form>
           </div>
 
-          <div className="text-center mt-10">
-            <p className="text-on-surface-variant font-medium">Chưa có tài khoản? <button className="text-primary font-bold hover:underline ml-1" onClick={() => navigate('/register', { state: { returnTo: location.state?.returnTo } })}>Đăng ký</button></p>
+          <div className="text-center mt-8">
+            <p className="text-on-surface-variant font-medium">
+              Chưa có tài khoản?{' '}
+              <Link to="/register" state={{ returnTo: location.state?.returnTo }} className="text-primary font-bold hover:underline ml-1">
+                Đăng ký
+              </Link>
+            </p>
           </div>
         </div>
       </main>

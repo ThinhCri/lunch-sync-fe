@@ -7,7 +7,6 @@ import { useAuthStore } from '@/store/authStore';
 import HomePage from '@/pages/HomePage';
 import LoginPage from '@/pages/LoginPage';
 import RegisterPage from '@/pages/RegisterPage';
-import AuthCallbackPage from '@/pages/AuthCallbackPage';
 import CreateSessionPage from '@/pages/CreateSessionPage';
 import LobbyPage from '@/pages/LobbyPage';
 import JoinPage from '@/pages/JoinPage';
@@ -42,8 +41,6 @@ function App() {
             <Route path="/collection/:id" element={<CollectionPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
-            <Route path="/auth/callback" element={<AuthCallbackPage />} />
-            <Route path="/callback" element={<AuthCallbackPage />} />
             <Route path="/join" element={<Navigate to="/" replace />} />
             <Route path="/join/:pin" element={<JoinPage />} />
             <Route path="/suggest" element={<CrowdsourcePage />} />

@@ -5,11 +5,10 @@ import { useNavigate } from 'react-router-dom';
 
 export function useAuth() {
   const navigate = useNavigate();
-  const { user, accessToken, isAuthenticated, loginWithTokens, logout, restoreSession } = useAuthStore();
+  const { user, accessToken, isAuthenticated, loginWithTokens, setUser, logout, restoreSession } = useAuthStore();
 
   const handleLogout = useCallback(() => {
-    const refreshToken = useAuthStore.getState().refreshToken;
-    authApi.revoke(refreshToken).catch(() => {});
+    authApi.logout().catch(() => {});
     logout();
     navigate('/');
   }, [logout, navigate]);
@@ -19,6 +18,7 @@ export function useAuth() {
     accessToken,
     isLoggedIn: isAuthenticated(),
     loginWithTokens,
+    setUser,
     logout: handleLogout,
     restoreSession,
   };
