@@ -12,11 +12,12 @@ import { useToastStore } from '@/store/toastStore';
 import { VOTING_AUTO_CLOSE_SECONDS } from '@/utils/constants';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheck, faClock, faCircleNotch, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+import { handleSessionEndByStatus } from '@/hooks/useSessionReset';
 
 export default function VotingWaitPage() {
   const { pin } = useParams();
   const navigate = useNavigate();
-  const { participants, isHost, sessionId, reset: resetSession } = useSessionStore();
+  const { participants, isHost, sessionId } = useSessionStore();
   const { submitted } = useVotingStore();
   const { votingStartedAt } = useSessionStore();
   const { show } = useToastStore();
@@ -78,9 +79,8 @@ export default function VotingWaitPage() {
       completed: 'Phiên này đã kết thúc.',
     };
     show(messages[status] || 'Phiên không còn hoạt động.', 'error');
-    resetSession();
-    navigate('/', { replace: true });
-  }, [resetSession, navigate, show]);
+    handleSessionEndByStatus(status, pin, navigate);
+  }, [pin, navigate, show]);
 
   const fetchStatus = useCallback(async () => {
     try {

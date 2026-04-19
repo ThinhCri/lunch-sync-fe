@@ -11,6 +11,7 @@ import { useToastStore } from '@/store/toastStore';
 import Header from '@/components/layout/Header';
 import { Timer, Hand } from 'lucide-react';
 import VotingSubmittedModal from '@/components/modals/VotingSubmittedModal';
+import { handleSessionEndByStatus } from '@/hooks/useSessionReset';
 
 const TOTAL_QUESTIONS = 8;
 
@@ -28,7 +29,7 @@ const QUESTIONS = [
 export default function VotingPage() {
   const { pin } = useParams();
   const navigate = useNavigate();
-  const { participantId, sessionId, isHost, reset: resetSession } = useSessionStore();
+  const { participantId, sessionId, isHost } = useSessionStore();
   const { show } = useToastStore();
   const [submitting, setSubmitting] = useState(false);
   const [cardKey, setCardKey] = useState(0);
@@ -63,9 +64,8 @@ export default function VotingPage() {
       completed: 'Phiên này đã kết thúc.',
     };
     show(messages[status] || 'Phiên không còn hoạt động.', 'error');
-    resetSession();
-    navigate('/', { replace: true });
-  }, [resetSession, navigate, show]);
+    handleSessionEndByStatus(status, pin, navigate);
+  }, [pin, navigate, show]);
 
   const fetchStatus = useCallback(async () => {
     try {

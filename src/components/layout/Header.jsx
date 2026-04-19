@@ -1,13 +1,25 @@
 import { useNavigate } from 'react-router-dom';
+import { useSessionStore } from '@/store/sessionStore';
+import { useSessionExit } from '@/hooks/useSessionReset';
 
 export default function Header({ title = "LunchSync", rightContent = null }) {
   const navigate = useNavigate();
+  const { pin, sessionId } = useSessionStore();
+  const sessionExit = useSessionExit();
+
+  const handleLogoClick = async () => {
+    if (pin && sessionId) {
+      await sessionExit();
+    } else {
+      navigate('/');
+    }
+  };
 
   return (
     <header
       className="fixed top-0 w-full z-50 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_4px_16px_rgba(0,0,0,0.03)] border-b border-outline/10 cursor-pointer select-none"
       style={{ paddingTop: 'var(--safe-area-inset-top)' }}
-      onClick={() => navigate('/')}
+      onClick={handleLogoClick}
     >
       <div className="flex items-center justify-between px-6 py-4 w-full relative">
         {rightContent ? (

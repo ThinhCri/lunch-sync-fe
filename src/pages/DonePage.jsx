@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { api } from '@/api';
 import { useSessionStore } from '@/store/sessionStore';
 import { useToastStore } from '@/store/toastStore';
 import Header from '@/components/layout/Header';
 import { MapPin, Star, Map, Utensils, Home } from 'lucide-react';
+import { handleSessionExitStandalone } from '@/hooks/useSessionReset';
 
 const PRICE_MAP = {
   Under50k: 'Dưới 50k',
@@ -15,8 +16,7 @@ const PRICE_MAP = {
 
 export default function DonePage() {
   const { pin } = useParams();
-  const navigate = useNavigate();
-  const { isHost, sessionId, reset } = useSessionStore();
+  const { isHost } = useSessionStore();
   const { show } = useToastStore();
 
   const [restaurant, setRestaurant] = useState(null);
@@ -81,18 +81,7 @@ export default function DonePage() {
     if (goHomeLoading) return;
     setGoHomeLoading(true);
     try {
-      const res = await api.sessions.getStatus(pin, sessionId);
-      const status = res.data?.status;
-      localStorage.removeItem('lunchsync-session');
-      localStorage.removeItem('lunchsync-session-store');
-      reset();
-      if (isHost && status === 'done') {
-        window.location.href = '/create';
-      } else if (isHost) {
-        navigate('/create');
-      } else {
-        navigate('/');
-      }
+      await handleSessionExitStandalone();
     } catch {
       show('Không thể quay về trang chủ.', 'error');
       setGoHomeLoading(false);
