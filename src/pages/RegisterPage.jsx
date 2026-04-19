@@ -36,8 +36,24 @@ export default function RegisterPage() {
       setError('Vui lòng nhập email.');
       return;
     }
-    if (password.length < 6) {
-      setError('Mật khẩu phải có ít nhất 6 ký tự.');
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+
+    if (password.length < 8) {
+      setError('Mật khẩu phải có ít nhất 8 ký tự.');
+      return;
+    }
+    if (!hasUpperCase) {
+      setError('Mật khẩu phải chứa ít nhất 1 chữ hoa.');
+      return;
+    }
+    if (!hasNumber) {
+      setError('Mật khẩu phải chứa ít nhất 1 số.');
+      return;
+    }
+    if (!hasSpecial) {
+      setError('Mật khẩu phải chứa ít nhất 1 ký tự đặc biệt.');
       return;
     }
     if (password !== confirmPassword) {
@@ -133,10 +149,11 @@ export default function RegisterPage() {
               <div className="relative">
                 <input
                   id="password"
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? 'text' : 'text'}
+                  style={!showPassword ? { WebkitTextSecurity: 'disc' } : {}}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Ít nhất 6 ký tự"
+                  placeholder="Ít nhất 8 ký tự, gồm chữ hoa, số, ký tự đặc biệt"
                   autoComplete="new-password"
                   className="w-full px-4 py-3 pr-12 rounded-xl border border-outline bg-surface text-on-surface text-base placeholder:text-on-surface-variant/50 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                 />
@@ -159,21 +176,56 @@ export default function RegisterPage() {
                   )}
                 </button>
               </div>
+              <div className="mt-2 space-y-0.5">
+                <div className={`text-xs flex items-center gap-1 ${password.length >= 8 ? 'text-green-600' : 'text-on-surface-variant'}`}>
+                  {password.length >= 8 ? (
+                    <svg className="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
+                  ) : (
+                    <svg className="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"/></svg>
+                  )}
+                  Ít nhất 8 ký tự
+                </div>
+                <div className={`text-xs flex items-center gap-1 ${/[A-Z]/.test(password) ? 'text-green-600' : 'text-on-surface-variant'}`}>
+                  {/[A-Z]/.test(password) ? (
+                    <svg className="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
+                  ) : (
+                    <svg className="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"/></svg>
+                  )}
+                  Ít nhất 1 chữ hoa
+                </div>
+                <div className={`text-xs flex items-center gap-1 ${/\d/.test(password) ? 'text-green-600' : 'text-on-surface-variant'}`}>
+                  {/\d/.test(password) ? (
+                    <svg className="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
+                  ) : (
+                    <svg className="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"/></svg>
+                  )}
+                  Ít nhất 1 số
+                </div>
+                <div className={`text-xs flex items-center gap-1 ${/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password) ? 'text-green-600' : 'text-on-surface-variant'}`}>
+                  {/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password) ? (
+                    <svg className="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
+                  ) : (
+                    <svg className="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"/></svg>
+                  )}
+                  Ít nhất 1 ký tự đặc biệt
+                </div>
+              </div>
             </div>
 
             <div>
               <label className="block text-sm font-semibold text-on-surface mb-1.5" htmlFor="confirmPassword">
                 Xác nhận mật khẩu
               </label>
-              <input
-                id="confirmPassword"
-                type={showPassword ? 'text' : 'password'}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Nhập lại mật khẩu"
-                autoComplete="new-password"
-                className="w-full px-4 py-3 rounded-xl border border-outline bg-surface text-on-surface text-base placeholder:text-on-surface-variant/50 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-              />
+                <input
+                  id="confirmPassword"
+                  type={showPassword ? 'text' : 'text'}
+                  style={!showPassword ? { WebkitTextSecurity: 'disc' } : {}}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Nhập lại mật khẩu"
+                  autoComplete="new-password"
+                  className="w-full px-4 py-3 rounded-xl border border-outline bg-surface text-on-surface text-base placeholder:text-on-surface-variant/50 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                />
             </div>
 
             <button

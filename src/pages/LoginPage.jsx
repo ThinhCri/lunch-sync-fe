@@ -119,15 +119,16 @@ export default function LoginPage() {
                   Mật khẩu
                 </label>
                 <div className="relative">
-                  <input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Nhập mật khẩu"
-                    autoComplete="current-password"
-                    className="w-full px-4 py-3 pr-12 rounded-xl border border-outline bg-surface text-on-surface text-base placeholder:text-on-surface-variant/50 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-                  />
+                <input
+                  id="password"
+                  type={showPassword ? 'text' : 'text'}
+                  style={!showPassword ? { WebkitTextSecurity: 'disc' } : {}}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Nhập mật khẩu"
+                  autoComplete="current-password"
+                  className="w-full px-4 py-3 pr-12 rounded-xl border border-outline bg-surface text-on-surface text-base placeholder:text-on-surface-variant/50 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
