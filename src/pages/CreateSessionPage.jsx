@@ -70,7 +70,7 @@ const GuestJoinView = () => {
       });
       navigate(`/lobby/${pin}`);
     } catch (err) {
-      const parsed = parseApiError(err);
+      const parsed = err?.response ? parseApiError(err) : err;
       if (parsed.code === 'SESSION_FULL') {
         setError('Phòng đã đầy 8 người, không thể tham gia.');
       } else {

@@ -2,13 +2,13 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { authApi } from '@/api/auth';
+import { parseApiError } from '@/utils/error';
 import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { loginWithTokens } = useAuthStore();
   const accessToken = useAuthStore((s) => s.accessToken);
 
   const [fullName, setFullName] = useState('');
@@ -50,25 +50,25 @@ export default function RegisterPage() {
     try {
       const res = await authApi.register(email.trim(), password, fullName.trim());
       const data = res.data;
-      const user = {
-        id: data.user_id,
-        email: data.email || email.trim(),
-        fullName: data.full_name || fullName.trim(),
-        role: data.role,
-      };
-      loginWithTokens({
-        access_token: data.access_token,
-        refresh_token: data.refresh_token,
-        user,
+
+      navigate('/verify', {
+        state: { email: email.trim(), returnTo: location.state?.returnTo },
+        replace: true,
       });
-      const returnTo = location.state?.returnTo || '/';
-      navigate(returnTo, { replace: true });
+      return;
     } catch (err) {
-      const msg = err?.message || 'Đăng ký thất bại. Vui lòng thử lại.';
-      if (msg.toLowerCase().includes('exist') || msg.toLowerCase().includes('already')) {
+      const parsed = err?.response ? parseApiError(err) : err;
+      if (parsed.shouldRedirectToVerify) {
+        navigate('/verify', {
+          state: { email: email.trim(), returnTo: location.state?.returnTo },
+          replace: true,
+        });
+        return;
+      }
+      if (parsed.code === 'EMAIL_EXISTS' || parsed.code === 'USER_DUPLICATE') {
         setError('Email này đã được sử dụng.');
       } else {
-        setError(msg);
+        setError(parsed.message || 'Đăng ký thất bại. Vui lòng thử lại.');
       }
     } finally {
       setLoading(false);

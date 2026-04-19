@@ -165,7 +165,7 @@ export function parseApiError(error) {
     rawMsg.includes('otp incorrect') ||
     rawMsg.includes('wrong otp')
   ) {
-    finalMessage = 'Mã OTP không đúng. Vui lòng kiểm tra và thử lại.';
+    finalMessage = 'Mã OTP không đúng vui lòng thử lại!';
   } else if (
     code === 'BUSINESS_RULE_VIOLATION' ||
     rawMsg.includes('already voted') ||

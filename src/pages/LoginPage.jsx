@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { authApi } from '@/api/auth';
+import { parseApiError } from '@/utils/error';
 import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
 import logo from '/images/lunchsync-logo.png';
@@ -50,13 +51,18 @@ export default function LoginPage() {
       const returnTo = location.state?.returnTo || '/';
       navigate(returnTo, { replace: true });
     } catch (err) {
-      const msg = err?.message || 'Đăng nhập thất bại. Vui lòng thử lại.';
-      if (msg.toLowerCase().includes('password') || msg.toLowerCase().includes('invalid')) {
+      const parsed = err?.response ? parseApiError(err) : err;
+      if (parsed.shouldRedirectToVerify) {
+        navigate('/verify', {
+          state: { email: email.trim(), returnTo: location.state?.returnTo },
+          replace: true,
+        });
+        return;
+      }
+      if (parsed.code === 'INVALID_CREDENTIALS' || parsed.code === 'WRONG_PASSWORD') {
         setError('Email hoặc mật khẩu không đúng.');
-      } else if (msg.toLowerCase().includes('not found') || msg.toLowerCase().includes('exist')) {
-        setError('Tài khoản không tồn tại.');
       } else {
-        setError(msg);
+        setError(parsed.message || 'Đăng nhập thất bại. Vui lòng thử lại.');
       }
     } finally {
       setLoading(false);

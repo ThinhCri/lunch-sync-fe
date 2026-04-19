@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { authApi } from '@/api/auth';
+import { parseApiError } from '@/utils/error';
 import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -61,14 +62,10 @@ export default function VerifyPage() {
         });
       }, 1500);
     } catch (err) {
-      const msg = err?.message || 'Mã xác thực không đúng. Vui lòng thử lại.';
-      if (msg.includes('Invalid verification code')) {
-        setError('Mã xác thực không đúng. Vui lòng kiểm tra lại.');
-      } else if (msg.includes('expired')) {
-        setError('Mã đã hết hạn. Hãy gửi lại mã mới.');
-      } else {
-        setError(msg);
-      }
+      const parsed = err?.response
+        ? parseApiError(err)
+        : err;
+      setError(parsed.message || 'Mã OTP không đúng vui lòng thử lại!');
     } finally {
       setLoading(false);
     }
@@ -82,7 +79,10 @@ export default function VerifyPage() {
       await authApi.resendOTP({ email });
       setCooldown(RESEND_COOLDOWN);
     } catch (err) {
-      setError(err?.message || 'Không thể gửi lại mã. Vui lòng thử lại.');
+      const parsed = err?.response
+        ? parseApiError(err)
+        : err;
+      setError(parsed.message || 'Không thể gửi lại mã. Vui lòng thử lại.');
     } finally {
       setResending(false);
     }

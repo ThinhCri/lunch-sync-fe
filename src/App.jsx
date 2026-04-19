@@ -18,6 +18,7 @@ import DonePage from '@/pages/DonePage';
 import CrowdsourcePage from '@/pages/CrowdsourcePage';
 import ProfilePage from '@/pages/ProfilePage';
 import CollectionPage from '@/pages/CollectionPage';
+import VerifyPage from '@/pages/VerifyPage';
 
 function RequireAuth({ children }) {
   const isAuth = useAuthStore((s) => !!s.accessToken);
@@ -52,6 +53,7 @@ function App() {
             <Route path="/results/:pin" element={<ResultsPage />} />
             <Route path="/boom/:pin" element={<BoomPage />} />
             <Route path="/done/:pin" element={<DonePage />} />
+            <Route path="/verify" element={<VerifyPage />} />
           </Routes>
         </SessionProvider>
       </ErrorBoundary>
