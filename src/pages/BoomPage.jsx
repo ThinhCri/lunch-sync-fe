@@ -139,13 +139,22 @@ export default function BoomPage() {
                     >
                       {/* Image */}
                       <div className="relative w-full h-40 overflow-hidden">
-                        <img
-                          alt={rest.name}
-                          className="w-full h-full object-cover"
-                          src={rest.thumbnail_url || `https://picsum.photos/seed/${rest.id}/800/400`}
-                          onError={(e) => { e.target.src = `https://picsum.photos/seed/${rest.id}/800/400`; }}
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                        {rest.thumbnail_url ? (
+                          <>
+                            <img
+                              alt={rest.name}
+                              className="w-full h-full object-cover"
+                              src={rest.thumbnail_url}
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                          </>
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-surface-container-low">
+                            <span className="text-xl font-extrabold text-on-surface-variant/50 text-center px-4 leading-tight">
+                              {rest.name}
+                            </span>
+                          </div>
+                        )}
                         <div className={`absolute top-3 left-3 ${bg} w-10 h-10 rounded-xl flex items-center justify-center shadow-lg`}>
                           <FontAwesomeIcon icon={icon} className="text-lg" />
                         </div>

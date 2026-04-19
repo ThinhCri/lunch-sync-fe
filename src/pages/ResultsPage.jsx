@@ -186,12 +186,19 @@ export default function ResultsPage() {
                 >
                   {/* Rank badge */}
                   <div className="relative w-20 shrink-0">
-                    <img
-                      alt={r.name}
-                      className="w-full h-32 object-cover"
-                      src={r.thumbnail_url || `https://picsum.photos/seed/${r.id}/400/300`}
-                      onError={(e) => { e.target.src = `https://picsum.photos/seed/${r.id}/400/300`; }}
-                    />
+                    {r.thumbnail_url ? (
+                      <img
+                        alt={r.name}
+                        className="w-full h-32 object-cover"
+                        src={r.thumbnail_url}
+                      />
+                    ) : (
+                      <div className="w-full h-32 flex items-center justify-center bg-surface-container-low">
+                        <span className="text-xs font-extrabold text-on-surface-variant/50 text-center px-1 leading-tight">
+                          {r.name}
+                        </span>
+                      </div>
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col items-center justify-end pb-2">
                       <span className="text-white font-headline font-black text-2xl leading-none">{idx + 1}</span>
                       <span className="text-white/80 text-[9px] font-bold uppercase tracking-widest">TOP</span>

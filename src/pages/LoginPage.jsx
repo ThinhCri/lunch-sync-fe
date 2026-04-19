@@ -4,6 +4,7 @@ import { useAuthStore } from '@/store/authStore';
 import { authApi } from '@/api/auth';
 import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
+import logo from '/images/lunchsync-logo.png';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -77,7 +78,7 @@ export default function LoginPage() {
               <img
                 alt="LunchSync"
                 className="relative w-24 h-24 rounded-full object-cover border-4 border-surface-container-lowest shadow-[0_8px_24px_rgba(44,47,48,0.06)]"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5w4bIGcCVNEeYO2k_6bA_4h018IxYIhvl0YUGLxX_RZ0F4Td41tdLHY8AYkWY2mtgcRrp_o8mHKLTgxiO5ruGeSHu-t9GxF7ROJGtY6MwDeHsMeMzNcFEYRRAiuqwCg6iH9wVpxlRSJrJz7P9vUFPVT59bxT9aUmWO9ehV6aPv1uftYVErK76Tc6mf4ql3sI1EW-n4JkKGthHuukXtan6x-3-BBrbA_xG9hKS31sHElV40CAwi4J2Q0fUT2ZvuRN7-utBXlOIsoM"
+                src={logo}
               />
             </div>
             <h1 className="text-4xl font-extrabold tracking-tight text-on-surface mb-2 font-headline">Chào mừng trở lại!</h1>

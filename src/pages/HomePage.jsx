@@ -131,8 +131,10 @@ export default function HomePage() {
                       {res.thumbnail_url ? (
                         <img src={res.thumbnail_url} alt={res.name} className="w-full h-full object-cover" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-outline/30 bg-surface-container-low">
-                          <MapPin className="text-4xl" />
+                        <div className="w-full h-full flex items-center justify-center bg-surface-container-low">
+                          <span className="text-sm font-extrabold text-on-surface-variant/50 text-center px-2 leading-tight">
+                            {res.name}
+                          </span>
                         </div>
                       )}
                         <div className="absolute top-3 left-3 bg-surface-container-lowest/90 backdrop-blur-sm text-primary font-bold text-xs px-2 py-1 rounded-lg flex items-center gap-1 shadow-sm">

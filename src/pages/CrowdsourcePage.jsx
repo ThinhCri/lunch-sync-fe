@@ -172,7 +172,6 @@ export default function CrowdsourcePage() {
                   </div>
                 ) : (
                   <>
-                    <img alt="Food preview" className="absolute inset-0 w-full h-full object-cover opacity-20 transition-opacity group-hover:opacity-30" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCAIMdkU3dqCZTN_GOc-YQZMc6TQ0iYyorkXQnYrbiWl-v5Pz3IvmsV10NmQh9OHhv55zWMnd87hGclsLnfPjitGOwOAnsD9PRGMWVqtKJrplcJC-wC1SDNIaRBnjhU0RxNblHLsnzEurlq1dolol_dXJkLsSdkT27x0zlA5kCbRP6lSlapIHccEcSDg2dvb2fwpy5kUh7vcmqTXxy2xsItbLcHguplnsZGpTelwf_2kV3mRPbDDP148rwpLirNrMNEPaIUX54gjvU"/>
                     <div className="z-10 flex flex-col items-center">
                       <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-lg mb-3 text-primary">
                         <Camera className="text-3xl" />
