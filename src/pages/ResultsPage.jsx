@@ -36,14 +36,12 @@ export default function ResultsPage() {
   }, [fetchResults]);
 
   useEffect(() => {
+    if (!sessionId || !isHost) return;
     const interval = setInterval(async () => {
       try {
         const res = await api.sessions.getStatus(pin, sessionId);
         const data = res.data;
-        if (data.status === 'picking') {
-          clearInterval(interval);
-          navigate(`/boom/${pin}`);
-        } else if (data.status === 'done') {
+        if (data.status === 'done') {
           clearInterval(interval);
           navigate(`/done/${pin}`);
         }
@@ -52,7 +50,7 @@ export default function ResultsPage() {
       }
     }, 5000);
     return () => clearInterval(interval);
-  }, [pin, navigate, sessionId]);
+  }, [pin, navigate, sessionId, isHost]);
 
   const handleBoom = async () => {
     if (booming) return;

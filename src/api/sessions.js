@@ -10,6 +10,7 @@ export const sessionsApi = {
   getChoices: (pin) => client.get(`/sessions/${pin}/choices`),
   vote: (pin, data) => client.post(`/sessions/${pin}/vote`, data),
   getResults: (pin) => client.get(`/sessions/${pin}/results`),
+  getBoom: (pin) => client.get(`/sessions/${pin}/boom`),
   boom: (pin) => client.post(`/sessions/${pin}/boom`),
   pick: (pin, restaurantId) => client.post(`/sessions/${pin}/pick`, `"${restaurantId}"`, {
     headers: { 'Content-Type': 'application/json' },

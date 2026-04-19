@@ -20,17 +20,30 @@ export default function BoomPage() {
   const { show } = useToastStore();
 
   const [boomData, setBoomData] = useState(null);
+  const [boomLoading, setBoomLoading] = useState(true);
   const [pickingDone, setPickingDone] = useState(false);
 
   useEffect(() => {
-    console.log('[BoomPage] location.state:', location.state);
+    if (!isHost) {
+      show('Bạn không có quyền truy cập trang này.', 'error');
+      navigate(`/results/${pin}`);
+      return;
+    }
     if (location.state?.boomData) {
       setBoomData(location.state.boomData);
+      setBoomLoading(false);
     } else {
-      show('Không có dữ liệu boom.', 'error');
-      navigate(-1);
+      api.sessions.getBoom(pin)
+        .then((res) => {
+          setBoomData(res.data);
+          setBoomLoading(false);
+        })
+        .catch(() => {
+          show('Không có dữ liệu boom.', 'error');
+          navigate(-1);
+        });
     }
-  }, [location.state, show, navigate]);
+  }, [location.state, pin, show, navigate]);
 
   useEffect(() => {
     if (!boomData) return;
@@ -88,6 +101,12 @@ export default function BoomPage() {
       <main className="pt-24 flex-grow flex flex-col items-center px-5 pb-32 max-w-xl mx-auto w-full overflow-hidden relative">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] -z-10 pointer-events-none" />
 
+        {boomLoading ? (
+          <div className="flex-1 flex flex-col items-center justify-center gap-4">
+            <FontAwesomeIcon icon={faCircleNotch} className="text-primary text-4xl animate-spin" />
+            <p className="text-on-surface-variant font-semibold text-sm">Đang tải dữ liệu boom...</p>
+          </div>
+        ) : (
         <div className="w-full space-y-10 mt-6">
           {/* Header */}
           <div className="text-center space-y-3">
@@ -227,6 +246,7 @@ export default function BoomPage() {
             </div>
           )}
         </div>
+        )}
       </main>
       <BottomNav />
     </div>
